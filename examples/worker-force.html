@@ -58,8 +58,8 @@
 var i,
     s,
     o,
-    N = 10,
-    E = 50,
+    N = 100,
+    E = 500,
     C = 5,
     d = 0.5,
     cs = [],
@@ -114,6 +114,8 @@ s = new sigma({
   container: 'graph-container'
 });
 
-// Start the ForceAtlas2 algorithm:
-s.startWorkerForce();
+// Start the Worker Force algorithm:
+s.startWorkerForce({
+  noTree: false
+});
 </script>

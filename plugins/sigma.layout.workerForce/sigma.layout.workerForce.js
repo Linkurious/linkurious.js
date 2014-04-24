@@ -1,8 +1,21 @@
 ;(function(global) {
   'use strict';
 
-  var worker = function() {
+  var worker = function(customOptions) {
     'use strict';
+
+    var options = {
+      repulsion: 700,
+      attraction: 1e-4,
+      friction: 0.9,
+      idealEdgeDistance: 30,
+      g: 0.23,
+      centerForce: 1e-3
+    };
+
+    customOptions = customOptions || {};
+    for (var k in customOptions)
+      options[k] = customOptions[k];
 
     /**
      * Check whether we're in a worker or not:
@@ -49,33 +62,32 @@
     /**
      * Planar indexation:
      */
-    var BSPTree = function(top, right, bottom, left, points) {
+    var BSPTree = function(top, right, bottom, left, nodes) {
       this.top = top;
       this.right = right;
       this.bottom = bottom;
       this.left = left;
       this.children = [];
 
-      if (points.length === 0)
-        throw new Error('Don\'t build a BSPTree with 0 points !');
+      if (nodes.length === 0)
+        throw new Error('Don\'t build a BSPTree with 0 nodes !');
 
-      if (points.length === 1) {
-        var p = points[0];
+      if (nodes.length === 1) {
+        var n = nodes[0];
         this.barycenter = {
-          x: p.x,
-          y: p.y,
+          x: n.x,
+          y: n.y,
           mass: 1,
-          point: p
+          point: n
         };
         delete this.children;
-        return this;
+      } else {
+        this.recursiveSplit(nodes);
+        this.computeBarycenter();
       }
-
-      this.recursiveSplit(points);
-      this.computeBarycenter();
     };
 
-    BSPTree.prototype.recursiveSplit = function (points) {
+    BSPTree.prototype.recursiveSplit = function (nodes) {
       var bottom = this.bottom,
           top = this.top,
           right = this.right,
@@ -98,14 +110,14 @@
           right: right,
           bottom: bottom - verticalHalfDiff,
           left: left,
-          points: []
+          nodes: []
         };
         child2 = {
           top: top + verticalHalfDiff,
           right: right,
           bottom: bottom,
           left: left,
-          points: []
+          nodes: []
         };
       } else {
         child1 = {
@@ -113,31 +125,31 @@
           right: right - horizontalHalfDiff,
           bottom: bottom,
           left: left,
-          points: []
+          nodes: []
         };
         child2 = {
           top: top,
           right: right,
           bottom: bottom,
           left: left + horizontalHalfDiff,
-          points: []
+          nodes: []
         };
       }
 
       child1.contains = child2.contains = this.contains;
 
-      points.forEach(function (p) {
-        if (child1.contains(p.x, p.y))
-          child1.points.push(p);
+      nodes.forEach(function (n) {
+        if (child1.contains(n.x, n.y))
+          child1.nodes.push(n);
         else
-          child2.points.push(p);
+          child2.nodes.push(n);
       });
 
-      if (child1.points.length >= 1) {
-        this.children.push(new BSPTree(child1.top, child1.right, child1.bottom, child1.left, child1.points));
+      if (child1.nodes.length >= 1) {
+        this.children.push(new BSPTree(child1.top, child1.right, child1.bottom, child1.left, child1.nodes));
       }
-      if (child2.points.length >= 1) {
-        this.children.push(new BSPTree(child2.top, child2.right, child2.bottom, child2.left, child2.points));
+      if (child2.nodes.length >= 1) {
+        this.children.push(new BSPTree(child2.top, child2.right, child2.bottom, child2.left, child2.nodes));
       }
     };
 
@@ -207,31 +219,29 @@
     BSPTree.prototype.getForceRelevantMassedPoints = function (x, y) {
       var ret = [];
 
-      function _getForceRelevantMassedPoints(bspTree) {
-        var barycenter = bspTree.barycenter,
-            bottom = bspTree.bottom,
-            top = bspTree.top,
-            right = bspTree.right,
-            left = bspTree.left;
+      var barycenter = this.barycenter,
+          bottom = this.bottom,
+          top = this.top,
+          right = this.right,
+          left = this.left;
 
-        if (!bspTree.children) {
-          if (barycenter.x !== x || barycenter.y !== y)
-            ret.push(barycenter);
-
-          return;
-        }
-
-        var distSquare = (barycenter.x - x) * (barycenter.x - x) + (barycenter.y - y) * (barycenter.y - y);
-        var diagSquare = (bottom - top) * (bottom - top) + (right - left) * (right - left);
-
-        if (distSquare > BSPTree.THETA_SQUARE * diagSquare)
+      if (!this.children) {
+        if (barycenter.x !== x || barycenter.y !== y)
           ret.push(barycenter);
-        else {
-          bspTree.children.forEach(_getForceRelevantMassedPoints);
-        }
+
+        return;
       }
 
-      _getForceRelevantMassedPoints(this);
+      var distSquare = (barycenter.x - x) * (barycenter.x - x) + (barycenter.y - y) * (barycenter.y - y);
+      var diagSquare = (bottom - top) * (bottom - top) + (right - left) * (right - left);
+
+      if (distSquare > BSPTree.THETA_SQUARE * diagSquare)
+        ret.push(barycenter);
+      else {
+        this.children.forEach(function(child) {
+          child.getForceRelevantMassedPoints(x, y);
+        });
+      }
 
       return ret;
     };
@@ -244,17 +254,7 @@
     /**
      * Actual force directed layout algorithm:
      */
-    var REPULSION = 700,
-        ATTRACTION = 1e-4,
-        FRICTION = 0.9,
-        IDEAL_EDGE_DISTANCE = 30,
-        G = 0.23,
-
-        CENTER_X = 700,
-        CENTER_Y = 350,
-        CENTER_FORCE = 1e-3,
-
-        nodesIndex = Object.create(null),
+    var nodesIndex = Object.create(null),
         nodes = [],
         edges = [],
         bspTree;
@@ -285,20 +285,15 @@
     var step = function step() {
       var newCoords = Object.create(null);
 
-      nodes.forEach(function(n) {
-        var deltaX = CENTER_X - n.x,
-            deltaY = CENTER_Y - n.y;
-
-        n.accX = CENTER_FORCE * deltaX;
-        n.accY = CENTER_FORCE * deltaY;
-      });
-
       var pointsArray = [],
           top = +Infinity,
           right = -Infinity,
           bottom = -Infinity,
-          left = +Infinity;
+          left = +Infinity,
+          centerX,
+          centerY;
 
+      // FIND BOUNDS:
       nodes.forEach(function(n) {
         pointsArray.push(n);
         if (n.y < top)
@@ -311,37 +306,87 @@
           right = n.x + 0.1;
       });
 
-      bspTree = new BSPTree(top, right, bottom, left, pointsArray);
+      centerX = left + right / 2;
+      centerY = top + bottom / 2;
 
+      // GRAVITY:
       nodes.forEach(function(n) {
-        var repulsionX = 0,
-            repulsionY = 0,
-            forceRelevantMassedPoints = bspTree.getForceRelevantMassedPoints(n.x, n.y);
+        var deltaX = centerX - n.x,
+            deltaY = centerY - n.y;
 
-        forceRelevantMassedPoints.forEach(function(m) {
-          var deltaX = m.x - n.x,
-              deltaY = m.y - n.y,
-              inverseCubedDistance = Math.pow(deltaX * deltaX + deltaY * deltaY, -3 / 2);
-
-          if (inverseCubedDistance > 0.1)
-            inverseCubedDistance = 0.1;
-
-          repulsionX += deltaX * m.mass * inverseCubedDistance;
-          repulsionY += deltaY * m.mass * inverseCubedDistance;
-        });
-
-        n.accX -= REPULSION * repulsionX;
-        n.accY -= REPULSION * repulsionY;
+        n.accX = options.centerForce * deltaX;
+        n.accY = options.centerForce * deltaY;
       });
 
+
+      // REPULSION:
+      if (options.noTree) {
+        var i,
+            j,
+            l,
+            n1,
+            n2,
+            deltaX,
+            deltaY,
+            repulsionX,
+            repulsionY,
+            inverseCubedDistance;
+
+        l = nodes.length;
+        for (i = 0; i < l; i++) {
+          n1 = nodes[i];
+          for (j = i + 1; j < l; j++) {
+            n2 = nodes[j];
+
+            deltaX = n2.x - n1.x;
+            deltaY = n2.y - n1.y;
+            inverseCubedDistance = Math.pow(deltaX * deltaX + deltaY * deltaY, -3 / 2);
+
+            if (inverseCubedDistance > 0.1)
+              inverseCubedDistance = 0.1;
+
+            repulsionX = deltaX * inverseCubedDistance;
+            repulsionY = deltaY * inverseCubedDistance;
+
+            n1.accX -= options.repulsion * repulsionX;
+            n1.accY -= options.repulsion * repulsionY;
+            n2.accX += options.repulsion * repulsionX;
+            n2.accY += options.repulsion * repulsionY;
+          }
+        }
+      } else {
+        bspTree = new BSPTree(top, right, bottom, left, pointsArray);
+        nodes.forEach(function(n) {
+          var repulsionX = 0,
+              repulsionY = 0,
+              forceRelevantMassedPoints = bspTree.getForceRelevantMassedPoints(n.x, n.y);
+
+          forceRelevantMassedPoints.forEach(function(m) {
+            var deltaX = m.x - n.x,
+                deltaY = m.y - n.y,
+                inverseCubedDistance = Math.pow(deltaX * deltaX + deltaY * deltaY, -3 / 2);
+
+            if (inverseCubedDistance > 0.1)
+              inverseCubedDistance = 0.1;
+
+            repulsionX += deltaX * m.mass * inverseCubedDistance;
+            repulsionY += deltaY * m.mass * inverseCubedDistance;
+          });
+
+          n.accX -= options.repulsion * repulsionX;
+          n.accY -= options.repulsion * repulsionY;
+        });
+      }
+
+      // ATTRACTION:
       edges.forEach(function(e) {
         var source = e.source,
             target = e.target,
             deltaX = target.x - source.x,
             deltaY = target.y - source.y,
             distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
-            attractX = ATTRACTION * (distance - IDEAL_EDGE_DISTANCE) * deltaX,
-            attractY = ATTRACTION * (distance - IDEAL_EDGE_DISTANCE) * deltaY;
+            attractX = options.attraction * (distance - options.idealEdgeDistance) * deltaX,
+            attractY = options.attraction * (distance - options.idealEdgeDistance) * deltaY;
 
         source.accX += attractX;
         source.accY += attractY;
@@ -349,9 +394,10 @@
         target.accY -= attractY;
       });
 
+      // APPLY THE FORCES:
       nodes.forEach(function(n) {
-        n.speedX = n.speedX * FRICTION + G * n.accX;
-        n.speedY = n.speedY * FRICTION + G * n.accY;
+        n.speedX = n.speedX * options.friction + options.g * n.accX;
+        n.speedY = n.speedY * options.friction + options.g * n.accY;
 
         n.x += n.speedX;
         n.y += n.speedY;
@@ -391,20 +437,29 @@
   };
 
   sigma.prototype.startWorkerForce = function(options) {
-    var self = this;
+    var self = this,
+        count = 0;
 
     if (this.workerForce)
       this.stopWorkerForce();
 
-    this.workerForce = new Worker(URL.createObjectURL(makeBlob(';(' + worker + ').call(this);')));
+    this.workerForce = new Worker(URL.createObjectURL(makeBlob(
+      ';(' + worker + ').call(this, ' + JSON.stringify(options || {}) + ');'
+    )));
 
     this.workerForce.addEventListener('message', function(e) {
       var nodesIndex = e.data;
+
       self.graph.nodes().forEach(function(n) {
         n.x = nodesIndex[n.id].x;
         n.y = nodesIndex[n.id].y;
       });
+
+      setTimeout(self.refresh.bind(self), 0);
       self.refresh();
+
+      if (++count >= 100)
+        self.stopWorkerForce();
     });
 
     this.workerForce.postMessage({
