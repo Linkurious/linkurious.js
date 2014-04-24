@@ -260,7 +260,7 @@
         bspTree;
 
     self.addEventListener('message', function(e) {
-      applyGraphChanges(e.data);
+      applyGraphChanges(e.data || {});
     });
 
     function applyGraphChanges(changes) {
@@ -275,11 +275,8 @@
           edges.push({ source: nodesIndex[e.source], target: nodesIndex[e.target] });
         });
 
-      (function loop() {
-        var newCoords = step();
-        sendNewCoords(newCoords);
-        setTimeout(loop, 0);
-      })();
+      var newCoords = step();
+      sendNewCoords(newCoords);
     }
 
     var step = function step() {
@@ -455,11 +452,9 @@
         n.y = nodesIndex[n.id].y;
       });
 
-      setTimeout(self.refresh.bind(self), 0);
       self.refresh();
 
-      if (++count >= 100)
-        self.stopWorkerForce();
+      self.workerForce.postMessage();
     });
 
     this.workerForce.postMessage({
