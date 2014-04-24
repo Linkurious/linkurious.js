@@ -2,22 +2,24 @@
   'use strict';
 
   var worker = function() {
+    'use strict';
+
     /**
      * Check whether we're in a worker or not:
      */
     var sendNewCoords;
     if (Object(this.document) === this.document)
-      sendNewCoords = function sendNewCoords(coords) {
+      sendNewCoords = function sendNewCoords(nodesIndex) {
         var e = new Event('newCoords');
-        e.coords = coords;
+        e.nodesIndex = nodesIndex;
         requestAnimationFrame(function() {
           return document.dispatchEvent(e);
         });
       };
     else {
       if (typeof postMessage === 'function')
-        sendNewCoords = function sendNewCoords(coords) {
-          postMessage(coords);
+        sendNewCoords = function sendNewCoords(nodesIndex) {
+          postMessage(nodesIndex);
         };
       else
         throw new Error('No idea of how to reach back the context where the graph is drawn');
@@ -252,8 +254,9 @@
         CENTER_Y = 350,
         CENTER_FORCE = 1e-3,
 
-        points = new Map(),
-        edges = new Set(),
+        nodesIndex = Object.create(null),
+        nodes = [],
+        edges = [],
         bspTree;
 
     self.addEventListener('message', function(e) {
@@ -263,12 +266,13 @@
     function applyGraphChanges(changes) {
       if (changes.addNodes)
         changes.addNodes.forEach(function (p) {
-          points.set(p.id, new MovingPoint(p.id, p.x, p.y));
+          nodesIndex[p.id] = new MovingPoint(p.id, p.x, p.y);
+          nodes.push(nodesIndex[p.id]);
         });
 
       if (changes.addEdges)
         changes.addEdges.forEach(function (e) {
-          edges.add({ source: points.get(e.source), target: points.get(e.target) });
+          edges.push({ source: nodesIndex[e.source], target: nodesIndex[e.target] });
         });
 
       (function loop() {
@@ -279,15 +283,14 @@
     }
 
     var step = function step() {
-      var newCoords = [];
+      var newCoords = Object.create(null);
 
-      graph.nodes().forEach(function(p) {
-        var deltaX = CENTER_X - p.x,
-            deltaY = CENTER_Y - p.y,
-            distanceToCenter = Math.hypot(deltaX, deltaY);
+      nodes.forEach(function(n) {
+        var deltaX = CENTER_X - n.x,
+            deltaY = CENTER_Y - n.y;
 
-        p.accX = CENTER_FORCE * deltaX;
-        p.accY = CENTER_FORCE * deltaY;
+        n.accX = CENTER_FORCE * deltaX;
+        n.accY = CENTER_FORCE * deltaY;
       });
 
       var pointsArray = [],
@@ -296,28 +299,28 @@
           bottom = -Infinity,
           left = +Infinity;
 
-      graph.nodes().forEach(function(p) {
-        pointsArray.push(p);
-        if (p.y < top)
-          top = p.y - 0.1;
-        if (p.y > bottom)
-          bottom = p.y + 0.1;
-        if (p.x < left)
-          left = p.x - 0.1;
-        if (p.x > right)
-          right = p.x + 0.1;
+      nodes.forEach(function(n) {
+        pointsArray.push(n);
+        if (n.y < top)
+          top = n.y - 0.1;
+        if (n.y > bottom)
+          bottom = n.y + 0.1;
+        if (n.x < left)
+          left = n.x - 0.1;
+        if (n.x > right)
+          right = n.x + 0.1;
       });
 
       bspTree = new BSPTree(top, right, bottom, left, pointsArray);
 
-      points.forEach(function(p) {
+      nodes.forEach(function(n) {
         var repulsionX = 0,
             repulsionY = 0,
-            forceRelevantMassedPoints = bspTree.getForceRelevantMassedPoints(p.x, p.y);
+            forceRelevantMassedPoints = bspTree.getForceRelevantMassedPoints(n.x, n.y);
 
         forceRelevantMassedPoints.forEach(function(m) {
-          var deltaX = m.x - p.x,
-              deltaY = m.y - p.y,
+          var deltaX = m.x - n.x,
+              deltaY = m.y - n.y,
               inverseCubedDistance = Math.pow(deltaX * deltaX + deltaY * deltaY, -3 / 2);
 
           if (inverseCubedDistance > 0.1)
@@ -327,8 +330,8 @@
           repulsionY += deltaY * m.mass * inverseCubedDistance;
         });
 
-        p.accX -= REPULSION * repulsionX;
-        p.accY -= REPULSION * repulsionY;
+        n.accX -= REPULSION * repulsionX;
+        n.accY -= REPULSION * repulsionY;
       });
 
       edges.forEach(function(e) {
@@ -336,8 +339,8 @@
             target = e.target,
             deltaX = target.x - source.x,
             deltaY = target.y - source.y,
-            distance = Math.hypot(deltaX, deltaY),
-            attractX = ATTRACTION * (distance - IDEAL_EDGE_DISTANCE) * deltaX;
+            distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+            attractX = ATTRACTION * (distance - IDEAL_EDGE_DISTANCE) * deltaX,
             attractY = ATTRACTION * (distance - IDEAL_EDGE_DISTANCE) * deltaY;
 
         source.accX += attractX;
@@ -346,18 +349,17 @@
         target.accY -= attractY;
       });
 
-      points.forEach(function(p) {
+      nodes.forEach(function(n) {
         n.speedX = n.speedX * FRICTION + G * n.accX;
         n.speedY = n.speedY * FRICTION + G * n.accY;
 
         n.x += n.speedX;
         n.y += n.speedY;
 
-        newCoords.push({
-          id: n.id,
+        newCoords[n.id] = {
           x: n.x,
           y: n.y
-        });
+        };
       });
 
       return newCoords;
@@ -370,11 +372,49 @@
   /**
    * Interfacing the worker:
    */
+  function makeBlob(workerFunc) {
+    var blob;
+
+    try {
+      blob = new Blob([workerFunc], {type: 'application/javascript'});
+    } catch (e) {
+      window.BlobBuilder = window.BlobBuilder ||
+                           window.WebKitBlobBuilder ||
+                           window.MozBlobBuilder;
+
+      blob = new BlobBuilder();
+      blob.append(workerFunc);
+      blob = blob.getBlob();
+    }
+
+    return blob;
+  };
+
   sigma.prototype.startWorkerForce = function(options) {
-    // TODO
+    var self = this;
+
+    if (this.workerForce)
+      this.stopWorkerForce();
+
+    this.workerForce = new Worker(URL.createObjectURL(makeBlob(';(' + worker + ').call(this);')));
+
+    this.workerForce.addEventListener('message', function(e) {
+      var nodesIndex = e.data;
+      self.graph.nodes().forEach(function(n) {
+        n.x = nodesIndex[n.id].x;
+        n.y = nodesIndex[n.id].y;
+      });
+      self.refresh();
+    });
+
+    this.workerForce.postMessage({
+      addNodes: this.graph.nodes(),
+      addEdges: this.graph.edges()
+    });
   };
 
   sigma.prototype.stopWorkerForce = function() {
-    // TODO
+    if (this.workerForce)
+      this.workerForce.terminate();
   };
 })(this);
