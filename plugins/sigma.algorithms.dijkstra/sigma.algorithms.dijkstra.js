@@ -119,7 +119,7 @@ if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
 			neighbors = this.allNeighborsIndex[key];
 
 			console.log("test4");
-			console.log(u);
+			console.log(neighbors);
 			
 			// neighbors = Object.keys(uncheckedNodes).filter(function(id){
 			// 									return !!this.allNeighborsIndex[key][id] });
@@ -142,15 +142,18 @@ if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
 				}
 			}
 			console.log("test5");
-			console.log(uncheckedNodes.n4); 
+			console.log(k); 
 
 			if (k>1) {
+				
+				console.log("test6");
+				console.log(nodeQueue);
 				myDistanceNode = nodeQueue.dequeue();
+
 				u = uncheckedNodes[myDistanceNode.id]; 
 				//u = uncheckedNodes[Object.keys(uncheckedNodes).filter(function(id){return uncheckedNodes[id].dijkstra.distance <= minDist })[0]];
 			}
-			// console.log("test6");
-			// console.log(u); 
+			
 			lastNeighbors = neighbors;
 			k--;//decrease counter
 		}
