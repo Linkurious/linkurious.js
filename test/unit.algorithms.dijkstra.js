@@ -110,13 +110,13 @@ test('Basic manipulation', function() {
   deepEqual(
     myGraph1.dijkstraOpt(node1),
     graph1Sol,
-    '"dijkstraOpt" works on a simple graph (graph1)'
+    '"dijkstraOpt" returns the distance between each node and an entry node on a 5-node graph'
   );
 
   deepEqual(
     myGraph2.dijkstraOpt(node2_1),
     graph2_1Sol,
-    '"dijkstraOpt" works on a more complex graph (graph2)'
+    '"dijkstraOpt" returns the correct distances on a 10-node graph (first entry node)'
   );
 
   myGraph2 = new sigma.classes.graph();
@@ -124,14 +124,14 @@ test('Basic manipulation', function() {
   deepEqual(
     myGraph2.dijkstraOpt(node2_2),
     graph2_2Sol,
-    '"dijkstraOpt" works on a more complex graph (graph2) with a different initial node(n4).'
+    '"dijkstraOpt" returns the correct distances on a 10-node graph (second entry node)'
   );
    myGraph2 = new sigma.classes.graph();
   myGraph2.read(graph2);
   deepEqual(
     myGraph2.dijkstraOpt(node2_3),
     graph2_3Sol,
-    '"dijkstraOpt" works on a more complex graph (graph2) with a different initial node(n7).'
+    '"dijkstraOpt" returns the correct distances on a 10-node graph (third entry node)'
   );
 
 
