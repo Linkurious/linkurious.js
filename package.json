@@ -23,7 +23,8 @@
     "grunt-zip": "~0.15.0",
     "http-server": "~0.6.1",
     "grunt-grunt": "^0.2.2",
-    "uglify-js": "^2.4.15"
+    "uglify-js": "^2.4.15",
+    "js-priority-queue": "~0.1.0"
   },
   "scripts": {
     "start": "http-server -p 8000",
