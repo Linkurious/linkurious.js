@@ -69,17 +69,32 @@ module.exports = function(grunt) {
   npmJsFiles.splice(2, 0, 'src/sigma.export.js');
 
   var plugins = [
+    'helpers.graph',
+    'exporters.gexf',
+    'exporters.spreadsheet',
     'exporters.svg',
     'layout.forceAtlas2',
     'parsers.gexf',
     'parsers.json',
+    'plugins.activeState',
     'plugins.animate',
+    'plugins.colorbrewer',
+    'plugins.designer',
     'plugins.dragNodes',
+    'plugins.edgeSiblings',
+    'plugins.image',
     'plugins.filter',
+    'plugins.fullScreen',
+    'plugins.keyboard',
+    'plugins.locate',
     'plugins.neighborhoods',
+    'plugins.poweredBy',
+    'plugins.select',
+    'plugins.tooltips',
     'renderers.customEdgeShapes',
     'renderers.customShapes',
     'renderers.edgeLabels',
+    'renderers.halo',
     'renderers.snapshot',
     'statistics.HITS'
   ];
@@ -88,7 +103,7 @@ module.exports = function(grunt) {
       subGrunts = {};
 
   plugins.forEach(function(p) {
-    var dir = 'plugins/sigma.' + p + '/';
+    var dir = './plugins/sigma.' + p + '/';
 
     if (fs.existsSync(dir + 'Gruntfile.js'))
       subGrunts[p] = {

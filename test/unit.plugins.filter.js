@@ -70,26 +70,31 @@ test('API', function() {
           {
             id: 'n0',
             label: 'Node 0',
-            myNodeAttr: 0
+            myNodeAttr: 0,
+            my: {node: {attr: 5}}
           },
           {
             id: 'n1',
             label: 'Node 1',
-            myNodeAttr: 1
+            myNodeAttr: 1,
+            my: {node: {attr: 3}}
           },
           {
             id: 'n2',
             label: 'Node 2',
-            myNodeAttr: 2
+            myNodeAttr: 2,
+            my: {node: {attr: -10}}
           },
           {
             id: 'n3',
             label: 'Node 3',
-            myNodeAttr: -1
+            myNodeAttr: -1,
+            my: {node: {}}
           },
           {
             id: 'n4',
-            label: 'Node 4'
+            label: 'Node 4',
+            my: {node: {attr: 1}}
           }
         ],
         edges: [
@@ -144,9 +149,9 @@ test('API', function() {
     });
   };
 
-  // Show non-isolated nodes only
-  function degreePredicate(n) {
-    return this.degree(n.id) > 0;
+  // Show only with degree greater than a specified value
+  function degreePredicate(n, params) {
+    return this.graph.degree(n.id) > params.value;
   };
 
   // Show edges without the myEdgeAttr attribute or with myEdgeAttr > 1
@@ -154,8 +159,12 @@ test('API', function() {
     return e.myEdgeAttr === undefined || e.myEdgeAttr > 1;
   };
 
+  function dynamicAccessorPredicate(n, params) {
+    return this.get(n, params.property) < params.threshold;
+  }
+
   // Register the filter
-  filter.nodesBy(degreePredicate, 'degree');
+  filter.nodesBy(degreePredicate, { value: 0 }, 'degree');
 
   deepEqual(
     hiddenNodes(),
@@ -186,8 +195,23 @@ test('API', function() {
 
   deepEqual(
     hiddenNodes(),
-    [s.graph.nodes('n2') , s.graph.nodes('n3') , s.graph.nodes('n4') ],
+    [s.graph.nodes('n2'), s.graph.nodes('n3'), s.graph.nodes('n4') ],
     '"neighborsOf" hides all nodes which are not linked to the specified node'
+  );
+
+  // Register and apply a filter with dynamic access to nodes properties
+  filter
+    .undo()
+    .nodesBy(dynamicAccessorPredicate, {
+      property: 'my.node.attr',
+      threshold: 3
+    })
+    .apply();
+
+  deepEqual(
+    hiddenNodes(),
+    [s.graph.nodes('n0'), s.graph.nodes('n1'), s.graph.nodes('n3') ],
+    '"apply" applies a nodesBy filter with a dynamic accessor'
   );
 
 
@@ -208,7 +232,7 @@ test('API', function() {
 
   // Register two filters and apply them
   filter
-    .nodesBy(degreePredicate)
+    .nodesBy(degreePredicate, { value: 0 })
     .edgesBy(myEdgeAttrPredicate)
     .apply();
 
@@ -224,14 +248,14 @@ test('API', function() {
 
   // Register two filters and apply them
   filter
-    .nodesBy(degreePredicate, 'degree')
+    .nodesBy(degreePredicate, { value: 0 }, 'degree')
     .edgesBy(myEdgeAttrPredicate, 'attr')
     .apply();
 
   deepEqual(
-    filter.export().map(function(o) { return o.key }),
+    filter.serialize().map(function(o) { return o.key }),
     ['degree', 'attr'],
-    'The filters chain is exported'
+    'The filters chain is serialized'
   );
 
 
@@ -239,7 +263,7 @@ test('API', function() {
   filter.clear();
 
   deepEqual(
-    filter.export(),
+    filter.serialize(),
     [],
     'The filters chain is cleared'
   );
@@ -250,11 +274,9 @@ test('API', function() {
 
   // nodesBy X > undo > nodesBy Y > apply
   filter
-    .nodesBy(degreePredicate, 'degree0')
+    .nodesBy(degreePredicate, { value: 0 }, 'degree0')
     .undo()
-    .nodesBy(function(n) {
-      return this.degree(n.id) > 1;
-    }, 'degree1')
+    .nodesBy(degreePredicate, { value: 1 }, 'degree1')
     .apply();
 
   deepEqual(
@@ -276,7 +298,7 @@ test('API', function() {
 
   // Call "undo" with multiple arguments
   filter
-    .nodesBy(degreePredicate, 'degree0')
+    .nodesBy(degreePredicate, { value: 0 }, 'degree0')
     .undo('degree0', 'degree1')
     .apply();
 
@@ -288,12 +310,12 @@ test('API', function() {
 
 
   // Import an empty chain
-  filter.import([]);
+  filter.load([]);
 
   strictEqual(
-    filter.export().length,
+    filter.serialize().length,
     0,
-    'The empty chain is imported'
+    'The empty chain is loaded'
   );
 
 
@@ -302,93 +324,105 @@ test('API', function() {
     {
       key: 'my-filter',
       predicate: degreePredicate,
-      processor: 'filter.processors.nodes'
+      processor: 'nodes',
+      options: { value: 0 }
     }
   ];
 
-  filter.import(chain).apply();
+  filter.load(chain).apply();
 
   deepEqual(
-    filter.export().map(function(o) {
+    filter.serialize().map(function(o) {
       return {
         key: o.key,
-        predicate: o.predicate.toString(),
-        processor: o.processor
+        predicate: o.predicate,
+        processor: o.processor,
+        options: o.options
       };
     }),
     [{
       key: 'my-filter',
-      predicate: degreePredicate.toString(),
-      processor: 'filter.processors.nodes'
+      predicate: degreePredicate.toString().replace(/\s+/g, ' '),
+      processor: 'nodes',
+      options: { value: 0 }
     }],
-    'The filters chain is imported'
+    'The chain of filters is loaded'
   );
 
 
-  // export > import > export
-  var dumpedChain = filter.import(filter.export()).export();
+  // serialize > import > serialize
+  var dumpedChain = filter.load(filter.serialize()).serialize();
 
   deepEqual(
     chain.map(function(o) {
       return {
         key: o.key,
-        predicate: o.predicate.toString(),
-        processor: o.processor
+        processor: o.processor,
+        options: o.options
       };
     }),
     dumpedChain.map(function(o) {
       return {
         key: o.key,
-        predicate: o.predicate.toString(),
-        processor: o.processor
+        processor: o.processor,
+        options: o.options
       };
     }),
-    'The exported filters chain is imported'
+    'The serialized chain of filters is loaded'
   );
 
 
   // check chain duplication
-  filter.clear();
+  filter.apply().clear();
 
   strictEqual(
     dumpedChain.length,
     1,
-    'The exported chain is a deep copy of the internal chain'
+    'The serialized chain is a deep copy of the internal chain'
   );
 
 
   // check chain duplication
-  filter.import(chain);
+  filter.load(chain);
   chain.length = 0;
   degreePredicate = null;
 
   deepEqual(
-    filter.export().map(function(o) {
+    filter.serialize().map(function(o) {
       return {
         key: o.key,
-        predicate: o.predicate.toString().replace(/\s+/g, ' '),
-        processor: o.processor
+        predicate: o.predicate,
+        processor: o.processor,
+        options: o.options
       };
     }),
     [
       {
         key: 'my-filter',
-        predicate: function degreePredicate(n) {
-          return this.degree(n.id) > 0;
+        predicate: function degreePredicate(n, params) {
+          return this.graph.degree(n.id) > params.value;
         }.toString().replace(/\s+/g, ' '),
-        processor: 'filter.processors.nodes'
+        processor: 'nodes',
+        options: { value: 0 }
       }
     ],
-    'The internal chain is a deep copy of the imported chain'
+    'The internal chain is a deep copy of the loaded chain'
   );
-
 
   throws(
     function() {
-      filter.nodesBy(function() {}, 5);
+      filter.nodesBy(function() {}, true);
     },
-    /The filter key \"5\" must be a string./,
+    /The filter key \"true\" must be a number or a string./,
     '"nodesBy" with a wrong key type throws an error.'
+  );
+
+  throws(
+    function() {
+      filter.nodesBy(function() {}, {}, true);
+    },
+    /The filter key \"true\" must be a number or a string./,
+    '"nodesBy" with options and a wrong key type throws an error.'
   );
 
   throws(
@@ -397,6 +431,14 @@ test('API', function() {
     },
     /The filter key must be a non-empty string./,
     '"edgesBy" with a wrong key type throws an error.'
+  );
+
+  throws(
+    function() {
+      filter.edgesBy(function() {}, {}, '');
+    },
+    /The filter key must be a non-empty string./,
+    '"edgesBy" with options and a wrong key type throws an error.'
   );
 
   throws(
@@ -424,5 +466,31 @@ test('API', function() {
     /The filter \"a\" already exists./,
     'Registering two filters with the same key throws an error.'
   );
+
+  // check plugin lifecycle
+  filter.kill();
+  s.kill();
+  s = new sigma();
+  filter = new sigma.plugins.filter(s);
+  s.graph.read(graph);
+  filter.nodesBy(function (n) {
+    return this.graph.degree(n.id) > 0;
+  }, 'degree');
+  filter.apply();
+
+  deepEqual(
+    hiddenNodes(),
+    [ s.graph.nodes('n4') ],
+    '"apply" applies a nodesBy filter after a kill of the plugin and sigma, and a new instanciation of them.'
+  );
+
+  sigma.plugins.killFilter(s);
+  deepEqual(
+    filter.serialize(),
+    [],
+    'The filters chain is empty after `killFilter` is called.'
+  );
+  filter.apply(); // does nothing
+  filter.undo(); // does nothing
 
 });

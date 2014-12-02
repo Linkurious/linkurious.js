@@ -1,12 +1,19 @@
 ;(function(undefined) {
   'use strict';
 
+  if (typeof sigma === 'undefined')
+    throw 'sigma is not declared';
+
+  // Initialize package:
+  sigma.utils.pkg('sigma.layouts');
+
   /**
    * Sigma ForceAtlas2.5 Webworker
    * ==============================
    *
    * Author: Guillaume Plique (Yomguithereal)
    * Algorithm author: Mathieu Jacomy @ Sciences Po Medialab & WebAtlas
+   * Autostop author: Sébastien Heymann @ Linkurious
    * Version: 1.0.3
    */
 
@@ -34,6 +41,8 @@
       ppr: 9,
       maxForce: 10,
       iterations: 0,
+      maxIterations: 1000,
+      avgDistanceThreshold: 0.01,
       converged: false,
 
       // Possible to change through config
@@ -49,7 +58,8 @@
         barnesHutOptimize: false,
         barnesHutTheta: 0.5,
         startingIterations: 1,
-        iterationsPerRender: 1
+        iterationsPerRender: 1,
+        autoStop: false
       }
     };
 
@@ -205,6 +215,8 @@
           coefficient,
           xDist,
           yDist,
+          oldxDist,
+          oldyDist,
           ewc,
           mass,
           distance,
@@ -853,7 +865,8 @@
       var force,
           swinging,
           traction,
-          nodespeed;
+          nodespeed,
+          alldistance = 0;
 
       // MATH: sqrt and square distances
       if (W.settings.adjustSizes) {
@@ -890,6 +903,9 @@
             nodespeed =
               0.1 * Math.log(1 + traction) / (1 + Math.sqrt(swinging));
 
+            oldxDist = NodeMatrix[np(n, 'x')];
+            oldyDist = NodeMatrix[np(n, 'y')];
+
             // Updating node's positon
             NodeMatrix[np(n, 'x')] =
               NodeMatrix[np(n, 'x')] + NodeMatrix[np(n, 'dx')] *
@@ -897,6 +913,13 @@
             NodeMatrix[np(n, 'y')] =
               NodeMatrix[np(n, 'y')] + NodeMatrix[np(n, 'dy')] *
               (nodespeed / W.settings.slowDown);
+
+            xDist = NodeMatrix[np(n, 'x')];
+            yDist = NodeMatrix[np(n, 'y')];
+            distance = Math.sqrt(
+              Math.pow(xDist - oldxDist, 2) + Math.pow(yDist - oldyDist, 2)
+            );
+            alldistance += distance;
           }
         }
       }
@@ -932,6 +955,9 @@
                 (1 + Math.sqrt(swinging))
               ));
 
+            oldxDist = NodeMatrix[np(n, 'x')];
+            oldyDist = NodeMatrix[np(n, 'y')];
+
             // Updating node's positon
             NodeMatrix[np(n, 'x')] =
               NodeMatrix[np(n, 'x')] + NodeMatrix[np(n, 'dx')] *
@@ -939,12 +965,29 @@
             NodeMatrix[np(n, 'y')] =
               NodeMatrix[np(n, 'y')] + NodeMatrix[np(n, 'dy')] *
               (nodespeed / W.settings.slowDown);
+
+            xDist = NodeMatrix[np(n, 'x')];
+            yDist = NodeMatrix[np(n, 'y')];
+            distance = Math.sqrt(
+              Math.pow(xDist - oldxDist, 2) + Math.pow(yDist - oldyDist, 2)
+            );
+            alldistance += distance;
           }
         }
       }
 
       // Counting one more iteration
       W.iterations++;
+
+      // Auto stop.
+      // The greater the ratio nb nodes / nb edges,
+      // the greater the number of iterations needed to converge.
+      if (W.settings.autoStop) {
+        W.converged = (
+          W.iterations > W.maxIterations ||
+          alldistance / W.nodesLength < W.avgDistanceThreshold
+        );
+      }
     }
 
     /**
@@ -960,7 +1003,8 @@
       sendNewCoords = function() {
         var e = new Event('newCoords');
         e.data = {
-          nodes: NodeMatrix.buffer
+          nodes: NodeMatrix.buffer,
+          converged: W.converged
         };
         requestAnimationFrame(function() {
           document.dispatchEvent(e);
@@ -972,7 +1016,10 @@
       // From a WebWorker
       sendNewCoords = function() {
         self.postMessage(
-          {nodes: NodeMatrix.buffer},
+          {
+            nodes: NodeMatrix.buffer,
+            converged: W.converged
+          },
           [NodeMatrix.buffer]
         );
       };
@@ -1110,16 +1157,14 @@
   }
 
   if (inWebWorker) {
-
     // We are in a webworker, so we launch the Worker function
     eval(getWorkerFn());
   }
   else {
-
     // We are requesting the worker from sigma, we retrieve it therefore
     if (typeof sigma === 'undefined')
       throw 'sigma is not declared';
 
-    sigma.prototype.getForceAtlas2Worker = getWorkerFn;
+    sigma.layouts.getForceAtlas2Worker = getWorkerFn;
   }
 }).call(this);

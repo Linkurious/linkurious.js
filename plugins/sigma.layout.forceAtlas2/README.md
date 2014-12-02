@@ -5,6 +5,8 @@ Algorithm by [Mathieu Jacomy](https://github.com/jacomyma).
 
 Plugin by [Guillaume Plique](https://github.com/Yomguithereal).
 
+Auto-stop condition by [Sébastien Heymann](https://github.com/sheymann).
+
 ---
 
 This plugin implements [ForceAtlas2](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0098679), a force-directed layout algorithm.
@@ -15,15 +17,15 @@ For optimization purposes, the algorithm's computations are delegated to a web w
 
 **sigma.startForceAtlas2**
 
-Starts or unpauses the layout. It is possible to pass a configuration if this is the first time you start the layout.
+Starts or resumes the layout. It is possible to pass a configuration if this is the first time you start the layout.
 
 ```js
-sigmaInstance.startForceAtlas2(config);
+sigmaInstance.startForceAtlas2(sigInst, config);
 ```
 
 **sigma.stopForceAtlas2**
 
-Pauses the layout.
+Stops the layout.
 
 ```js
 sigmaInstance.stopForceAtlas2();
@@ -34,12 +36,12 @@ sigmaInstance.stopForceAtlas2();
 Changes the layout's configuration.
 
 ```js
-sigmaInstance.configForceAtlas2(config);
+sigmaInstance.configForceAtlas2(sigInst, config);
 ```
 
 **sigma.killForceAtlas2**
 
-Completely stops the layout and terminates the assiociated worker. You can still restart it later, but a new worker will have to initialize.
+Stops the layout and terminates the associated worker. You can still restart it later, but a new worker will have to be initialized.
 
 ```js
 sigmaInstance.killForceAtlas2();
@@ -69,11 +71,14 @@ sigmaInstance.isForceAtlas2Running();
 * **slowDown** *number* `1`
 * **startingIterations** *integer* `1`: number of iterations to be run before the first render.
 * **iterationsPerRender** *integer* `1`: number of iterations to be run before each render.
+* **autoStop** *boolean* `false`
 
 *Supervisor configuration*
 
 * **worker** *boolean* `true`: should the layout use a web worker?
 * **workerUrl** *string* : path to the worker file if needed because your browser does not support blob workers.
+* **background** *boolean* `false`: run the layout on background, apply the new nodes position on stop.
+* **easing** *string* : if specified, ease the transition between nodes positions if background is `true`. The duration is specified by the Sigma settings `animationsTime`.
 
 ## Notes
-1. The layout won't stop by itself, so if you want it to stop, you will have to trigger it explicitly.
+1. The layout won't stop by itself unless *autoStop* is true, so if you want it to stop, you have to trigger it explicitely.
