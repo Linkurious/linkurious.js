@@ -12,11 +12,11 @@ if (typeof sigma === 'undefined')
 *								ex: {n1: {distance:"0", previous: null}, n2: {distance :"3", previous: "n1"}, ...} 
 */
 
-if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
-	sigma.classes.graph.addMethod('dijkstraOpt', function(node){
+if(!sigma.classes.graph.hasMethod('dijkstra'))
+	sigma.classes.graph.addMethod('dijkstra', function(node, weight){
 
-		// console.log("test0");
-		// console.log(node); 
+		
+		if (weight === undefined) weight = null;
 		var uncheckedNodes = this.nodesIndex,
 			N = this.nodesArray.length, // total number of nodes
 			k = N, // number of unvisited nodes
@@ -27,10 +27,14 @@ if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
 			key,
 			previous,
 			Opt = {},
-			evalDistance = function(edge){return edge.cost || 1;},
+			evalDistance = function(edge){
+				if(edge[weight] >= 0){return edge[weight] || 1;}
+				else if(edge[weight] < 0) {throw "ERROR : Negative weight !";}
+				else{return 1;}
+			},
 			nodeQueue = new PriorityQueue({strategy: PriorityQueue.ArrayStrategy, comparator: function(a, b) {
 				if(a.distance && b.distance){
-					console.log(a.distance - b.distance);
+					
 					return a.distance - b.distance;
 
 				}else{
@@ -39,9 +43,7 @@ if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
 				}
 			}});
 			
-			// inserter = function(myQueue, myDistance){ // allows to store vertices in the priority queue according to their distance
-			// 	return 0;
-			// };
+			
 
 		nodeQueue.update = function(myDistanceNode){
 				if (this.length == 0){
@@ -53,11 +55,11 @@ if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
 					var s = [];
 					var temp = this.dequeue();
 					
-					//console.log("check1");
+			
 
 					while ((myDistanceNode.id != temp.id)&& (this.length > 0)){
 						s.push(temp);
-						//console.log("checke");
+						
 						temp = this.dequeue();
 					}
 
@@ -66,39 +68,28 @@ if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
 					}else{
 						this.queue(myDistanceNode);
 					}
-					// console.log("check2");
-					// console.log(temp);
-					// console.log(this);
+					
 
 					while(s.length > 0){
 
 						this.queue(temp);
-						//console.log("checko");
+					
 						temp = s.pop();
 					}
 						this.queue(temp);
-						//console.log("checkfinal");
+						
 						return null;
 				}
 		};
 
 		
-		origin.dijkstra = {distance: 0, prev: null};
+		origin.dijkstraData = {distance: 0, prev: null};
 		delete uncheckedNodes[origin.id];
 
-		// console.log("test1");
-		// console.log(Opt.typeof);
+	
 		for(var j in uncheckedNodes){
-			uncheckedNodes[j].dijkstra = {distance : Number.POSITIVE_INFINITY, prev: null};
+			uncheckedNodes[j].dijkstraData = {distance : Number.POSITIVE_INFINITY, prev: null};
 		}
-		// console.log("test2");
-		// var a = {id: 'n1', distance: 10},
-		// 	b = {id: 'n2', distance: 3},
-		// 	c = {id: 'n3', distance: 1},
-		// 	d = {id: 'n6', distance: 16};
-		// nodeQueue.queue(a);nodeQueue.queue(b);nodeQueue.queue(c);nodeQueue.queue(d);	
-		// nodeQueue.update({id: 'n2', distance: 11});
-		// console.log(nodeQueue.dequeue());
 		
 
 		var u = origin,	
@@ -107,8 +98,13 @@ if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
 			myDistanceNode = {};
 			//minDist;
 
-		console.log("test3");
-		console.log(u.id); 
+		
+
+		//Algorithm starts here
+		// ....
+		// ....
+		// ....
+		// ....
 
 		while (k > 0){
 			
@@ -116,55 +112,51 @@ if(!sigma.classes.graph.hasMethod('dijkstraOpt'))
 			key = u.id;
 			delete uncheckedNodes[key];
 
-			Opt[key] = u.dijkstra;
+			Opt[key] = u.dijkstraData;
 			neighbors = this.allNeighborsIndex[key];
-
-			console.log("test4");
-			console.log(neighbors);
-
-			// neighbors = Object.keys(uncheckedNodes).filter(function(id){
-			// 									return !!this.allNeighborsIndex[key][id] });
-			//minDist = Number.POSITIVE_INFINITY; //minimal distance between u and its neighbors
+			
+			
 			for (var i in neighbors){
 				
 				if (uncheckedNodes[i]){
-				//delete neighbors[i];
-				//}else{
+				
 				
 				v = uncheckedNodes[i];	
 
-				console.log("test5");
-				console.log(Object.keys(neighbors[i])[0]); 
-
-				tempDistance = u.dijkstra.distance + evalDistance(neighbors[i][Object.keys(neighbors[i])[0]]);
-				if (tempDistance < v.dijkstra.distance){
-					v.dijkstra.distance = tempDistance;
-				//if (v.dijkstra.distance < minDist) minDist = v.dijkstra.distance;
-					v.dijkstra.prev = u.id;
+	
+				try{tempDistance = u.dijkstraData.distance + evalDistance(neighbors[i][Object.keys(neighbors[i])[0]]);}
+				catch(err){console.log(err);
+					return null;}
+				if (tempDistance < v.dijkstraData.distance){
+					v.dijkstraData.distance = tempDistance;
+				
+					v.dijkstraData.prev = [u.id];
+				}else if(tempDistance == v.dijkstraData.distance){
+					v.dijkstraData.prev.push(u.id);
 				}
 				uncheckedNodes[i] = v;
-				myDistanceNode = {id: v.id, distance: v.dijkstra.distance};
+				myDistanceNode = {id: v.id, distance: v.dijkstraData.distance};
 				nodeQueue.update(myDistanceNode);
-				//neighbors[i] = v;
+				
 				}
 			}
 			
 
 			if (k>1) {
 				
-				// console.log("test6");
-				// console.log(nodeQueue);
-				myDistanceNode = nodeQueue.dequeue();
+				try{ myDistanceNode = nodeQueue.dequeue();
+				}catch(err){
+					console.log(err);
+					return null;
+				}
 
 				u = uncheckedNodes[myDistanceNode.id]; 
-				//u = uncheckedNodes[Object.keys(uncheckedNodes).filter(function(id){return uncheckedNodes[id].dijkstra.distance <= minDist })[0]];
+				
 			}
 			
 			lastNeighbors = neighbors;
 			k--;//decrease counter
 		}
-		console.log("test7");
-		console.log(Opt);
 
 		return Opt;
 	});
