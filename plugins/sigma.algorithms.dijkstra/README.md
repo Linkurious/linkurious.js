@@ -7,7 +7,7 @@ Plugin developed by [Yann Grenier](https://github.com/YannGrenier) for [Linkurio
 ## General
 This plugin extends the [Plugins](https://github.com/Linkurious/sigma.js/plugins) with new public methods:
 
-**dijkstra( *node* )** : *graph*
+**dijkstra( *node*, *string*)** : *graph*
  * This methods is used to calculate the shortest path from one node to very other node in the graph. The method must be called with a node ID.
 
 See the following [unit tests](../../test/unit.algorithms.dijkstra.js) for full usage.

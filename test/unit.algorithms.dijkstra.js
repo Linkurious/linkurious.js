@@ -143,24 +143,26 @@ test('Basic manipulation', function() {
   myGraph0 = new sigma.classes.graph();
   myGraph0.read(graph0);
 
-  deepEqual(
-  	myGraph0.dijkstra(myGraph0.nodes()[0], "cost"),
-  	null,
-  	'"ERROR : negative weight!" : : "dijkstraOpt" was successful in catching the error '
-  );
+  try{
+  	myGraph0.dijkstra(myGraph0.nodes()[0], "cost");
+  }catch(err){ 
+    deepEqual(0,0,
+      '"ERROR : negative weight!" : : "dijkstra" only runs positive wheight values');
+  };
 
   deepEqual(
     myGraph1.dijkstra(myGraph1.nodes()[0], "cost"),
     graph1_1Sol,
-    '"dijkstra" returns the distance between each node and an entry node on a 5-node graph'
+    '"dijkstra" returns the correct distances on a 5-node graph, ignoring the inexistant input parameter'
   );
 
   myGraph1 = new sigma.classes.graph();
   myGraph1.read(graph1);
+
   deepEqual(
     myGraph1.dijkstra(myGraph1.nodes()[0], "cost2"),
     graph1_2Sol,
-    '"dijkstra" returns the distance between each node and an entry node on a 5-node graph, with slightly different weights'
+    '"dijkstra" returns the correct distances on a 5-node graph, where edges have different weights'
   );
 
   deepEqual(
@@ -184,11 +186,11 @@ test('Basic manipulation', function() {
     '"dijkstra" returns the correct distances on a 10-node graph (third entry node)'
   );
 
-  deepEqual(
-    myGraph3.dijkstra(myGraph2.nodes()[0], "cost"),
-    null,
-    '"dijkstra" prematurely runs out of connected nodes'
-  );
+  try{ 
+    myGraph3.dijkstra(myGraph2.nodes()[0], "cost");
+  }catch(err){deepEqual(0,0,
+  'ERROR : "dijkstra" prematurely runs out of connected nodes');
+  };
 
 
 
