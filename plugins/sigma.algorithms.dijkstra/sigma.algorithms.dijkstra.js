@@ -1,6 +1,6 @@
 ;(function(){
 	'use strict';
-
+	
 	if (typeof sigma === 'undefined')
 	    throw 'sigma is not declared';
 
