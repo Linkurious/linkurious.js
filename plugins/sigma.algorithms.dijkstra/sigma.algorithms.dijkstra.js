@@ -1,9 +1,8 @@
 ;(function(){
+'use strict';
 
-	'use strict';
-	
-	if (typeof sigma === 'undefined')
-	    throw 'sigma is not declared';
+if (typeof sigma === 'undefined')
+throw 'sigma is not declared';
 
 
 //Dijkstra Algorithm
