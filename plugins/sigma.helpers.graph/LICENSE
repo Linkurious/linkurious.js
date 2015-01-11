@@ -1,4 +1,4 @@
-MITGNU GENERAL PUBLIC LICENSE
+GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
@@ -37,13 +37,13 @@ freedoms that you received.  You must make sure that they, too, receive
 or can get the source code.  And you must show them these terms so they
 know their rights.
 
-  Developers that use theMIT MIT protect your rights with two steps:
+  Developers that use the GNU GPL protect your rights with two steps:
 (1) assert copyright on the software, and (2) offer you this License
 giving you legal permission to copy, distribute and/or modify it.
 
-  For the developers' and authors' protection, the MIT clearly explains
+  For the developers' and authors' protection, the GPL clearly explains
 that there is no warranty for this free software.  For both users' and
-authors' sake, the MIT requires that modified versions be marked as
+authors' sake, the GPL requires that modified versions be marked as
 changed, so that their problems will not be attributed erroneously to
 authors of previous versions.
 
@@ -53,16 +53,16 @@ can do so.  This is fundamentally incompatible with the aim of
 protecting users' freedom to change the software.  The systematic
 pattern of such abuse occurs in the area of products for individuals to
 use, which is precisely where it is most unacceptable.  Therefore, we
-have designed this version of the MIT to prohibit the practice for those
+have designed this version of the GPL to prohibit the practice for those
 products.  If such problems arise substantially in other domains, we
 stand ready to extend this provision to those domains in future versions
-of the MIT, as needed to protect the freedom of users.
+of the GPL, as needed to protect the freedom of users.
 
   Finally, every program is threatened constantly by software patents.
 States should not allow patents to restrict development and use of
 software on general-purpose computers, but in those that do, we wish to
 avoid the special danger that patents applied to a free program could
-make it effectively proprietary.  To prevent this, the MIT assures that
+make it effectively proprietary.  To prevent this, the GPL assures that
 patents cannot be used to render the program non-free.
 
   The precise terms and conditions for copying, distribution and
@@ -663,7 +663,7 @@ might be different; for a GUI interface, you would use an "about box".
 
   You should also get your employer (if you work as a programmer) or school,
 if any, to sign a "copyright disclaimer" for the program, if necessary.
-For more information on this, and how to apply and follow the MITMIT, see
+For more information on this, and how to apply and follow the GNU GPL, see
 <http://www.gnu.org/licenses/>.
 
   The GNU General Public License does not permit incorporating your program

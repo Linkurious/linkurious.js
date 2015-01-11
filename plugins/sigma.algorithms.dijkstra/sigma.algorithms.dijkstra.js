@@ -123,8 +123,7 @@
 
 		
 					try{tempDistance = u.dijkstraData.distance + evalDistance(neighbors[i][Object.keys(neighbors[i])[0]]);}
-					catch(err){console.log(err);
-						throw(err);}
+					catch(err){throw(err);}
 					if (tempDistance < v.dijkstraData.distance){
 						v.dijkstraData.distance = tempDistance;
 					
@@ -144,7 +143,6 @@
 					
 					try{ myDistanceNode = nodeQueue.dequeue();
 					}catch(err){
-						console.log(err);
 						throw(err);
 					}
 

@@ -189,7 +189,7 @@ test('Basic manipulation', function() {
   try{ 
     myGraph3.dijkstra(myGraph2.nodes()[0], "cost");
   }catch(err){deepEqual(0,0,
-  'ERROR : "dijkstra" prematurely runs out of connected nodes');
+  'ERROR : "dijkstra" cannot run on a dsconnected graph');
   };
 
 
