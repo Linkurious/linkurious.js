@@ -26,6 +26,7 @@ module.exports = function(grunt) {
     // Renderers:
     'src/renderers/sigma.renderers.canvas.js',
     'src/renderers/sigma.renderers.webgl.js',
+    'src/renderers/sigma.renderers.svg.js',
     'src/renderers/sigma.renderers.def.js',
 
     // Sub functions per engine:
@@ -46,6 +47,12 @@ module.exports = function(grunt) {
     'src/renderers/canvas/sigma.canvas.edgehovers.arrow.js',
     'src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js',
     'src/renderers/canvas/sigma.canvas.extremities.def.js',
+    'src/renderers/svg/sigma.svg.utils.js',
+    'src/renderers/svg/sigma.svg.nodes.def.js',
+    'src/renderers/svg/sigma.svg.edges.def.js',
+    'src/renderers/svg/sigma.svg.edges.curve.js',
+    'src/renderers/svg/sigma.svg.labels.def.js',
+    'src/renderers/svg/sigma.svg.hovers.def.js',
 
     // Middlewares:
     'src/middlewares/sigma.middlewares.rescale.js',
@@ -54,6 +61,7 @@ module.exports = function(grunt) {
     // Miscellaneous:
     'src/misc/sigma.misc.animation.js',
     'src/misc/sigma.misc.bindEvents.js',
+    'src/misc/sigma.misc.bindDOMEvents.js',
     'src/misc/sigma.misc.drawHovers.js'
   ];
 
@@ -61,24 +69,47 @@ module.exports = function(grunt) {
   npmJsFiles.splice(2, 0, 'src/sigma.export.js');
 
   var plugins = [
+    'helpers.graph',
+    'exporters.gexf',
+    'exporters.spreadsheet',
+    'exporters.svg',
+    'exporters.xlsx',
     'layout.forceAtlas2',
     'parsers.gexf',
     'parsers.json',
+    'pathfinding.astar',
+    'plugins.activeState',
     'plugins.animate',
     'plugins.colorbrewer',
     'plugins.design',
     'plugins.dragNodes',
+    'plugins.edgeSiblings',
+    'plugins.image',
     'plugins.filter',
+    'plugins.fullScreen',
+    'plugins.keyboard',
+    'plugins.lasso',
+    'plugins.locate',
     'plugins.neighborhoods',
-    'statistics.HITS',
-    'renderers.customShapes'
+    'plugins.poweredBy',
+    'plugins.select',
+    'plugins.tooltips',
+    'plugins.relativeSize',
+    'renderers.customEdgeShapes',
+    'renderers.customShapes',
+    'renderers.edgeLabels',
+    'renderers.glyphs',
+    'renderers.halo',
+    'renderers.linkurious',
+    'renderers.snapshot',
+    'statistics.HITS'
   ];
 
   var pluginFiles = [],
       subGrunts = {};
 
   plugins.forEach(function(p) {
-    var dir = 'plugins/sigma.' + p + '/';
+    var dir = './plugins/sigma.' + p + '/';
 
     if (fs.existsSync(dir + 'Gruntfile.js'))
       subGrunts[p] = {
@@ -127,6 +158,7 @@ module.exports = function(grunt) {
           'build/sigma.min.js': coreJsFiles
         },
         options: {
+          sourceMap: true,
           banner: '/* sigma.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Alexis Jacomy, Sciences-Po Médialab - License: MIT */\n'
         }
       },
@@ -135,7 +167,10 @@ module.exports = function(grunt) {
           var dest = 'build/' + path.replace(/\/\*\*\/\*\.js$/, '.min.js');
           res[dest] = path;
           return res;
-        }, {})
+        }, {}),
+        options: {
+          sourceMap: true
+        }
       }
     },
     concat: {
@@ -163,7 +198,7 @@ module.exports = function(grunt) {
     },
     zip: {
       release: {
-        dest: 'build/release-v<%= pkg.version %>.zip',
+        dest: 'build/<%= pkg.name %>-v<%= pkg.version %>.zip',
         src: [
           'README.md',
           'build/sigma.min.js',

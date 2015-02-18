@@ -78,6 +78,9 @@
    * Here is the exhaustive list of every accepted parameters in the settings
    * object:
    *
+   *   {?array}             nodes      An array of node objects or node ids. If
+   *                                   not specified, all nodes of the graph
+   *                                   will be animated.
    *   {?(function|string)} easing     Either the name of an easing in the
    *                                   sigma.utils.easings package or a
    *                                   function. If not specified, the
@@ -106,51 +109,47 @@
           o.easing :
           sigma.utils.easings.quadraticInOut,
         start = sigma.utils.dateNow(),
-        // Store initial positions:
-        startPositions = s.graph.nodes().reduce(function(res, node) {
-          var k;
-          res[node.id] = {};
-          for (k in animate)
-            if (k in node)
-              res[node.id][k] = node[k];
-          return res;
-        }, {});
+        nodes,
+        startPositions;
+
+    if (o.nodes && o.nodes.length) {
+      if (typeof o.nodes[0] === 'object')
+        nodes = o.nodes;
+      else
+        nodes = s.graph.nodes(o.nodes); // argument is an array of IDs
+    }
+    else
+      nodes = s.graph.nodes();
+
+    // Store initial positions:
+    startPositions = nodes.reduce(function(res, node) {
+      var k;
+      res[node.id] = {};
+      for (k in animate)
+        if (k in node)
+          res[node.id][k] = node[k];
+      return res;
+    }, {});
 
     s.animations = s.animations || Object.create({});
-    sigma.plugins.kill(s);
-
-    // Do not refresh edgequadtree during drag:
-    var k,
-        c;
-    for (k in s.cameras) {
-      c = s.cameras[k];
-      c.edgequadtree._enabled = false;
-    }
+    sigma.plugins.killAnimate(s);
 
     function step() {
       var p = (sigma.utils.dateNow() - start) / duration;
 
       if (p >= 1) {
-        s.graph.nodes().forEach(function(node) {
+        nodes.forEach(function(node) {
           for (var k in animate)
             if (k in animate)
               node[k] = node[animate[k]];
         });
 
-        // Allow to refresh edgequadtree:
-        var k,
-            c;
-        for (k in s.cameras) {
-          c = s.cameras[k];
-          c.edgequadtree._enabled = true;
-        }
-
-        s.refresh();
+        s.refresh({skipIndexation: true});
         if (typeof o.onComplete === 'function')
           o.onComplete();
       } else {
         p = easing(p);
-        s.graph.nodes().forEach(function(node) {
+        nodes.forEach(function(node) {
           for (var k in animate)
             if (k in animate) {
               if (k.match(/color$/))
@@ -166,7 +165,7 @@
             }
         });
 
-        s.refresh();
+        s.refresh({skipIndexation: true});
         s.animations[id] = requestAnimationFrame(step);
       }
     }
@@ -174,16 +173,8 @@
     step();
   };
 
-  sigma.plugins.kill = function(s) {
+  sigma.plugins.killAnimate = function(s) {
     for (var k in (s.animations || {}))
       cancelAnimationFrame(s.animations[k]);
-
-    // Allow to refresh edgequadtree:
-    var k,
-        c;
-    for (k in s.cameras) {
-      c = s.cameras[k];
-      c.edgequadtree._enabled = true;
-    }
   };
 }).call(window);
