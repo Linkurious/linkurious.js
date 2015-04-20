@@ -19,42 +19,72 @@
     <div id="graph-container"></div>
 </div>
 <script>
-    /**
-     * This is a basic example on how to instantiate sigma. A random graph is
-     * generated and stored in the "graph" variable, and then sigma is instantiated
-     * directly with the graph.
-     *
-     * The simple instance of sigma is enough to make it render the graph on the on
-     * the screen, since the graph is given directly to the constructor.
-     */
     var i,
-            s,
-            N = 500,
-            E = 100,
-            g = {
-                nodes: [],
-                edges: []
-            };
+        clusterCenterArray = [],
+        clusterCenters = 20,
+        N = 20,
+        E = 20,
+        g = {
+            nodes: [],
+            edges: []
+        };
     // Generate a random graph:
-    for (i = 0; i < N; i++)
+    for (i = 0; i < N * clusterCenters; i = i + N) {
         g.nodes.push({
             id: 'n' + i,
             label: 'Node ' + i,
-            x: Math.random(),
-            y: Math.random(),
+            x: Math.random() * 100,
+            y: Math.random() * 100,
             size: Math.random(),
-            color: '#666'
+            color: '#f55564'
         });
-    for (i = 0; i < E; i++)
+
+        clusterCenterArray.push(g.nodes[i]);
+
+        for (var j =  i + 1 ; j < i + N ; j++){
+            g.nodes.push({
+                id: 'n' + j,
+                label: 'Node ' + j,
+                x: (Math.floor(Math.random()*2) == 1 ? 1 : -1) * Math.random() * 5 + g.nodes[i].x,
+                y: (Math.floor(Math.random()*2) == 1 ? 1 : -1) * Math.random() * 5 + g.nodes[i].y,
+                size: Math.random(),
+                color: '#f55564'
+            });
+
+            g.edges.push({
+                id: 'e' + ((i+1) * j),
+                source: 'n' + i,
+                target: 'n' + j,
+                size: Math.random(),
+                color: '#ccc'
+            });
+        }
+    }
+
+    var
+        sourceIndex = 0,
+        targetIndex = 0,
+        lastIndex = g.edges.length + E ;
+
+
+    for (i = g.edges.length + 1 ; i < lastIndex; i++){
+        sourceIndex = Math.floor(Math.random() * clusterCenterArray.length);
+        targetIndex = Math.floor(Math.random() * clusterCenterArray.length);
+
+        console.log('source: ', sourceIndex, 'target:', targetIndex);
+        console.log('correspondance', clusterCenterArray[sourceIndex], clusterCenterArray[targetIndex]);
+
         g.edges.push({
             id: 'e' + i,
-            source: 'n' + (Math.random() * N | 0),
-            target: 'n' + (Math.random() * N | 0),
+            source: clusterCenterArray[sourceIndex].id,
+            target: clusterCenterArray[targetIndex].id,
             size: Math.random(),
             color: '#ccc'
         });
+    }
+
     // Instantiate sigma:
-    s = new sigma({
+    var s = new sigma({
         graph: g,
         container: 'graph-container'
     });
