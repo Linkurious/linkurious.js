@@ -19,11 +19,26 @@
     <div id="graph-container"></div>
 </div>
 <script>
+
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    var
+        queryClusters = getParameterByName('clusters'),
+        queryNodeByCluster = getParameterByName('nodeByCluster'),
+        queryEdges = getParameterByName('edgesInterCluster'),
+        queryClusterRatio = getParameterByName('clusterRatio');
+
     var i,
         clusterCenterArray = [],
-        clusterCenters = 20,
-        N = 20,
-        E = 20,
+        clusterCenters = (queryClusters !== '') ? parseInt(queryClusters, 10) : 20,
+        clusterSize = (queryClusterRatio !== '') ? parseFloat(queryClusterRatio) : 0.05,
+        N = (queryNodeByCluster !== '') ? parseInt(queryNodeByCluster, 10) : 20,
+        E = (queryEdges !== '') ? parseInt(queryEdges, 10) : 20,
         g = {
             nodes: [],
             edges: []
@@ -32,9 +47,8 @@
     for (i = 0; i < N * clusterCenters; i = i + N) {
         g.nodes.push({
             id: 'n' + i,
-            label: 'Node ' + i,
-            x: Math.random() * 100,
-            y: Math.random() * 100,
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
             size: Math.random(),
             color: '#f55564'
         });
@@ -44,15 +58,14 @@
         for (var j =  i + 1 ; j < i + N ; j++){
             g.nodes.push({
                 id: 'n' + j,
-                label: 'Node ' + j,
-                x: (Math.floor(Math.random()*2) == 1 ? 1 : -1) * Math.random() * 5 + g.nodes[i].x,
-                y: (Math.floor(Math.random()*2) == 1 ? 1 : -1) * Math.random() * 5 + g.nodes[i].y,
+                x: (Math.floor(Math.random() * 2) == 1 ? 1 : -1) * Math.random() * clusterSize * window.innerWidth  + g.nodes[i].x,
+                y: (Math.floor(Math.random() * 2) == 1 ? 1 : -1) * Math.random() * clusterSize * window.innerHeight + g.nodes[i].y,
                 size: Math.random(),
                 color: '#f55564'
             });
 
             g.edges.push({
-                id: 'e' + ((i+1) * j),
+                id: 'e' + (j - 1),
                 source: 'n' + i,
                 target: 'n' + j,
                 size: Math.random(),
@@ -64,15 +77,11 @@
     var
         sourceIndex = 0,
         targetIndex = 0,
-        lastIndex = g.edges.length + E ;
+        lastIndex = g.edges.length + clusterCenters + E ;
 
-
-    for (i = g.edges.length + 1 ; i < lastIndex; i++){
+    for (i = g.edges.length + clusterCenters + 1 ; i < lastIndex; i++){
         sourceIndex = Math.floor(Math.random() * clusterCenterArray.length);
         targetIndex = Math.floor(Math.random() * clusterCenterArray.length);
-
-        console.log('source: ', sourceIndex, 'target:', targetIndex);
-        console.log('correspondance', clusterCenterArray[sourceIndex], clusterCenterArray[targetIndex]);
 
         g.edges.push({
             id: 'e' + i,
