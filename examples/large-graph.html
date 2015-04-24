@@ -31,10 +31,12 @@
         queryClusters = getParameterByName('clusters'),
         queryNodeByCluster = getParameterByName('nodeByCluster'),
         queryEdges = getParameterByName('edgesInterCluster'),
-        queryClusterRatio = getParameterByName('clusterRatio');
+        queryClusterRatio = getParameterByName('clusterRatio'),
+        queryNodeSize = getParameterByName('nodeSize');
 
     var i,
         clusterCenterArray = [],
+        nodeSize = (queryNodeSize !== '') ? parseFloat(queryNodeSize) : 8,
         clusterCenters = (queryClusters !== '') ? parseInt(queryClusters, 10) : 20,
         clusterSize = (queryClusterRatio !== '') ? parseFloat(queryClusterRatio) : 0.05,
         N = (queryNodeByCluster !== '') ? parseInt(queryNodeByCluster, 10) : 20,
@@ -95,7 +97,10 @@
     // Instantiate sigma:
     var s = new sigma({
         graph: g,
-        container: 'graph-container'
+        container: 'graph-container',
+        settings: {
+            maxNodeSize: nodeSize
+        }
     });
 </script>
 </body>
