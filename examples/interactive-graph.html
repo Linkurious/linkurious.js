@@ -11,7 +11,8 @@
     <script src="../js/linkurious-v1.0.7/plugins/sigma.plugins.activeState.min.js"></script>
     <script src="../js/linkurious-v1.0.7/plugins/sigma.plugins.select.min.js"></script>
     <script src="../js/linkurious-v1.0.7/plugins/sigma.plugins.tooltips.min.js"></script>
-    <script src="../js/linkurious-v1.0.7/plugins/sigma.plugins.lasso.min.js"></script>
+    <script src="../js/linkurious-v1.0.7/plugins/sigma.parsers.gexf.min.js"></script>
+    <script src="../js/linkurious-v1.0.7/plugins/sigma.plugins.filter.min.js"></script>
 </head>
 <body>
 <div id="container">
@@ -98,92 +99,177 @@
             border-right-color: rgb(249, 247, 237);
             border-left-width: 0;
         }
+
+        #control-pane {
+            top: 10px;
+            /*bottom: 10px;*/
+            right: 10px;
+            position: absolute;
+            width: 230px;
+            background-color: rgb(249, 247, 237);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        #control-pane > div {
+            margin: 10px;
+            overflow-x: auto;
+        }
+        .line {
+            clear: both;
+            display: block;
+            width: 100%;
+            margin: 0;
+            padding: 12px 0 0 0;
+            border-bottom: 1px solid #aac789;
+            background: transparent;
+        }
+        h2, h3, h4 {
+            padding: 0;
+            font-variant: small-caps;
+        }
+        .green {
+            color: #437356;
+        }
+        h2.underline {
+            color: #437356;
+            background: #f4f0e4;
+            margin: 0;
+            border-radius: 2px;
+            padding: 8px 12px;
+            font-weight: 700;
+        }
+        .hidden {
+            display: none;
+            visibility: hidden;
+        }
+        input[type=range] {
+            width: 160px;
+        }
     </style>
     <div id="graph-container"></div>
+    <div id="control-pane">
+        <h2 class="underline">filters</h2>
+
+        <div>
+            <h3>min degree <span id="min-degree-val">0</span></h3>
+            0 <input id="min-degree" type="range" min="0" max="0" value="0"> <span id="max-degree-value">0</span><br>
+        </div>
+        <div>
+            <h3>node category</h3>
+            <select id="node-category">
+                <option value="" selected>All categories</option>
+            </select>
+        </div>
+        <span class="line"></span>
+        <div>
+            <button id="reset-btn">Reset filters</button>
+            <button id="export-btn">Export</button>
+        </div>
+        <div id="dump" class="hidden"></div>
+    </div>
 </div>
 <script>
 
-    function getParameterByName(name) {
-        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-                results = regex.exec(location.search);
-        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
-
-    var
-            queryClusters = getParameterByName('clusters'),
-            queryNodeByCluster = getParameterByName('nodeByCluster'),
-            queryEdges = getParameterByName('edgesInterCluster'),
-            queryClusterRatio = getParameterByName('clusterRatio');
-
-    var i,
-            clusterCenterArray = [],
-            nodeColor = '#cd476a',
-            clusterCenters = (queryClusters !== '') ? parseInt(queryClusters, 10) : 20,
-            clusterSize = (queryClusterRatio !== '') ? parseFloat(queryClusterRatio) : 0.05,
-            N = (queryNodeByCluster !== '') ? parseInt(queryNodeByCluster, 10) : 20,
-            E = (queryEdges !== '') ? parseInt(queryEdges, 10) : 20,
-            g = {
-                nodes: [],
-                edges: []
-            };
-    // Generate a random graph:
-    for (i = 0; i < N * clusterCenters; i = i + N) {
-        g.nodes.push({
-            id: 'n' + i,
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            size: 1,
-            color: nodeColor
-        });
-
-        clusterCenterArray.push(g.nodes[i]);
-
-        for (var j =  i + 1 ; j < i + N ; j++){
-            g.nodes.push({
-                id: 'n' + j,
-                x: (Math.floor(Math.random() * 2) == 1 ? 1 : -1) * Math.random() * clusterSize * window.innerWidth  + g.nodes[i].x,
-                y: (Math.floor(Math.random() * 2) == 1 ? 1 : -1) * Math.random() * clusterSize * window.innerHeight + g.nodes[i].y,
-                size: 1,
-                color: nodeColor
-            });
-
-            g.edges.push({
-                id: 'e' + (j - 1),
-                source: 'n' + i,
-                target: 'n' + j,
-                size: 1,
-                color: '#ccc'
-            });
+    var filter;
+    /**
+     * DOM utility functions
+     */
+    var _ = {
+        $: function (id) {
+            return document.getElementById(id);
+        },
+        all: function (selectors) {
+            return document.querySelectorAll(selectors);
+        },
+        removeClass: function(selectors, cssClass) {
+            var nodes = document.querySelectorAll(selectors);
+            var l = nodes.length;
+            for ( i = 0 ; i < l; i++ ) {
+                var el = nodes[i];
+                // Bootstrap compatibility
+                el.className = el.className.replace(cssClass, '');
+            }
+        },
+        addClass: function (selectors, cssClass) {
+            var nodes = document.querySelectorAll(selectors);
+            var l = nodes.length;
+            for ( i = 0 ; i < l; i++ ) {
+                var el = nodes[i];
+                // Bootstrap compatibility
+                if (-1 == el.className.indexOf(cssClass)) {
+                    el.className += ' ' + cssClass;
+                }
+            }
+        },
+        show: function (selectors) {
+            this.removeClass(selectors, 'hidden');
+        },
+        hide: function (selectors) {
+            this.addClass(selectors, 'hidden');
+        },
+        toggle: function (selectors, cssClass) {
+            var cssClass = cssClass || "hidden";
+            var nodes = document.querySelectorAll(selectors);
+            var l = nodes.length;
+            for ( i = 0 ; i < l; i++ ) {
+                var el = nodes[i];
+                //el.style.display = (el.style.display != 'none' ? 'none' : '' );
+                // Bootstrap compatibility
+                if (-1 !== el.className.indexOf(cssClass)) {
+                    el.className = el.className.replace(cssClass, '');
+                } else {
+                    el.className += ' ' + cssClass;
+                }
+            }
         }
-    }
-
-    var
-        sourceIndex = 0,
-        targetIndex = 0,
-        lastIndex = g.edges.length + clusterCenters + E ;
-
-    for (i = g.edges.length + clusterCenters + 1 ; i < lastIndex; i++){
-        sourceIndex = Math.floor(Math.random() * clusterCenterArray.length);
-        targetIndex = Math.floor(Math.random() * clusterCenterArray.length);
-
-        g.edges.push({
-            id: 'e' + i,
-            source: clusterCenterArray[sourceIndex].id,
-            target: clusterCenterArray[targetIndex].id,
-            size: Math.random(),
-            color: '#ccc'
+    };
+    function updatePane (graph, filter) {
+        // get max degree
+        var maxDegree = 0,
+                categories = {};
+        // read nodes
+        graph.nodes().forEach(function(n) {
+            maxDegree = Math.max(maxDegree, graph.degree(n.id));
+            categories[n.attributes.acategory] = true;
+        })
+        // min degree
+        _.$('min-degree').max = maxDegree;
+        _.$('max-degree-value').textContent = maxDegree;
+        // node category
+        var nodecategoryElt = _.$('node-category');
+        Object.keys(categories).forEach(function(c) {
+            var optionElt = document.createElement("option");
+            optionElt.text = c;
+            nodecategoryElt.add(optionElt);
+        });
+        // reset button
+        _.$('reset-btn').addEventListener("click", function(e) {
+            _.$('min-degree').value = 0;
+            _.$('min-degree-val').textContent = '0';
+            _.$('node-category').selectedIndex = 0;
+            filter.undo().apply();
+            _.$('dump').textContent = '';
+            _.hide('#dump');
+        });
+        // export button
+        _.$('export-btn').addEventListener("click", function(e) {
+            var chain = filter.serialize();
+            console.log(chain);
+            _.$('dump').textContent = JSON.stringify(chain);
+            _.show('#dump');
         });
     }
-
-    // Instantiate sigma:
-    var s = new sigma({
-        graph: g,
+    // Initialize sigma with the dataset:
+    //   e-Diaspora Moroccan corpus of websites
+    //   by Dana Diminescu & Matthieu Renault
+    //   http://www.e-diasporas.fr/wp/moroccan.html
+    sigma.parsers.gexf('./data/moroccan-ediaspora.gexf', {
         renderer: {
             container: document.getElementById('graph-container'),
             type: 'canvas'
         },
         settings: {
+            edgeColor: 'default',
+            defaultEdgeColor: '#ccc',
             maxNodeSize: 5,
             borderSize: 2,
             outerBorderSize: 3,
@@ -192,76 +278,85 @@
             enableEdgeHovering: true,
             edgeHoverHighlightNodes: 'circle'
         }
-    });
-
-
-    // Instanciate the ActiveState plugin:
-    var activeState = sigma.plugins.activeState(s);
-    var keyboard = sigma.plugins.keyboard(s, s.renderers[0]);
-    // Initialize the Select plugin:
-    var select = sigma.plugins.select(s, activeState);
-    select.bindKeyboard(keyboard);
-    // Initialize the dragNodes plugin:
-    var dragListener = sigma.plugins.dragNodes(s, s.renderers[0], activeState);
-
-    var config = {
-        node: {
-            show: 'overNode',
-            hide: 'outNode',
-            cssClass: 'sigma-tooltip',
-            position: 'top',
-            renderer: function(node) {
-
-                return '<div class="arrow"></div>' +
-                ' <div class="sigma-tooltip-header">Node</div>' +
-                '  <div class="sigma-tooltip-body">' +
-                '  </div>' +
-                '  <div class="sigma-tooltip-footer">Number of connections: '+ this.degree(node.id) +'</div>'
-            }
+    }, function(s) {
+        // Initialize the Filter API
+        filter = sigma.plugins.filter(s);
+        updatePane(s.graph, filter);
+        function applyMinDegreeFilter(e) {
+            var v = e.target.value;
+            _.$('min-degree-val').textContent = v;
+            filter
+                    .undo('min-degree')
+                    .nodesBy(
+                    function(n, options) {
+                        return this.graph.degree(n.id) >= options.minDegreeVal;
+                    },
+                    {
+                        minDegreeVal: +v
+                    },
+                    'min-degree'
+            )
+                    .apply();
         }
-    };
-    // Instanciate the tooltips plugin with a Mustache renderer for node tooltips:
-    var tooltips = sigma.plugins.tooltips(s, s.renderers[0], config);
-    // Manually open a tooltip on a node:
-    var n = s.graph.nodes('n10');
-    var prefix = s.renderers[0].camera.prefix;
-    tooltips.open(n, config.node, n[prefix + 'x'], n[prefix + 'y']);
-
-    var lasso = new sigma.plugins.lasso(s, s.renderers[0], {
-        'strokeStyle': 'black',
-        'lineWidth': 2,
-        'fillWhileDrawing': true,
-        'fillStyle': 'rgba(41, 41, 41, 0.2)',
-        'cursor': 'crosshair'
-    });
-    // Listen for selectedNodes event
-    lasso.bind('selectedNodes', function (event) {
-        // Do something with the selected nodes
-        var nodes = event.data;
-        console.log('nodes', nodes);
-        // For instance, reset all node size as their initial size
-        s.graph.nodes().forEach(function (node) {
-            node.color = nodeColor;
-            node.size = 50;
-        });
-        // Then increase the size of selected nodes...
-        nodes.forEach(function (node) {
-            node.color = '#f35371';
-            node.size *= 3;
-        });
-        s.refresh();
-    });
-
-    // Alt + L
-    document.addEventListener('keyup', function (event) {
-        if (event.keyCode === 76) {
-            if (lasso.isActive) {
-                lasso.deactivate();
-            } else {
-                lasso.activate();
-            }
+        function applyCategoryFilter(e) {
+            var c = e.target[e.target.selectedIndex].value;
+            filter
+                    .undo('node-category')
+                    .nodesBy(
+                    function(n, options) {
+                        return !c.length || n.attributes[options.property] === c;
+                    },
+                    {
+                        property: 'acategory'
+                    },
+                    'node-category'
+            )
+                    .apply();
         }
+        _.$('min-degree').addEventListener("input", applyMinDegreeFilter);  // for Chrome and FF
+        _.$('min-degree').addEventListener("change", applyMinDegreeFilter); // for IE10+, that sucks
+        _.$('node-category').addEventListener("change", applyCategoryFilter);
+
+        // Instanciate the ActiveState plugin:
+        var activeState = sigma.plugins.activeState(s);
+        var keyboard = sigma.plugins.keyboard(s, s.renderers[0]);
+        // Initialize the Select plugin:
+        var select = sigma.plugins.select(s, activeState);
+        select.bindKeyboard(keyboard);
+        // Initialize the dragNodes plugin:
+        var dragListener = sigma.plugins.dragNodes(s, s.renderers[0], activeState);
+
+        var config = {
+            node: {
+                show: 'overNode',
+                hide: 'outNode',
+                cssClass: 'sigma-tooltip',
+                position: 'top',
+                renderer: function(node) {
+
+                    return '<div class="arrow"></div>' +
+                            '  <div class="sigma-tooltip-header">Node '+node.label+'</div>' +
+                            '  <div class="sigma-tooltip-body"></div>' +
+                            '<div class="sigma-tooltip-footer">Number of connections: '+ this.degree(node.id) +'</div>'
+                }
+            }
+        };
+
+        // Instanciate the tooltips plugin with a Mustache renderer for node tooltips:
+        sigma.plugins.tooltips(s, s.renderers[0], config);
+
+        // Alt + L
+        document.addEventListener('keyup', function (event) {
+            if (event.keyCode === 76) {
+                if (lasso.isActive) {
+                    lasso.deactivate();
+                } else {
+                    lasso.activate();
+                }
+            }
+        });
     });
+
 
 </script>
 </body>
