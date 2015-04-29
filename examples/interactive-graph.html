@@ -220,6 +220,20 @@
                     el.className += ' ' + cssClass;
                 }
             }
+        },
+        debounce: function(func, wait, immediate) {
+            var timeout;
+            return function() {
+                var context = this, args = arguments;
+                var later = function() {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                };
+                var callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+            };
         }
     };
     function updatePane (graph, filter) {
@@ -313,9 +327,8 @@
             )
                     .apply();
         }
-        _.$('min-degree').addEventListener("input", applyMinDegreeFilter);  // for Chrome and FF
-        _.$('min-degree').addEventListener("change", applyMinDegreeFilter); // for IE10+, that sucks
-        _.$('node-category').addEventListener("change", applyCategoryFilter);
+        _.$('min-degree').addEventListener("input", _.debounce(applyMinDegreeFilter, 100));
+        _.$('node-category').addEventListener("change", _.debounce(applyCategoryFilter, 100));
 
         // Instanciate the ActiveState plugin:
         var activeState = sigma.plugins.activeState(s);
