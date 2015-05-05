@@ -45,12 +45,10 @@
                 if (!sigma.layouts.isForceAtlas2Running()) {
                     sigma.layouts.startForceAtlas2(s, {
                         worker: true,
-                        easing: 'cubicInOut',
                         gravity: 1,
-                        adjustSizes: true,
                         scalingRatio: 10,
                         barnesHutOptimize: true,
-                        iterationsPerRender: 5
+                        iterationsPerRender: 10
                     });
                 } else {
                     sigma.layouts.stopForceAtlas2();
