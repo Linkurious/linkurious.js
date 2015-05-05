@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title></title>
     <script src="../js/linkurious-v1.0.7/sigma.min.js"></script>
+    <script src="../js/linkurious-v1.0.7/plugins/sigma.parsers.gexf.min.js"></script>
     <script src="../js/linkurious-v1.0.7/plugins/sigma.layout.forceAtlas2.min.js"></script>
 </head>
 <body>
@@ -20,104 +21,42 @@
     <div id="graph-container"></div>
 </div>
 <script>
-
-    function getParameterByName(name) {
-        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-                results = regex.exec(location.search);
-        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
-
-    var
-            queryClusters = getParameterByName('clusters'),
-            queryNodeByCluster = getParameterByName('nodeByCluster'),
-            queryEdges = getParameterByName('edgesInterCluster'),
-            queryClusterRatio = getParameterByName('clusterRatio'),
-            queryNodeSize = getParameterByName('nodeSize');
-
-    var i,
-            clusterCenterArray = [],
-            nodeSize = (queryNodeSize !== '') ? parseFloat(queryNodeSize) : 8,
-            clusterCenters = (queryClusters !== '') ? parseInt(queryClusters, 10) : 20,
-            clusterSize = (queryClusterRatio !== '') ? parseFloat(queryClusterRatio) : 0.05,
-            N = (queryNodeByCluster !== '') ? parseInt(queryNodeByCluster, 10) : 20,
-            E = (queryEdges !== '') ? parseInt(queryEdges, 10) : 20,
-            g = {
-                nodes: [],
-                edges: []
-            };
-    // Generate a random graph:
-    for (i = 0; i < N * clusterCenters; i = i + N) {
-        g.nodes.push({
-            id: 'n' + i,
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            size: Math.random(),
-            color: '#f55564'
-        });
-
-        clusterCenterArray.push(g.nodes[i]);
-
-        for (var j =  i + 1 ; j < i + N ; j++){
-            g.nodes.push({
-                id: 'n' + j,
-                x: (Math.floor(Math.random() * 2) == 1 ? 1 : -1) * Math.random() * clusterSize * window.innerWidth  + g.nodes[i].x,
-                y: (Math.floor(Math.random() * 2) == 1 ? 1 : -1) * Math.random() * clusterSize * window.innerHeight + g.nodes[i].y,
-                size: Math.random(),
-                color: '#f55564'
-            });
-
-            g.edges.push({
-                id: 'e' + (j - 1),
-                source: 'n' + i,
-                target: 'n' + j,
-                size: Math.random(),
-                color: '#ccc'
-            });
-        }
-    }
-
-    var
-            sourceIndex = 0,
-            targetIndex = 0,
-            lastIndex = g.edges.length + clusterCenters + E ;
-
-    for (i = g.edges.length + clusterCenters + 1 ; i < lastIndex; i++){
-        sourceIndex = Math.floor(Math.random() * clusterCenterArray.length);
-        targetIndex = Math.floor(Math.random() * clusterCenterArray.length);
-
-        g.edges.push({
-            id: 'e' + i,
-            source: clusterCenterArray[sourceIndex].id,
-            target: clusterCenterArray[targetIndex].id,
-            size: Math.random(),
-            color: '#ccc'
-        });
-    }
-
     // Instantiate sigma:
-    var s = new sigma({
-        graph: g,
+    sigma.parsers.gexf('./data/arctic_websites.gexf', {
         container: 'graph-container',
         settings: {
-            maxNodeSize: nodeSize
+            enableHovering: false,
+            drawLabels: false,
+            drawNodes: true,
+            maxNodeSize: 3,
         }
-    });
+    } , function(s){
 
-    document.addEventListener('keyup', function (event) {
-        if (event.keyCode === 70) {
-            if (!sigma.layouts.isForceAtlas2Running()) {
-                sigma.layouts.startForceAtlas2(s, {
-                    worker: true,
-                    autoStop: true,
-                    easing: 'cubicInOut',
-                    gravity: 10,
-                    scalingRatio: 7
-                });
-            } else {
-                sigma.layouts.stopForceAtlas2();
+        s.graph.nodes().forEach(function(node){
+            node.x = Math.random();
+            node.y = Math.random();
+            node.size = 1;
+        });
+
+        s.refresh();
+
+        document.addEventListener('keyup', function (event) {
+            if (event.keyCode === 70) {
+                if (!sigma.layouts.isForceAtlas2Running()) {
+                    sigma.layouts.startForceAtlas2(s, {
+                        worker: true,
+                        easing: 'cubicInOut',
+                        gravity: 1,
+                        adjustSizes: true,
+                        scalingRatio: 10,
+                        barnesHutOptimize: true,
+                        iterationsPerRender: 5
+                    });
+                } else {
+                    sigma.layouts.stopForceAtlas2();
+                }
             }
-        }
+        });
     });
 </script>
 </body>

@@ -357,17 +357,6 @@
 
         // Instanciate the tooltips plugin with a Mustache renderer for node tooltips:
         sigma.plugins.tooltips(s, s.renderers[0], config);
-
-        // Alt + L
-        document.addEventListener('keyup', function (event) {
-            if (event.keyCode === 76) {
-                if (lasso.isActive) {
-                    lasso.deactivate();
-                } else {
-                    lasso.activate();
-                }
-            }
-        });
     });
 
 
