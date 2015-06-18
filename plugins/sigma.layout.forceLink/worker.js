@@ -177,31 +177,19 @@
     };
 
     /**
-     * Find the closest point on a line.
+     * Find the intersection between two lines, two segments, or one line and one segment.
+     * http://jsfiddle.net/justin_c_rounds/Gd2S2/
      *
-     * @param  {number} x  The X coordinate of the point to check.
-     * @param  {number} y  The Y coordinate of the point to check.
-     * @param  {number} x1 The X coordinate of the line start point.
-     * @param  {number} y1 The Y coordinate of the line start point.
-     * @param  {number} x2 The X coordinate of the line end point.
-     * @param  {number} y2 The Y coordinate of the line end point.
-     * @return {x,y}       The coordinates of the closest point.
+     * @param  {number} line1x1  The X coordinate of the start point of the first line.
+     * @param  {number} line1y1  The Y coordinate of the start point of the first line.
+     * @param  {number} line1x2  The X coordinate of the end point of the first line.
+     * @param  {number} line1y2  The Y coordinate of the end point of the first line.v
+     * @param  {number} line2x1  The X coordinate of the start point of the second line.
+     * @param  {number} line2y1  The Y coordinate of the start point of the second line.
+     * @param  {number} line2x2  The X coordinate of the end point of the second line.
+     * @param  {number} line2y2  The Y coordinate of the end point of the second line.
+     * @return {object}           The coordinates of the intersection point.
      */
-    /*function getClosestPointToLine(x, y, x1, y1, x2, y2) {
-      // http://stackoverflow.com/a/328122
-      var crossProduct = Math.abs((y - y1) * (x2 - x1) - (x - x1) * (y2 - y1)),
-        d = getDistance(x1, y1, x2, y2),
-        nCrossProduct = crossProduct / d; // normalized cross product
-
-      // http://stackoverflow.com/a/3120357
-      // Add the distance to A, moving towards B
-      return {
-        x: x1 + (x2 - x1) * nCrossProduct,
-        y: y1 + (y2 - y1) * nCrossProduct
-      }
-    };*/
-
-    // http://jsfiddle.net/justin_c_rounds/Gd2S2/
     function getLinesIntersection(line1x1, line1y1, line1x2, line1y2, line2x1, line2y1, line2x2, line2y2) {
       // if the lines intersect, the result contains the x and y of the intersection
       // (treating the lines as infinite) and booleans for whether line segment 1 or
