@@ -15,19 +15,35 @@
   if (typeof sigma === 'undefined')
     throw new Error('sigma is not declared');
 
-  function download(dataUrl, extension, filename) {
-    // Anchor
-    var anchor = document.createElement('a');
-    anchor.setAttribute('href', dataUrl);
+  function download(fileEntry, extension, filename) {
+    var
+      anchor = document.createElement('a'),
+      objectUrl = null;
+
+    if(window.Blob){
+      // use Blob if available
+      objectUrl = window.URL.createObjectURL(new Blob([fileEntry], {type: 'text/csv'}));
+      anchor.setAttribute('href', objectUrl);
+    }
+    else {
+      // else use dataURI
+      var dataUrl = 'data:text/csv;charset=UTF-8,' + encodeURIComponent(fileEntry);
+      anchor.setAttribute('href', dataUrl);
+    }
+
     anchor.setAttribute('download', filename || 'graph.' + extension);
 
-    // Click event
+    // Click event:
     var event = document.createEvent('MouseEvent');
     event.initMouseEvent('click', true, false, window, 0, 0, 0 ,0, 0,
       false, false, false, false, 0, null);
 
     anchor.dispatchEvent(event);
     anchor.remove();
+
+    if (objectUrl) {
+      window.URL.revokeObjectURL(objectUrl);
+    }
   }
 
   function escape(x, separator) {
@@ -158,12 +174,7 @@
       }).join('\n');
 
       if (params.download) {
-        download(
-          'data:text/csv;charset=UTF-8,' +
-            encodeURIComponent(serialized),
-          'csv',
-          params.filename
-        );
+        download(serialized, 'csv', params.filename);
       }
 
       return serialized;
