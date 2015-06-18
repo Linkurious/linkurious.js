@@ -109,7 +109,7 @@
      * @return {number}     The euclidian distance.
      */
     function getDistance(x0, y0, x1, y1) {
-      return Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
+      return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
     };
 
     /**
