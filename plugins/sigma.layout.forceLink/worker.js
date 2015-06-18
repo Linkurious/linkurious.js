@@ -146,7 +146,6 @@
       }
       if (d < Math.abs(r0 - r1)) {
           // No solution. one circle is contained in the other.
-          console.log('B', d, r0, r1, Math.abs(r0 - r1));
           return false;
       }
 
