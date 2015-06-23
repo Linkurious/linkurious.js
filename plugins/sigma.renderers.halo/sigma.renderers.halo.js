@@ -8,7 +8,7 @@
    * The aim of this plugin is to display a circled halo behind specified nodes.
    *
    * Author: Sébastien Heymann (sheymann) for Linkurious
-   * Version: 0.0.1
+   * Version: 0.0.2
    */
 
   // Terminating if sigma were not to be found
@@ -57,25 +57,142 @@
     return result;
   }
 
+  /**
+   * Draw the specified circles in a given context.
+   *
+   * @param {array}   circles
+   * @param {object}  context
+   * @param {boolean} withStroke
+   */
+  function drawCircles(circles, context, withStroke) {
+    for(var i = 0; i < circles.length ; i++) {
+      if (circles[i] == null) continue;
+
+      context.beginPath();
+
+      context.arc(
+        circles[i].x,
+        circles[i].y,
+        circles[i].radius,
+        0,
+        Math.PI * 2,
+        true
+      );
+
+      context.closePath();
+      context.fill();
+
+      if (withStroke) context.stroke();
+    }
+  }
+
+  /**
+   * Avoid crossing strokes.
+   *
+   * @see http://vis4.net/blog/posts/clean-your-symbol-maps/
+   * @param {array}  circles    The circles to cluster.
+   * @param {number} margin     The minimal distance between the circle
+   *                            and the points inside it.
+   * @param {?number} maxRadius The max length of a radius
+   * @return {array}            The clustered circles.
+   */
+  function clusterCircles(circles, margin, maxRadius) {
+    maxRadius = maxRadius || Number.POSITIVE_INFINITY;
+
+    // console.time('halo cluster');
+    if (circles.length > 1) {
+      var
+        intersecting = true,
+        centroid,
+        d,
+        points;
+
+      while(intersecting) {
+        intersecting = false;
+        for(var i = 0; i < circles.length; i++) {
+          if (circles[i] === null) continue;
+
+          for(var j = i + 1; j < circles.length; j++) {
+            if (circles[j] === null) continue;
+
+            // distance between i-1 and i
+            d = sigma.utils.getDistance(
+              circles[i].x, circles[i].y, circles[j].x, circles[j].y
+            );
+            if (d < maxRadius && d < circles[i].radius + circles[j].radius) {
+              intersecting = true;
+
+              // Centers of the merged circles:
+              points = [
+                {x:circles[i].x, y: circles[i].y, radius: circles[i].radius},
+                {x:circles[j].x, y: circles[j].y, radius: circles[j].radius}
+              ];
+              if (circles[i].points) {
+                points = points.concat(circles[i].points);
+              }
+              if (circles[j].points) {
+                points = points.concat(circles[j].points);
+              }
+
+              // Compute the centroid:
+              centroid = {x: 0, y: 0};
+              for(var p = 0; p < points.length; p++) {
+                centroid.x += points[p].x;
+                centroid.y += points[p].y;
+              }
+              centroid.x /= points.length;
+              centroid.y /= points.length;
+
+              // Compute radius:
+              centroid.radius = Math.max.apply(null, points.map(function(point) {
+                return margin + sigma.utils.getDistance(
+                  centroid.x, centroid.y, point.x, point.y
+                );
+              }));
+
+              // Merge circles
+              circles.push({
+                x: centroid.x,
+                y: centroid.y,
+                radius: centroid.radius,
+                points: points
+              });
+
+              circles[i] = circles[j] = null;
+              break; // exit for loop
+            }
+          }
+        }
+      }
+    }
+    // console.timeEnd('halo cluster');
+    return circles;
+  }
+
 
   // Main function
   function halo(params) {
     params = params || {};
 
-  if (!this.domElements['background']) {
-    this.initDOM('canvas', 'background');
-    this.domElements['background'].width = this.container.offsetWidth;
-    this.domElements['background'].height = this.container.offsetHeight;
-    this.container.insertBefore(this.domElements['background'], this.container.firstChild);
-  }
+    if (!this.domElements['background']) {
+      this.initDOM('canvas', 'background');
+      this.domElements['background'].width = this.container.offsetWidth;
+      this.domElements['background'].height = this.container.offsetHeight;
+      this.container.insertBefore(this.domElements['background'], this.container.firstChild);
+    }
 
     var self = this,
         context = self.contexts.background,
         webgl = this instanceof sigma.renderers.webgl,
         ePrefix = self.options.prefix,
         nPrefix = webgl ? ePrefix.substr(5) : ePrefix,
+        nHaloClustering = params.nodeHaloClustering || self.settings('nodeHaloClustering'),
+        nHaloClusteringMaxRadius = params.nodeHaloClusteringMaxRadius || self.settings('nodeHaloClusteringMaxRadius'),
         nHaloColor = params.nodeHaloColor || self.settings('nodeHaloColor'),
         nHaloSize = params.nodeHaloSize || self.settings('nodeHaloSize'),
+        nHaloStroke = params.nodeHaloStroke || self.settings('nodeHaloStroke'),
+        nHaloStrokeColor = params.nodeHaloStrokeColor || self.settings('nodeHaloStrokeColor'),
+        nHaloStrokeWidth = params.nodeHaloStrokeWidth || self.settings('nodeHaloStrokeWidth'),
         borderSize = self.settings('borderSize') || 0,
         outerBorderSize = self.settings('outerBorderSize') || 0,
         eHaloColor = params.edgeHaloColor || self.settings('edgeHaloColor'),
@@ -89,7 +206,9 @@
         sX,
         sY,
         tX,
-        tY;
+        tY,
+        margin,
+        circles;
 
     nodes = webgl ? nodes : intersection(params.nodes, self.nodesOnScreen);
     edges = webgl ? edges : intersection(params.edges, self.edgesOnScreen);
@@ -140,23 +259,29 @@
     // NODES
     context.fillStyle = nHaloColor;
 
-    nodes.forEach(function(node) {
-      if (node.hidden) return;
+    if (nHaloStroke) {
+      context.lineWidth = nHaloStrokeWidth;
+      context.strokeStyle = nHaloStrokeColor;
+    }
 
-      context.beginPath();
+    margin = borderSize + outerBorderSize + nHaloSize;
 
-      context.arc(
-        node[nPrefix + 'x'],
-        node[nPrefix + 'y'],
-        node[nPrefix + 'size'] + borderSize + outerBorderSize + nHaloSize,
-        0,
-        Math.PI * 2,
-        true
-      );
-
-      context.closePath();
-      context.fill();
+    circles = nodes.filter(function(node) {
+      return !node.hidden;
+    })
+    .map(function(node) {
+      return {
+        x: node[nPrefix + 'x'],
+        y: node[nPrefix + 'y'],
+        radius: node[nPrefix + 'size'] + margin,
+      }
     });
+
+    if (nHaloClustering) {
+      // Avoid crossing strokes:
+      circles = clusterCircles(circles, margin, nHaloClusteringMaxRadius);
+    }
+    drawCircles(circles, context, nHaloStroke);
 
     context.restore();
   }
