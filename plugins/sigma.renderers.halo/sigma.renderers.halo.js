@@ -16,48 +16,6 @@
     throw new Error('sigma not in scope.');
 
   /**
-   * This methods returns an array of nodes that are adjacent to a node.
-   *
-   * @param  {string} id The node id.
-   * @return {array}     The array of adjacent nodes.
-   */
-  if (!sigma.classes.graph.hasMethod('adjacentNodes'))
-    sigma.classes.graph.addMethod('adjacentNodes', function(id) {
-      if (typeof id !== 'number' && typeof id !== 'string')
-        throw new TypeError('Invalid argument: "id" is not a string or a number, was ' + id);
-
-      var target,
-          nodes = [];
-      for(target in this.allNeighborsIndex[id]) {
-        nodes.push(this.nodesIndex[target]);
-      }
-      return nodes;
-    });
-
-  /**
-   * This methods returns an array of edges that are adjacent to a node.
-   *
-   * @param  {string} id The node id.
-   * @return {array}     The array of adjacent edges.
-   */
-  if (!sigma.classes.graph.hasMethod('adjacentEdges'))
-    sigma.classes.graph.addMethod('adjacentEdges', function(id) {
-      if (typeof id !== 'number' && typeof id !== 'string')
-        throw new TypeError('Invalid argument: "id" is not a string or a number, was ' + id);
-
-      var a = this.allNeighborsIndex[id],
-          eid,
-          target,
-          edges = [];
-      for(target in a) {
-        for(eid in a[target]) {
-          edges.push(a[target][eid]);
-        }
-      }
-      return edges;
-    });
-
-  /**
    * Creates an array of unique values present in all provided arrays using
    * strict equality for comparisons, i.e. `===`.
    *
@@ -103,7 +61,7 @@
   // Main function
   function halo(params) {
     params = params || {};
-// console.log(this);
+
   if (!this.domElements['background']) {
     this.initDOM('canvas', 'background');
     this.domElements['background'].width = this.container.offsetWidth;
