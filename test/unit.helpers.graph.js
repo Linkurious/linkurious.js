@@ -49,7 +49,7 @@ test('Custom graph methods', function() {
   });
 
   equal(
-    myGraph.getFixedNodes().length, 
+    myGraph.getFixedNodes().length,
     1,
     '"graph.read" adds fixed nodes to fixedNodesIndex');
 
@@ -96,14 +96,14 @@ test('Custom graph methods', function() {
   myGraph.fixNode('n0');
 
   equal(
-    myGraph.getFixedNodes().length, 
+    myGraph.getFixedNodes().length,
     1,
     '"graph.fixNode" locks a node');
 
   myGraph.unfixNode('n0');
 
   equal(
-    myGraph.getFixedNodes().length, 
+    myGraph.getFixedNodes().length,
     0,
     '"graph.unfixNode" releases a node');
 
@@ -111,7 +111,7 @@ test('Custom graph methods', function() {
   myGraph.clear();
 
   equal(
-    myGraph.getFixedNodes().length, 
+    myGraph.getFixedNodes().length,
     0,
     '"graph.clear" empties fixedNodesIndex');
 });
