@@ -76,6 +76,26 @@ myRenderer.halo({
    * The node halo size.
    * type: *number*
    * default value: `50`
+ * **nodeHaloStroke**
+   * The node halo stroke.
+   * type: *boolean*
+   * default value: `false`
+ * **nodeHaloStrokeColor**
+   * The node halo stroke color.
+   * type: *string*
+   * default value: `#000`
+ * **nodeHaloStrokeWidth**
+   * The node halo stroke width.
+   * type: *number*
+   * default value: `0.5`
+ * **nodeHaloClustering**
+   * Group the halo circles into bigger ones. Intersecting circles are collapsed into bigger circles until no intersection is found.
+   * type: *boolean*
+   * default value: `false`
+ * **nodeHaloClusteringMaxRadius**
+   * The maximum radius of node halo circles.
+   * type: *number*
+   * default value: `1000`
  * **edgeHaloColor**
    * The edge halo color.
    * type: *string*

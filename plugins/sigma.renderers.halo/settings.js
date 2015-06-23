@@ -13,8 +13,18 @@
   var settings = {
     // {string}
     nodeHaloColor: '#fff',
+    // {boolean}
+    nodeHaloStroke: false,
+    // {string}
+    nodeHaloStrokeColor: '#000',
+    // {number}
+    nodeHaloStrokeWidth: 0.5,
     // {number}
     nodeHaloSize: 50,
+    // {boolean}
+    nodeHaloClustering: false,
+    // {number}
+    nodeHaloClusteringMaxRadius: 1000,
     // {string}
     edgeHaloColor: '#fff',
     // {number}

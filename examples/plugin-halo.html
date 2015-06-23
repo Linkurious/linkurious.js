@@ -142,9 +142,7 @@ s.bind('overNodes', function(e) {
 
   // Get adjacent nodes:
   e.data.nodes.forEach(function(node) {
-    s.graph.adjacentNodes(node.id).forEach(function(n) {
-      adjacentNodes.push(n);
-    })
+    adjacentNodes = adjacentNodes.concat(s.graph.adjacentNodes(node.id));
   });
 
   // Add hovered nodes to the array and remove duplicates:
@@ -152,9 +150,7 @@ s.bind('overNodes', function(e) {
 
   // Get adjacent edges:
   e.data.nodes.forEach(function(node) {
-    s.graph.adjacentEdges(node.id).forEach(function(edge) {
-      adjacentEdges.push(edge);
-    })
+    adjacentEdges = adjacentEdges.concat(s.graph.adjacentEdges(node.id));
   });
 
   // Remove duplicates:
