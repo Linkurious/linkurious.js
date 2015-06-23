@@ -12,28 +12,25 @@
    * @param  {CanvasRenderingContext2D} context      The canvas context.
    * @param  {configurable}             settings     The settings function.
    */
-  sigma.canvas.edgehovers.arrow =
+  sigma.canvas.edgehovers.curve =
     function(edge, source, target, context, settings) {
     var color = edge.color,
         prefix = settings('prefix') || '',
+        size = settings('edgeHoverSizeRatio') * (edge[prefix + 'size'] || 1),
+        count = edge.count || 0,
         edgeColor = settings('edgeColor'),
         defaultNodeColor = settings('defaultNodeColor'),
         defaultEdgeColor = settings('defaultEdgeColor'),
-        size = edge[prefix + 'size'] || 1,
-        tSize = target[prefix + 'size'],
+        cp = {},
+        sSize = source[prefix + 'size'],
         sX = source[prefix + 'x'],
         sY = source[prefix + 'y'],
         tX = target[prefix + 'x'],
         tY = target[prefix + 'y'];
 
-    size = (edge.hover) ?
-      settings('edgeHoverSizeRatio') * size : size;
-    var aSize = size * 2.5,
-        d = Math.sqrt((tX - sX) * (tX - sX) + (tY - sY) * (tY - sY)),
-        aX = sX + (tX - sX) * (d - aSize - tSize) / d,
-        aY = sY + (tY - sY) * (d - aSize - tSize) / d,
-        vX = (tX - sX) * aSize / d,
-        vY = (tY - sY) * aSize / d;
+    cp = (source.id === target.id) ?
+      sigma.utils.getSelfLoopControlPoints(sX, sY, sSize, count) :
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, count);
 
     if (!color)
       switch (edgeColor) {
@@ -58,19 +55,11 @@
     context.lineWidth = size;
     context.beginPath();
     context.moveTo(sX, sY);
-    context.lineTo(
-      aX,
-      aY
-    );
+    if (source.id === target.id) {
+      context.bezierCurveTo(cp.x1, cp.y1, cp.x2, cp.y2, tX, tY);
+    } else {
+      context.quadraticCurveTo(cp.x, cp.y, tX, tY);
+    }
     context.stroke();
-
-    context.fillStyle = color;
-    context.beginPath();
-    context.moveTo(aX + vX, aY + vY);
-    context.lineTo(aX + vY * 0.6, aY - vX * 0.6);
-    context.lineTo(aX - vY * 0.6, aY + vX * 0.6);
-    context.lineTo(aX + vX, aY + vY);
-    context.closePath();
-    context.fill();
   };
 })();
