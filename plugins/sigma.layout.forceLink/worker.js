@@ -754,8 +754,10 @@
 
               // We run the Barnes Hut test to see if we are at the right distance
               distance = Math.sqrt(
-                (Math.pow(NodeMatrix[np(n, 'x')] - RegionMatrix[rp(r, 'massCenterX')], 2)) +
-                (Math.pow(NodeMatrix[np(n, 'y')] - RegionMatrix[rp(r, 'massCenterY')], 2))
+                (NodeMatrix[np(n, 'x')] - RegionMatrix[rp(r, 'massCenterX')]) *
+                (NodeMatrix[np(n, 'x')] - RegionMatrix[rp(r, 'massCenterX')]) +
+                (NodeMatrix[np(n, 'y')] - RegionMatrix[rp(r, 'massCenterY')]) *
+                (NodeMatrix[np(n, 'y')] - RegionMatrix[rp(r, 'massCenterY')])
               );
 
               if (2 * RegionMatrix[rp(r, 'size')] / distance < W.settings.barnesHutTheta) {
@@ -940,9 +942,7 @@
         // Common to both methods
         xDist = NodeMatrix[np(n, 'x')];
         yDist = NodeMatrix[np(n, 'y')];
-        distance = Math.sqrt(
-          Math.pow(xDist, 2) + Math.pow(yDist, 2)
-        );
+        distance = Math.sqrt(xDist * xDist + yDist * yDist);
 
         if (W.settings.strongGravityMode) {
 
@@ -989,7 +989,7 @@
         if (W.settings.adjustSizes) {
 
           distance = Math.sqrt(
-            (Math.pow(xDist, 2) + Math.pow(yDist, 2)) -
+            (xDist * xDist + yDist * yDist) -
             NodeMatrix[np(n1, 'size')] -
             NodeMatrix[np(n2, 'size')]
           );
@@ -1031,9 +1031,7 @@
         }
         else {
 
-          distance = Math.sqrt(
-            Math.pow(xDist, 2) + Math.pow(yDist, 2)
-          );
+          distance = Math.sqrt(xDist * xDist + yDist * yDist);
 
           if (W.settings.linLogMode) {
             if (W.settings.outboundAttractionDistribution) {
@@ -1098,8 +1096,8 @@
         for (n = 0; n < W.nodesLength; n += W.ppn) {
           if (!NodeMatrix[np(n, 'fixed')]) {
             force = Math.sqrt(
-              Math.pow(NodeMatrix[np(n, 'dx')], 2) +
-              Math.pow(NodeMatrix[np(n, 'dy')], 2)
+              NodeMatrix[np(n, 'dx')] * NodeMatrix[np(n, 'dx')] +
+              NodeMatrix[np(n, 'dy')] * NodeMatrix[np(n, 'dy')]
             );
 
             if (force > W.maxForce) {
@@ -1141,7 +1139,8 @@
             xDist = NodeMatrix[np(n, 'x')];
             yDist = NodeMatrix[np(n, 'y')];
             distance = Math.sqrt(
-              Math.pow(xDist - oldxDist, 2) + Math.pow(yDist - oldyDist, 2)
+              (xDist - oldxDist) * (xDist - oldxDist) +
+              (yDist - oldyDist) * (yDist - oldyDist)
             );
             alldistance += distance;
           }
@@ -1174,8 +1173,8 @@
             NodeMatrix[np(n, 'convergence')] =
               Math.min(1, Math.sqrt(
                 nodespeed *
-                (Math.pow(NodeMatrix[np(n, 'dx')], 2) +
-                 Math.pow(NodeMatrix[np(n, 'dy')], 2)) /
+                (NodeMatrix[np(n, 'dx')] * NodeMatrix[np(n, 'dx')] +
+                 NodeMatrix[np(n, 'dy')] * NodeMatrix[np(n, 'dy')]) /
                 (1 + Math.sqrt(swinging))
               ));
 
@@ -1193,7 +1192,8 @@
             xDist = NodeMatrix[np(n, 'x')];
             yDist = NodeMatrix[np(n, 'y')];
             distance = Math.sqrt(
-              Math.pow(xDist - oldxDist, 2) + Math.pow(yDist - oldyDist, 2)
+              (xDist - oldxDist) * (xDist - oldxDist) +
+              (yDist - oldyDist) * (yDist - oldyDist)
             );
             alldistance += distance;
           }
