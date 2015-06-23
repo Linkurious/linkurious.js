@@ -7,24 +7,24 @@ Plugin developed by [Sébastien Heymann](https://github.com/sheymann) for [Linku
 ## General
 This plugin extends the [Graph API](https://github.com/jacomyal/sigma.js/wiki/Graph-API) with new public methods:
 
-**dropNodes( *string* )** : *graph*
+**dropNodes( *string|number* )** : *graph*
 **dropNodes( *array* )** : *graph*
  * This methods is used to drop a node or a set of nodes from the graph, depending on how it is called. The method must be called with an array of node IDs.
 
-**dropEdges( *string* )** : *graph*
+**dropEdges( *string|number* )** : *graph*
 **dropEdges( *array* )** : *graph*
  * This methods is used to drop an edge or a set of edges from the graph, depending on how it is called. The method must be called with an array of edge IDs.
 
-**adjacentNodes( *string* )** : *array*
- * This methods is used to retrieve the adjacent nodes of a specified node from the graph. The method must be called with the ID of a node.
+**adjacentNodes( *string|number*, *?object* )** : *array*
+ * This methods is used to retrieve the adjacent nodes of a specified node from the graph. The method must be called with the ID of a node. Set the optional object property `withHidden` to `false` to get non-hidden nodes only.
 
-**adjacentEdges( *string* )** : *array*
- * This methods is used to retrieve the adjacent edges of a specified node from the graph. The method must be called with the ID of a node.
+**adjacentEdges( *string|number*, *?object* )** : *array*
+ * This methods is used to retrieve the adjacent edges of a specified node from the graph. The method must be called with the ID of a node. Set the optional object property `withHidden` to `false` to get non-hidden edges only.
 
-**fixNode( *string* )** : *graph*
+**fixNode( *string|number* )** : *graph*
  * This methods will set the value of `fixed` to `true` on a specified node. The method must be called with the ID of a node.
 
-**unfixNode( *string* )** : *graph*
+**unfixNode( *string|number* )** : *graph*
  * This methods will set the value of `fixed` to `false` on a specified node. The method must be called with the ID of a node.
 
 **getFixedNodes()** : *array*
