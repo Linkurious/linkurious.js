@@ -60,12 +60,18 @@
     sigma.classes.dispatcher.extend(this);
 
     function camera(o) {
+      // Normalize ratio:
+      var ratio = Math.max(
+        s.settings('zoomMin'),
+        Math.min(s.settings('zoomMax'), s.camera.ratio * (o.ratio || 1))
+      );
+
       sigma.misc.animation.camera(
         s.camera,
         {
           x: s.camera.x + (o.x || 0),
           y: s.camera.y + (o.y || 0),
-          ratio: s.camera.ratio * (o.ratio || 1)
+          ratio: ratio
         },
         { duration: o.duration}
       );
