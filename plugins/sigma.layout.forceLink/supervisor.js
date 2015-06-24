@@ -47,23 +47,13 @@
     this.ppe = 3;
     this.config = {};
     this.worker = null;
-    this.shouldUseWorker =
-      options.worker === false ? false : true && webWorkers;
-    this.workerUrl = options.workerUrl;
-    this.runOnBackground = (options.background) ? true : false;
-    this.easing = options.easing;
+    this.shouldUseWorker = null;
+    this.workerUrl = null;
+    this.runOnBackground = null;
+    this.easing = null;
+    this.randomize = null;
 
-    this.randomize;
-    switch (options.randomize) {
-      case 'globally':
-        this.randomize = function(x) { return Math.random() * (options.randomizeFactor || 1) };
-      break;
-      case 'locally':
-        this.randomize = function(x) { return x + (Math.random() * (options.randomizeFactor || 1)) };
-      break;
-      default:
-        this.randomize = function(x) { return x };
-    }
+    this.configure(options);
 
     // State
     this.started = false;
@@ -302,6 +292,23 @@
 
     // Setting configuration
     this.config = config;
+
+    this.shouldUseWorker =
+      config.worker === false ? false : true && webWorkers;
+    this.workerUrl = config.workerUrl;
+    this.runOnBackground = (config.background) ? true : false;
+    this.easing = config.easing;
+
+    switch (config.randomize) {
+      case 'globally':
+        this.randomize = function(x) { return Math.random() * (config.randomizeFactor || 1) };
+      break;
+      case 'locally':
+        this.randomize = function(x) { return x + (Math.random() * (config.randomizeFactor || 1)) };
+      break;
+      default:
+        this.randomize = function(x) { return x };
+    }
 
     if (!this.started)
       return;
