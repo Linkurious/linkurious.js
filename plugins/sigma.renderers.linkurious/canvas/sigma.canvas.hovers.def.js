@@ -113,7 +113,7 @@
         settings('defaultLabelHoverColor');
 
       var labelWidth = context.measureText(node.label).width,
-          labelOffsetX = - labelWidth / 2,
+          labelOffsetX = - labelWidth * 0.5,
           labelOffsetY = fontSize / 3;
 
       switch (alignment) {
@@ -167,22 +167,21 @@
     function drawHoverBorder(alignment, context, fontSize, node) {
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
-          w = Math.round(
-            context.measureText(node.label).width + size + 1.5 + fontSize / 3
-          ),
+          w = Math.round(context.measureText(node.label).width + 4),
           h = fontSize + 4,
-          e = Math.round(size + fontSize / 4);
+          e = Math.round(size + fontSize * 0.25);
 
       if (node.label && typeof node.label === 'string') {
         // draw a rectangle for the label
         switch (alignment) {
           case 'center':
-            y = Math.round(node[prefix + 'y'] - fontSize / 2 - 2);
-            context.rect(x - w / 2, y, w, h);
+            y = Math.round(node[prefix + 'y'] - fontSize * 0.5 - 2);
+            context.rect(x - w * 0.5, y, w, h);
             break;
           case 'left':
-            x = Math.round(node[prefix + 'x'] + fontSize / 2 + 2);
-            y = Math.round(node[prefix + 'y'] - fontSize / 2 - 2);
+            x = Math.round(node[prefix + 'x'] + fontSize * 0.5 + 2);
+            y = Math.round(node[prefix + 'y'] - fontSize * 0.5 - 2);
+            w += size * 0.5 + fontSize * 0.5;
 
             context.moveTo(x, y + e);
             context.arcTo(x, y, x - e, y, e);
@@ -193,10 +192,10 @@
             context.lineTo(x, y + e);
             break;
           case 'top':
-            context.rect(x - w / 2, y - e - h, w, h);
+            context.rect(x - w * 0.5, y - e - h, w, h);
             break;
           case 'bottom':
-            context.rect(x - w / 2, y + e, w, h);
+            context.rect(x - w * 0.5, y + e, w, h);
             break;
           case 'inside':
             if (context.measureText(node.label).width <= e * 2) {
@@ -208,8 +207,9 @@
           case 'right':
           /* falls through*/
           default:
-            x = Math.round(node[prefix + 'x'] - fontSize / 2 - 2);
-            y = Math.round(node[prefix + 'y'] - fontSize / 2 - 2);
+            x = Math.round(node[prefix + 'x'] - fontSize * 0.5 - 2);
+            y = Math.round(node[prefix + 'y'] - fontSize * 0.5 - 2);
+            w += size * 0.5 + fontSize * 0.5;
 
             context.moveTo(x, y + e);
             context.arcTo(x, y, x + e, y, e);
