@@ -56,6 +56,18 @@ s.toXLSX({
  * **edgesAttributes** (optional)
    * The accessor to the dictionnary of edges attributes (e.g. "attributes" or "data.properties"). If provided, write the attributes in the spreadsheet.
    * type: *string*
+ * **nodesCategories** (optional)
+   * The accessor to the node categories (if any). If provided, write the categories in the spreadsheet.
+   * type: *string*
+ * **edgesCategories** (optional)
+   * The accessor to the edge categories (if any). If provided, write the categories in the spreadsheet.
+   * type: *string*
+ * **nodesCategoriesName** (optional)
+   * The column name of the node categories (if `nodesCategories` is used).
+   * type: *string*
+ * **edgesCategoriesName** (optional)
+   * The column name of the edge categories (if `edgesCategories` is used).
+   * type: *string*
  * **filename** (optional)
    * The full filename for the file to download.
    * type: *string*

@@ -45,13 +45,29 @@
     if (x === null || x === undefined)
       return '';
 
+    if (typeof x === 'string' || typeof x === 'number')
+      return x;
+
     if (typeof x === 'function')
-      x = x.toString();
+      return x.toString();
 
-    if (typeof x !== 'number')
-      x = (typeof x === 'string') ? x : JSON.stringify(x);
+    return JSON.stringify(x);
+  }
 
-    return x;
+  function formatCategories(x) {
+    if (x === null || x === undefined)
+      return '';
+
+    if (typeof x === 'string' || typeof x === 'number')
+      return x;
+
+    if (Array.isArray(x))
+      return x.join(',');
+
+    if (typeof x === 'function')
+      return x.toString();
+
+    return JSON.stringify(x);
   }
 
   /**
@@ -114,12 +130,21 @@
         index = {},
         attributesArr = [],
         attributes,
-        attributesPath,
+        attributesPath = params.nodesAttributes,
+        categoryPath = params.nodesCategories,
+        categoriesColName = params.nodesCategoriesName || 'categories',
         o,
+        arr,
+        extraCol = 0,
         rows = [];
 
-    attributesPath = (params.what === 'edges') ?
-      params.edgesAttributes : params.nodesAttributes;
+    if (params.what === 'edges') {
+      attributesPath = params.edgesAttributes;
+      categoryPath = params.edgesCategories;
+      categoriesColName = params.edgesCategoriesName || 'categories';
+    }
+
+    extraCol = (categoryPath && categoryPath.length) ? 1 : 0;
 
     // Find all attributes keys to provide fixed row length to deal with
     // missing attributes
@@ -131,6 +156,11 @@
       attributesArr.push('source');
       index['target'] = cpt++;
       attributesArr.push('target');
+    }
+
+    if (extraCol) {
+      cpt++;
+      attributesArr.push(categoriesColName);
     }
 
     for (var i = 0 ; i < data.length ; i++) {
@@ -148,7 +178,7 @@
     // Get attribute values
     for (var i = 0 ; i < data.length ; i++) {
       o = data[i];
-      var arr = [];
+      arr = [];
       arr.length = cpt;
 
       arr[0] = format(o.id);
@@ -156,6 +186,13 @@
       if (params.what === 'edges') {
         arr[1] = format(o.source);
         arr[2] = format(o.target);
+
+        if (extraCol) {
+          arr[3] = formatCategories(strToObjectRef(o, categoryPath));
+        }
+      }
+      else if (extraCol) {
+        arr[1] = formatCategories(strToObjectRef(o, categoryPath));
       }
 
       attributes = strToObjectRef(o, attributesPath) || {};
