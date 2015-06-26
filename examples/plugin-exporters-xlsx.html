@@ -90,7 +90,8 @@ for (i = 0; i < N/2; i++)
       anUndef: undefined,
       anObject: {},
       aFunction: function (argument) {}
-    }
+    },
+    categories: ['catA', 'catB']
   });
 
 for (i = N/2; i < N; i++)
@@ -130,7 +131,8 @@ for (i = 0; i < E; i++)
         anUndef: undefined,
         anObject: {},
         aFunction: function (argument) {}
-      }
+      },
+      type: 'catA'
     }
   });
 
@@ -145,7 +147,11 @@ s = new sigma({
 // Get the graph:
 s.toXLSX({
   nodesAttributes: 'data',
+  nodesCategories: 'categories',
+  nodesCategoriesName: 'categories',
   edgesAttributes: 'data.properties',
+  edgesCategories: 'data.type',
+  edgesCategoriesName: 'type',
   filename: 'myGraph.xlsx'
 });
 
