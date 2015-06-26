@@ -31,6 +31,10 @@
     duration: 200,
     // {number} Override the `zoomingRatio` setting of Sigma
     zoomingRatio: 1.7,
+    // {boolean} Set focus on the visualization container when the plugin is
+    // initialized and when the mouse is over it. The container must have the
+    // focus to enable keyboard events.
+    autofocus: true,
     // {number} Tab index of the graph container provided if no `tabindex`
     // attribute is found
     tabIndex: -1
@@ -148,10 +152,13 @@
     // needed to provide focus to the graph container
     // see http://www.dbp-consulting.com/tutorials/canvas/CanvasKeyEvents.html
     this.domElt.tabIndex = params.tabIndex;
-    this.domElt.focus();
 
-    this.domElt.addEventListener('mouseover', this.focus, false);
-    this.domElt.addEventListener('mouseout', this.blur, false);
+    if (params.autofocus) {
+      this.domElt.focus();
+      this.domElt.addEventListener('mouseover', this.focus, false);
+      this.domElt.addEventListener('mouseout', this.blur, false);
+    }
+
     this.domElt.addEventListener('keydown', this.keyDown, false);
     this.domElt.addEventListener('keyup', this.keyUp, false);
 
