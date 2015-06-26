@@ -42,6 +42,10 @@ var kbd = sigma.plugins.keyboard(s, {
    * Override the `zoomingRatio` setting of Sigma
    * type: *number*
    * default value: `1.7`
+ * **autofocus**
+   * Set focus on the visualization container when the plugin is initialized and when the mouse is over it. The container must have the focus to enable keyboard events.
+   * type: *boolean*
+   * default value: `true`
  * **tabindex**
    * Tab index of the graph container provided if no `tabindex` attribute is found
    * type: *number*
