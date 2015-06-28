@@ -345,7 +345,7 @@
 
           case 'label':
             format = that.mappings.label.format || function(item) {
-              return item.label;
+              return (typeof item === 'string') ? item : item.label;
             };
 
             if (typeof format !== 'function')
