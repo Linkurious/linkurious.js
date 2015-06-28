@@ -28,6 +28,25 @@ Kill the plugin as follows:
 sigma.plugins.killDragNodes(sigmaInstance);
 ````
 
+## Configuration
+
+This plugin adds new settings to sigma. Initialize sigma as follows:
+
+````javascript
+s = new sigma({
+  graph: g,
+  container: 'graph-container',
+  settings: {
+    dragNodeStickiness: 0.01
+  }
+});
+````
+
+ * **dragNodeStickiness**
+   * Apply the new node position if the distance between the start position and end position is greater than this threshold.
+   * type: *number*
+   * default value: `0`
+
 ## Events
 
 This plugin provides the following events fired by the instance of the plugin:

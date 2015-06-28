@@ -62,7 +62,8 @@
       _hoverIndex = {},
       _isMouseDown = false,
       _isMouseOverCanvas = false,
-      _drag = false;
+      _drag = false,
+      _stickiness = s.settings('dragNodeStickiness');
 
     if (renderer instanceof sigma.renderers.svg) {
         _mouse = renderer.container.firstChild;
@@ -221,15 +222,22 @@
             cos = Math.cos(_camera.angle),
             sin = Math.sin(_camera.angle),
             nodes = _s.graph.nodes(),
-            ref = [];
+            ref = [],
+            x2,
+            y2,
+            activeNodes,
+            n,
+            aux,
+            isHoveredNodeActive,
+            dist;
 
         if (nodes.length < 2) return;
 
         // Getting and derotating the reference coordinates.
         for (var i = 0; i < 2; i++) {
-          var n = nodes[i];
+          n = nodes[i];
           if (n) {
-            var aux = {
+            aux = {
               x: n.x * cos + n.y * sin,
               y: n.y * cos - n.x * sin,
               renX: n[_prefix + 'x'],
@@ -245,11 +253,17 @@
         y = ((y - ref[0].renY) / (ref[1].renY - ref[0].renY)) *
           (ref[1].y - ref[0].y) + ref[0].y;
 
+        x2 = x * cos - y * sin;
+        y2 = y * cos + x * sin;
+
+        if (_stickiness > 0) {
+          dist = sigma.utils.getDistance(x2, y2, _node.x, _node.y);
+          if (dist < _stickiness) return;
+        }
+
         // Drag multiple nodes, Keep distance
-        var x2, y2;
         if(_a) {
-          var activeNodes = _a.nodes(),
-            isHoveredNodeActive;
+          activeNodes = _a.nodes();
 
           // If hovered node is active, drag active nodes nodes
           isHoveredNodeActive = (-1 < activeNodes.map(function(node) {
@@ -258,34 +272,29 @@
 
           if (isHoveredNodeActive) {
             for(var i = 0; i < activeNodes.length; i++) {
-
               // Delete old reference
               if(_draggingNode != _node) {
-                delete activeNodes[i].alphaX;
-                delete activeNodes[i].alphaY;
+                activeNodes[i].alphaX = null;
+                activeNodes[i].alphaY = null;
               }
 
               // Calcul first position of activeNodes
               if(!activeNodes[i].alphaX || !activeNodes[i].alphaY) {
-
                 activeNodes[i].alphaX = activeNodes[i].x - x;
                 activeNodes[i].alphaY = activeNodes[i].y - y;
               }
 
               // Move activeNodes to keep same distance between dragged nodes
               // and active nodes
-              x2 = _node.x + activeNodes[i].alphaX;
-              y2 = _node.y + activeNodes[i].alphaY;
-
-              activeNodes[i].x = x2;
-              activeNodes[i].y = y2;
+              activeNodes[i].x = _node.x + activeNodes[i].alphaX;
+              activeNodes[i].y = _node.y + activeNodes[i].alphaY;
             }
           }
         }
 
         // Rotating the coordinates.
-        _node.x = x * cos - y * sin;
-        _node.y = y * cos + x * sin;
+        _node.x = x2;
+        _node.y = y2;
 
         _s.refresh({skipIndexation: true});
 
