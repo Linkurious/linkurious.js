@@ -46,6 +46,7 @@
 <script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
+<script src="../plugins/sigma.plugins.dragNodes/settings.js"></script>
 <script src="../plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
 
 <script src="../plugins/sigma.helpers.graph/sigma.helpers.graph.js"></script>
@@ -132,6 +133,7 @@ s = new sigma({
     type: 'canvas'
   },
   settings: {
+    dragNodeStickiness: 0.01,
     borderSize: 2,
     outerBorderSize: 3,
     defaultNodeBorderColor: '#fff',
