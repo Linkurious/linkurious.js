@@ -80,7 +80,6 @@
                     x : Math.random(),
                     y : Math.random(),
                     size : 1,
-                    color : '#000000',
                     neo4j_labels : node.labels,
                     neo4j_data : node.properties
                 };
@@ -99,7 +98,6 @@
                     label : edge.type,
                     source : edge.startNode,
                     target : edge.endNode,
-                    color : '#7D7C8E',
                     neo4j_type : edge.type,
                     neo4j_data : edge.properties
                 };
@@ -216,4 +214,4 @@
 
 }).call(this);
 
-    
+
