@@ -520,7 +520,13 @@
     _enableEvents = false;
     this.dropNodes();
     _enableEvents = true;
-    this.addNodes(a);
+
+    if (a.length) {
+      this.addNodes(a);
+    }
+    else {
+      dispatchNodeEvent();
+    }
 
     return this;
   };
@@ -541,7 +547,13 @@
     _enableEvents = false;
     this.dropEdges();
     _enableEvents = true;
-    this.addEdges(a);
+
+    if (a.length) {
+      this.addEdges(a);
+    }
+    else {
+      dispatchEdgeEvent();
+    }
 
     return this;
   };
