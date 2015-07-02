@@ -51,7 +51,7 @@
       return separator + separator;
 
     if (typeof x === 'function')
-      x = x.toString();
+      return x.toString();
 
     x = (typeof x === 'string') ? x : JSON.stringify(x);
     x = x.replace(/\s+/g, ' ');
@@ -64,8 +64,7 @@
         ) +
         separator;
     }
-    else
-      return x;
+    return x;
   }
 
   /**
@@ -103,7 +102,11 @@
           cpt = 0,
           data,
           attributes,
-          o;
+          categories,
+          categoriesColName = params.categoriesName || 'categories',
+          o,
+          arr,
+          extraCol;
 
       if (!params.what)
         throw new TypeError('Missing argument: "what".');
@@ -135,6 +138,12 @@
         attributesArr.push(escape('target', params.textSeparator));
       }
 
+      extraCol = params.categories && params.categories.length;
+      if (extraCol) {
+        index['categories'] = cpt++;
+        attributesArr.push(escape(categoriesColName, params.textSeparator));
+      }
+
       for (var i = 0 ; i < data.length ; i++) {
         o = data[i];
         attributes = strToObjectRef(o, params.attributes) || {};
@@ -152,7 +161,7 @@
       // Get attribute values
       for (var i = 0 ; i < data.length ; i++) {
         o = data[i];
-        var arr = [];
+        arr = [];
         arr.length = cpt;
 
         arr[0] = escape(o.id, params.textSeparator);
@@ -160,6 +169,15 @@
         if (params.what === 'edges') {
           arr[1] = escape(o.source, params.textSeparator);
           arr[2] = escape(o.target, params.textSeparator);
+        }
+
+        if (extraCol) {
+          categories = strToObjectRef(o, params.categories);
+          if (Array.isArray(categories)) {
+            categories = categories.join(',');
+          }
+
+          arr[index['categories']] = escape(categories, params.textSeparator);
         }
 
         attributes = strToObjectRef(o, params.attributes) || {};

@@ -49,6 +49,13 @@ s.toSpreadsheet({
  * **attributes** (optional)
    * The accessor to the dictionnary of nodes or edges attributes (e.g. "attributes" or "data.properties"). If provided, write the attributes in the spreadsheet.
    * type: *string*
+   * type: *string*
+ * **categories** (optional)
+   * The accessor to the nodes or edges categories (if any). If provided, write the categories in the spreadsheet.
+   * type: *string*
+ * **categoriesName** (optional)
+   * The column name of the categories (if `categories` is used).
+   * type: *string*
  * **download** (optional)
    * Whether you want the graph image to be downloaded by the browser.
    * type: *boolean*
