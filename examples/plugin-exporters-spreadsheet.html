@@ -89,7 +89,8 @@ for (i = 0; i < N/2; i++)
       anUndef: undefined,
       anObject: {},
       aFunction: function (argument) {}
-    }
+    },
+    categories: ['catA', 'catB']
   });
 
 for (i = N/2; i < N; i++)
@@ -129,7 +130,8 @@ for (i = 0; i < E; i++)
         anUndef: undefined,
         anObject: {},
         aFunction: function (argument) {}
-      }
+      },
+      type: 'catA'
     }
   });
 
@@ -146,6 +148,7 @@ var nodes = s.toSpreadsheet({
   what: 'nodes',
   which: ['n0', 'n1'],
   attributes: 'data',
+  categories: 'categories',
   download: true,
   filename: 'myNodes.csv',
   separator: ',',
@@ -157,6 +160,8 @@ console.log(nodes);
 var edges = s.toSpreadsheet({
   what: 'edges',
   attributes: 'data.properties',
+  categories: 'data.type',
+  categoriesName: 'type',
   download: false,
   filename: 'myEdges.csv'
 });
