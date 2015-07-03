@@ -25,13 +25,6 @@ var kbd = sigma.plugins.keyboard(sigmaInstance, sigmaInstance.renderers[0]);
 select.bindKeyboard(kbd);
 ````
 
-Optionnaly bind dragNodes events as follows:
-
-````javascript
-var dragListener = sigma.plugins.dragNodes(sigmaInstance, sigmaInstance.renderers[0], activeState);
-select.bindDragNodes(dragListener);
-````
-
 The plugin will be killed when Sigma is killed. Kill the plugin instance manually as follows:
 
 ````javascript
@@ -45,7 +38,7 @@ sigma.plugins.killSelect(sigmaInstance);
 
 ## Compatibility
 
-The plugin is compatible with `sigma.plugins.dragNodes`. You must bind its events to the plugin to make selection works properly (see above).
+The plugin is compatible with `sigma.plugins.dragNodes`.
 
 The plugin is compatible with `sigma.plugins.keyboard`: if an instance is bound to the plugin, it provides the following keyboard shortcuts:
 - <kbd>spacebar</kbd> + <kbd>a</kbd>: select all nodes
