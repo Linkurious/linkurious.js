@@ -15,7 +15,7 @@ To use, include all .js files under this folder. Then initialize it as follows:
 
 ````javascript
 var activeState = sigma.plugins.activeState(sigmaInstance);
-var select = sigma.plugins.select(sigmaInstance, activeState);
+var select = sigma.plugins.select(sigmaInstance, activeState, s.renderers[0]);
 ````
 
 Optionnaly bind keyboard events as follows:
@@ -38,16 +38,10 @@ The plugin will be killed when Sigma is killed. Kill the plugin instance manuall
 sigma.plugins.killSelect(sigmaInstance);
 ````
 
-## Status
-
-Beta
-
 ## Dependencies
 
 - `sigma.plugins.activeState`
-- `sigma.plugins.dragNodes` (optional)
-- `sigma.plugins.keyboard` (optional)
-- `sigma.helpers.graph` (required if `sigma.plugins.keyboard` is used)
+- `sigma.helpers.graph` (required if bound to `sigma.plugins.keyboard` events)
 
 ## Compatibility
 

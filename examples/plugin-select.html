@@ -167,7 +167,7 @@ var activeState = sigma.plugins.activeState(s);
 var keyboard = sigma.plugins.keyboard(s, s.renderers[0]);
 
 // Initialize the Select plugin:
-var select = sigma.plugins.select(s, activeState);
+var select = sigma.plugins.select(s, activeState, s.renderers[0]);
 select.bindKeyboard(keyboard);
 
 if (sigma.plugins.keyboard) {
