@@ -168,16 +168,18 @@
 
       // Style it:
       _tooltip.className = options.cssClass;
-      _tooltip.style.position = 'relative';
+      if (options.position) {
+        _tooltip.style.position = 'relative';
 
-      // container position:
-      var containerRect = renderer.container.getBoundingClientRect();
-      x = ~~(x - containerRect.left);
-      y = ~~(y - containerRect.top);
+        // container position:
+        var containerRect = renderer.container.getBoundingClientRect();
+        x = ~~(x - containerRect.left);
+        y = ~~(y - containerRect.top);
 
-      // Default position is mouse position:
-      _tooltip.style.left = x + 'px';
-      _tooltip.style.top = y + 'px';
+        // Default position is mouse position:
+        _tooltip.style.left = x + 'px';
+        _tooltip.style.top = y + 'px';
+      }
 
       // Execute after rendering:
       setTimeout(function() {
@@ -288,7 +290,6 @@
     // INTERFACE:
     this.close = function() {
       cancel();
-      this.dispatchEvent('hidden');
       return this;
     };
 
@@ -361,7 +362,7 @@
             clientX,
             clientY);
 
-          self.dispatchEvent('shown', event.data);
+          self.dispatchEvent('shown');
         }, so.delay);
       });
 
@@ -369,14 +370,14 @@
         var p = _tooltip;
         cancel();
         if (p)
-          self.dispatchEvent('hidden', event.data);
+          self.dispatchEvent('hidden');
       });
 
       if (so.show !== 'doubleClickStage') {
         s.bind('doubleClickStage', function(event) {
           cancel();
           _doubleClick = true;
-          self.dispatchEvent('hidden', event.data);
+          self.dispatchEvent('hidden');
           setTimeout(function() {
             _doubleClick = false;
           }, settings.doubleClickDelay);
@@ -416,7 +417,7 @@
             clientX,
             clientY);
 
-          self.dispatchEvent('shown', event.data);
+          self.dispatchEvent('shown');
         }, no.delay);
       });
 
@@ -424,14 +425,14 @@
         var p = _tooltip;
         cancel();
         if (p)
-          self.dispatchEvent('hidden', event.data);
+          self.dispatchEvent('hidden');
       });
 
       if (no.show !== 'doubleClickNode') {
         s.bind('doubleClickNode', function(event) {
           cancel();
           _doubleClick = true;
-          self.dispatchEvent('hidden', event.data);
+          self.dispatchEvent('hidden');
           setTimeout(function() {
             _doubleClick = false;
           }, settings.doubleClickDelay);
@@ -471,7 +472,7 @@
             clientX,
             clientY);
 
-          self.dispatchEvent('shown', event.data);
+          self.dispatchEvent('shown');
         }, eo.delay);
       });
 
@@ -479,14 +480,14 @@
         var p = _tooltip;
         cancel();
         if (p)
-          self.dispatchEvent('hidden', event.data);
+          self.dispatchEvent('hidden');
       });
 
       if (eo.show !== 'doubleClickEdge') {
         s.bind('doubleClickEdge', function(event) {
           cancel();
           _doubleClick = true;
-          self.dispatchEvent('hidden', event.data);
+          self.dispatchEvent('hidden');
           setTimeout(function() {
             _doubleClick = false;
           }, settings.doubleClickDelay);
