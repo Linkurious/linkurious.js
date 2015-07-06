@@ -7,7 +7,7 @@ Contact: seb@linkurio.us
 
 ---
 
-This plugin implements a binding to the [dagre layout](), which organises the graph using a DAG (directed acyclic graph) system, written by [Chris Pettitt](https://www.linkedin.com/in/chrismpettitt). It is especially suitable for DAGs and trees. For more information, please refer to its [Dagre's documentation](https://github.com/cpettitt/dagre).
+This plugin implements a binding to the [dagre layout](https://github.com/cpettitt/dagre), which organises the graph using a DAG (directed acyclic graph) system, written by [Chris Pettitt](https://www.linkedin.com/in/chrismpettitt). It is especially suitable for DAGs and trees. For more information, please refer to its [Dagre's documentation](https://github.com/cpettitt/dagre/wiki).
 
 Because Dagre is a separate library, the developer must manually include `dagre.js` in their app in order to use the layout.
 
@@ -81,8 +81,13 @@ The plugin dispatches the following events:
 Example:
 
 ```js
+var config = {
+  rankdir: 'TB'
+};
+
 // Start the algorithm:
 var listener = sigma.layouts.dagre.configure(sigInst, config);
+
 // Bind all events:
 listener.bind('start stop interpolate', function(event) {
   console.log(event.type);
