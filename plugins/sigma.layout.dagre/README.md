@@ -9,7 +9,9 @@ Contact: seb@linkurio.us
 
 This plugin implements a binding to the [dagre layout](https://github.com/cpettitt/dagre), which organises the graph using a DAG (directed acyclic graph) system, written by [Chris Pettitt](https://www.linkedin.com/in/chrismpettitt). It is especially suitable for DAGs and trees. For more information, please refer to its [Dagre's documentation](https://github.com/cpettitt/dagre/wiki).
 
-Because Dagre is a separate library, the developer must manually include `dagre.js` in their app in order to use the layout.
+Because Dagre is a separate library, the developer must manually include [`dagre.js`](https://github.com/cpettitt/dagre/releases) in their app in order to use the layout.
+
+:warning: The time complexity of the algorithm is quadratic and is thus suitable for small graphs with less than 300 edges only.
 
 ## Recommended reading
 
