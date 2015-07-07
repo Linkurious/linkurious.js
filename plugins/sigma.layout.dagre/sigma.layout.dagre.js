@@ -304,6 +304,7 @@
       // Binding on kill to clear the references
       sigInst.bind('kill', function() {
         _instance[sigInst.id].kill();
+        _instance[sigInst.id] = null;
         _eventEmitter[sigInst.id] = null;
       });
     }
