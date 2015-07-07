@@ -197,6 +197,7 @@
         outerBorderSize = self.settings('outerBorderSize') || 0,
         eHaloColor = params.edgeHaloColor || self.settings('edgeHaloColor'),
         eHaloSize = params.edgeHaloSize || self.settings('edgeHaloSize'),
+        drawHalo = params.drawHalo || self.settings('drawHalo'),
         nodes = params.nodes || [],
         edges = params.edges || [],
         source,
@@ -209,6 +210,10 @@
         tY,
         margin,
         circles;
+    
+    if(!drawHalo){
+      return;
+    }
 
     nodes = webgl ? nodes : intersection(params.nodes, self.nodesOnScreen);
     edges = webgl ? edges : intersection(params.edges, self.edgesOnScreen);
