@@ -156,8 +156,11 @@
           clone[k] = o[k];
 
         tooltipRenderer = options.renderer.call(s.graph, clone, options.template);
+		var type = typeof tooltipRenderer;
 
-        if (typeof tooltipRenderer === 'string')
+		if (type === 'undefined')
+			return;
+        if (type === 'string')
            _tooltip.innerHTML = tooltipRenderer;
         else
             // tooltipRenderer is a dom element:
