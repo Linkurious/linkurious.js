@@ -28,7 +28,9 @@
     // {string}
     edgeHaloColor: '#fff',
     // {number}
-    edgeHaloSize: 10
+    edgeHaloSize: 10,
+    // {boolean}
+    drawHalo: true,
   };
 
   // Export the previously designed settings:
