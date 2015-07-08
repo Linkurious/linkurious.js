@@ -193,6 +193,7 @@ var lasso = new sigma.plugins.lasso(s, s.renderers[0], {
   'cursor': 'crosshair'
 });
 
+select.bindLasso(lasso);
 lasso.activate();
 
 // halo on active nodes:
@@ -219,14 +220,6 @@ keyboard.bind('32+83', function() {
 
 // Listen for selectedNodes event
 lasso.bind('selectedNodes', function (event) {
-  activeState.dropEdges();
-
-  var nodes = event.data;
-
-  if (!nodes.length) activeState.dropNodes();
-
-  activeState.addNodes(nodes.map(function(n) { return n.id; }));
-
   setTimeout(function() {
     lasso.deactivate();
     s.refresh({ skipIdexation: true });
