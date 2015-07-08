@@ -18,11 +18,26 @@ var activeState = sigma.plugins.activeState(sigmaInstance);
 var select = sigma.plugins.select(sigmaInstance, activeState, s.renderers[0]);
 ````
 
+If a node is active before any mouse event you should call `init` as follows:
+
+````javascript
+// ... load the graph and set current active nodes here.
+
+select.init(); // take the current active nodes into account
+````
+
 Optionnaly bind keyboard events as follows:
 
 ````javascript
 var kbd = sigma.plugins.keyboard(sigmaInstance, sigmaInstance.renderers[0]);
 select.bindKeyboard(kbd);
+````
+
+Optionnaly bind lasso events as follows:
+
+````javascript
+var lasso = sigma.plugins.lasso(sigmaInstance, sigmaInstance.renderers[0]);
+select.bindLasso(lasso);
 ````
 
 The plugin will be killed when Sigma is killed. Kill the plugin instance manually as follows:
@@ -47,3 +62,5 @@ The plugin is compatible with `sigma.plugins.keyboard`: if an instance is bound 
 - <kbd>spacebar</kbd> + <kbd>e</kbd>: select neighbors of selected nodes
 - <kbd>spacebar</kbd> + <kbd>i</kbd>: select isolated nodes (i.e. of degree 0)
 - <kbd>spacebar</kbd> + <kbd>l</kbd>: select leaf nodes (i.e. nodes with 1 adjacent node)
+
+The plugin is compatible with `sigma.plugins.lasso`.

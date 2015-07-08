@@ -85,13 +85,25 @@
       self = this,
       renderer = r || s.renderers[0],
       mousemoveCount = 0,
-      kbd = null;
+      kbd = null,
+      lasso = null;
 
     _body = _body || document.getElementsByTagName('body')[0];
 
     renderer.container.lastChild.addEventListener('mousedown', nodeMouseDown);
     renderer.container.lastChild.addEventListener('mouseup', nodeMouseUp);
 
+
+    /**
+     * Initialize with current active nodes. This method should be called if a
+     * node is active before any mouse event.
+     */
+    this.init = function() {
+      var nodes = a.nodes();
+      if (nodes.length) {
+        _nodeReference = nodes[0].id;
+      }
+    };
 
     /**
      * This fuction handles the node click event. The clicked nodes are activated.
@@ -126,9 +138,12 @@
           a.addNodes(targets);
         }
 
-        if(a.nodes().length && sigma.plugins.dragNodes) {
-          if(_nodeReference === a.nodes()[0].id) {
+        var activeNode = a.nodes()[0];
+
+        if(activeNode != null && sigma.plugins.dragNodes) {
+          if(_nodeReference === activeNode.id) {
             if(newTargets.length) {
+              // console.log('x');
               a.dropNodes();
               _nodeReference = null;
             }
@@ -142,7 +157,8 @@
               }, s.settings('doubleClickTimeout'));
             }
           } else {
-            _nodeReference = a.nodes()[0].id;
+            // console.log('y');
+            _nodeReference = activeNode.id;
           }
         }
       }
@@ -216,11 +232,6 @@
 
     function nodeMouseMove() {
       mousemoveCount++;
-
-      var n = a.nodes()[0];
-      if(n && _nodeReference === null) {
-        _nodeReference = n.id;
-      }
     }
 
     function nodeMouseDown() {
@@ -231,6 +242,10 @@
     function nodeMouseUp() {
       setTimeout(function() {
         mousemoveCount = 0;
+        var n = a.nodes()[0];
+        if(n && _nodeReference === null) {
+          _nodeReference = n.id;
+        }
       }, 1);
       renderer.container.lastChild.removeEventListener('mousemove', nodeMouseMove);
     }
@@ -312,6 +327,41 @@
       return this;
     };
 
+    // Update active nodes and edges and update the node reference.
+    function lassoHandler(event) {
+      var nodes = event.data;
+
+      if (!nodes.length) {
+        a.dropNodes();
+        _nodeReference = null;
+      }
+      else {
+        a.dropEdges();
+        a.addNodes(nodes.map(function(n) { return n.id; }));
+        _nodeReference = a.nodes()[0].id;
+      }
+    };
+
+    /**
+     * Bind the select plugin to handle lasso events.
+     * @param  {sigma.plugins.lasso} lasso The lasso plugin instance.
+     */
+    this.bindLasso = function(lassoInstance) {
+      if (!lassoInstance) throw new Error('Missing argument: "lassoInstance"');
+
+      lasso = lassoInstance;
+      lasso.bind('selectedNodes', lassoHandler);
+    };
+
+    /**
+     * Clear event bindings to the lasso plugin.
+     */
+    this.unbindLasso = function() {
+      if (lasso) {
+        lasso.unbind('selectedNodes', lassoHandler);
+      }
+    }
+
     /**
      * Clear all event bindings and references.
      */
@@ -321,6 +371,7 @@
       s.unbind('clickEdges', self.clickEdgesHandler);
 
       self.unbindKeyboard();
+      self.unbindLasso();
 
       renderer.container.lastChild.removeEventListener('mousedown', nodeMouseDown);
       renderer.container.lastChild.removeEventListener('mouseup', nodeMouseUp);
