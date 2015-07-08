@@ -44,6 +44,11 @@
         defThreshold = params.threshold || this.settings('glyphThreshold'),
         defDraw = ('draw' in params) ? params.draw : this.settings('drawGlyphs');
 
+    if(!defDraw){
+      return;
+    }
+
+
     if (!this.domElements['glyphs']) {
       this.initDOM('canvas', 'glyphs');
       this.domElements['glyphs'].width = this.container.offsetWidth;
@@ -127,8 +132,8 @@
       if (node.glyphs) {
         node.glyphs.forEach(function(glyph) {
           display = !node.hidden;
-          if (display) {
-            display = ('draw' in glyph) ? glyph.draw : defDraw;
+          if (display && 'draw' in glyph) {
+            display = glyph.draw;
           }
 
           draw(
