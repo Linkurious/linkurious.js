@@ -506,7 +506,8 @@
     this.serialize = function() {
       var copy = cloneChain(_chain);
       for (var i = 0, len = copy.length; i < len; i++) {
-        copy[i].predicate = copy[i].predicate.toString().replace(/\s+/g, ' ');
+        copy[i].predicate = copy[i].predicate.toString().replace(/\s+/g, ' ')
+          .replace(/"use strict"; /, '');
       };
       return copy;
     };
