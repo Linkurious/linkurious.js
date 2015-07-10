@@ -197,7 +197,7 @@
       rootElem.setAttribute('xmlns', 'http://www.gexf.net/1.2draft');
       rootElem.setAttribute('xmlns:viz', 'http://www.gexf.net/1.2draft/viz');
       rootElem.setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
-      rootElem.setAttribute('xmlns:schemaLocation', 'http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd');
+      rootElem.setAttribute('xsi:schemaLocation', 'http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd');
       rootElem.setAttribute('version', '1.2');
 
       metaElem = doc.createElement('meta');
