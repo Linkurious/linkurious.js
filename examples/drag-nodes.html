@@ -154,8 +154,8 @@ var select = sigma.plugins.select(s, activeState);
 // Initialize the Keyboard plugin:
 var keyboard = sigma.plugins.keyboard(s, s.renderers[0]);
 
-// Bind the Keyboard and DragNodes plugins to the Select plugin:
-select.bindKeyboard(keyboard).bindDragNodes(dragListener);
+// Bind the Keyboard plugin to the Select plugin:
+select.bindKeyboard(keyboard);
 
 dragListener.bind('startdrag', function(event) {
   console.log(event);
