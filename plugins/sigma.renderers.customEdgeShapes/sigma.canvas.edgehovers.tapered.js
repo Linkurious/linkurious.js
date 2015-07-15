@@ -114,7 +114,7 @@
     context.restore();
 
     // draw label with a background
-    if (sigma.canvas.edges.labels.def) {
+    if (sigma.canvas.edges.labels) {
       edge.hover = true;
       sigma.canvas.edges.labels.def(edge, source, target, context, settings);
       edge.hover = false;
