@@ -42,7 +42,9 @@
     //          Available values: "edge", "default"
     edgeLabelHoverShadow: 'default',
     // {string}
-    edgeLabelHoverShadowColor: '#000'
+    edgeLabelHoverShadowColor: '#000',
+    // {boolean}
+    approximateLabelWidth: true,
   };
 
   // Export the previously designed settings:
