@@ -19,35 +19,42 @@ Edges are created with the following structure :
  * neo4j_type -> Neo4j edge type
  * neo4j_data -> All the properties of Neo4j relationship
 
-The most basic way to use this helper is to call it with a neo4j server url and a cypher query. It will then instantiate sigma, but after having added the graph into the config object.
+The most basic way to use this helper is to call it with a neo4j server url, a cypher query, and a sigma instance.
 
 For neo4j < 2.2
 ````javascript
+// Instantiate sigma:
+var sigmaInstance = new sigma({
+  graph: g,
+  container: 'graph-container'
+});
+
+// Run Cypher query:
 sigma.parsers.cypher(
   'http://localhost:7474',
   'MATCH (n) OPTIONAL MATCH (n)-[r]->(m) RETURN n,r,m LIMIT 100',
-  { container: 'myContainer' }
+  sigmaInstance,
+  function() {
+    sigmaInstance.refresh();
+  }
 );
 ````
 
 For neo4j >= 2.2, you must pass a neo4j user with its password. So instead of the neo4j url, you have to pass a neo4j server object like this :  
 ````javascript
+// Instantiate sigma:
+var sigmaInstance = new sigma({
+  graph: g,
+  container: 'graph-container'
+});
+
+// Run Cypher query:
 sigma.parsers.cypher(
   { url: 'http://localhost:7474', user:'neo4j', password:'admin' },
   'MATCH (n) OPTIONAL MATCH (n)-[r]->(m) RETURN n,r,m LIMIT 100',
-  { container: 'myContainer' }
-);
-````
-
-It is also possible to update an existing instance's graph instead.
-
-````javascript
-sigma.parsers.cypher(
-  { url: 'http://localhost:7474', user:'neo4j', password:'admin' },
-  'MATCH (n) OPTIONAL MATCH (n)-[r]->(m) RETURN n,r,m LIMIT 100',
-  myExistingInstance,
+  sigmaInstance,
   function() {
-    myExistingInstance.refresh();
+    sigmaInstance.refresh();
   }
 );
 ````
