@@ -31,17 +31,49 @@
 
   // UTILITIES FUNCTIONS:
   // ******************
+  function dataURLToBlob(dataURL) {
+    var BASE64_MARKER = ';base64,';
+    if (dataURL.indexOf(BASE64_MARKER) == -1) {
+      var parts = dataURL.split(',');
+      var contentType = parts[0].split(':')[1];
+      var raw = decodeURIComponent(parts[1]);
+
+      return new Blob([raw], {type: contentType});
+    }
+
+    var parts = dataURL.split(BASE64_MARKER);
+    var contentType = parts[0].split(':')[1];
+    var raw = window.atob(parts[1]);
+    var rawLength = raw.length;
+
+    var uInt8Array = new Uint8Array(rawLength);
+
+    for (var i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], {type: contentType});
+  }
+
   function download(dataUrl, extension, filename) {
-    var anchor = document.createElement('a');
-    anchor.setAttribute('href', dataUrl);
-    anchor.setAttribute('download', filename || 'graph.' + extension);
+    filename = filename || 'graph.' + extension;
 
-    var event = document.createEvent('MouseEvent');
-    event.initMouseEvent('click', true, false, window, 0, 0, 0 ,0, 0,
-      false, false, false, false, 0, null);
+    if (navigator.msSaveOrOpenBlob) { // IE10+
+      navigator.msSaveOrOpenBlob(dataURLToBlob(dataUrl), filename);
+    }
+    else if (navigator.msSaveBlob) { // IE11+
+      navigator.msSaveBlob(dataURLToBlob(dataUrl), filename);
+    }
+    else {
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', dataUrl);
+      anchor.setAttribute('download', filename);
 
-    anchor.dispatchEvent(event);
-    anchor.remove();
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
   }
 
   function calculateAspectRatioFit(srcWidth, srcHeight, maxSize) {
@@ -198,7 +230,7 @@
     // Cleaning
     doneContexts = [];
     s.killRenderer(renderer);
-    el.remove();
+    el.parentNode.removeChild(el);
   }
 
   /**
