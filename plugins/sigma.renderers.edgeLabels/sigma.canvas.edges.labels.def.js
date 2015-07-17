@@ -78,7 +78,7 @@
     // otherwise draw text along the edge line:
     if ('auto' === settings('edgeLabelAlignment')) {
       var labelWidth;
-      if(settings('edgeLabelApproximateWidth')){
+      if(settings('approximateLabelWidth')){
         labelWidth = 0.5*edge.label.length*fontSize;
       }else{
         labelWidth = context.measureText(edge.label).width;

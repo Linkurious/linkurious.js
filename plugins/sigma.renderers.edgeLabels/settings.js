@@ -43,8 +43,6 @@
     edgeLabelHoverShadow: 'default',
     // {string}
     edgeLabelHoverShadowColor: '#000',
-    // {boolean}
-    edgeLabelApproximateWidth: false,
   };
 
   // Export the previously designed settings:
