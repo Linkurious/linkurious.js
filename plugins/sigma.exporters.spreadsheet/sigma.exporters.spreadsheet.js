@@ -16,33 +16,40 @@
     throw new Error('sigma is not declared');
 
   function download(fileEntry, extension, filename) {
-    var
-      anchor = document.createElement('a'),
-      objectUrl = null;
+    var blob = null,
+        objectUrl = null,
+        dataUrl = null;
 
     if(window.Blob){
       // use Blob if available
-      objectUrl = window.URL.createObjectURL(new Blob([fileEntry], {type: 'text/csv'}));
-      anchor.setAttribute('href', objectUrl);
+      blob = new Blob([fileEntry], {type: 'text/xml'});
+      objectUrl = window.URL.createObjectURL(blob);
     }
     else {
       // else use dataURI
-      var dataUrl = 'data:text/csv;charset=UTF-8,' + encodeURIComponent(fileEntry);
-      anchor.setAttribute('href', dataUrl);
+      dataUrl = 'data:text/csv;charset=UTF-8,' + encodeURIComponent(fileEntry);
     }
 
-    anchor.setAttribute('download', filename || 'graph.' + extension);
+    if (navigator.msSaveBlob) { // IE11+ : (has Blob, but not a[download])
+      navigator.msSaveBlob(blob, filename);
+    } else if (navigator.msSaveOrOpenBlob) { // IE10+ : (has Blob, but not a[download])
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      // A-download
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', (window.Blob) ? objectUrl : dataUrl);
+      anchor.setAttribute('download', filename || 'graph.' + extension);
 
-    // Click event:
-    var event = document.createEvent('MouseEvent');
-    event.initMouseEvent('click', true, false, window, 0, 0, 0 ,0, 0,
-      false, false, false, false, 0, null);
-
-    anchor.dispatchEvent(event);
-    anchor.remove();
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
 
     if (objectUrl) {
-      window.URL.revokeObjectURL(objectUrl);
+      setTimeout(function() { // Firefox needs a timeout
+        window.URL.revokeObjectURL(objectUrl);
+      }, 0);
     }
   }
 
