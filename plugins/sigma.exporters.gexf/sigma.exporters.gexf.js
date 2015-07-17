@@ -18,35 +18,42 @@
 
   // Utilities
   function download(fileEntry, extension, filename) {
-    var
-      anchor = document.createElement('a'),
-      objectUrl = null;
+    var blob = null,
+        objectUrl = null,
+        dataUrl = null;
 
     if(window.Blob){
       // use Blob if available
-      objectUrl = window.URL.createObjectURL(new Blob([fileEntry], {type: 'text/xml'}));
-      anchor.setAttribute('href', objectUrl);
+      blob = new Blob([fileEntry], {type: 'text/xml'});
+      objectUrl = window.URL.createObjectURL(blob);
     }
     else {
       // else use dataURI
-      var dataUrl = 'data:text/xml;charset=UTF-8,' +
-            encodeURIComponent('<?xml version="1.0" encoding="UTF-8"?>') +
-            encodeURIComponent(fileEntry);
-      anchor.setAttribute('href', dataUrl);
+      dataUrl = 'data:text/xml;charset=UTF-8,' +
+          encodeURIComponent('<?xml version="1.0" encoding="UTF-8"?>') +
+          encodeURIComponent(fileEntry);
     }
 
-    anchor.setAttribute('download', filename || 'graph.' + extension);
+    if (navigator.msSaveBlob) { // IE11+ : (has Blob, but not a[download])
+      navigator.msSaveBlob(blob, filename);
+    } else if (navigator.msSaveOrOpenBlob) { // IE10+ : (has Blob, but not a[download])
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      // A-download
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', (window.Blob) ? objectUrl : dataUrl);
+      anchor.setAttribute('download', filename || 'graph.' + extension);
 
-    // Click event:
-    var event = document.createEvent('MouseEvent');
-    event.initMouseEvent('click', true, false, window, 0, 0, 0 ,0, 0,
-      false, false, false, false, 0, null);
-
-    anchor.dispatchEvent(event);
-    anchor.remove();
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
 
     if (objectUrl) {
-      window.URL.revokeObjectURL(objectUrl);
+      setTimeout(function() { // Firefox needs a timeout
+        window.URL.revokeObjectURL(objectUrl);
+      }, 0);
     }
   }
 
@@ -410,24 +417,24 @@
       }
 
       // Cleaning
-      if (attrDefElem) attrDefElem.remove();
-      if (attrsElem) attrsElem.remove();
-      if (attrElem) attrElem.remove();
-      if (colorElem) colorElem.remove();
-      if (creatorElem) creatorElem.remove();
-      if (descriptionElem) descriptionElem.remove();
-      if (textElem) textElem.remove();
-      if (positionElem) positionElem.remove();
-      if (sizeElem) sizeElem.remove();
-      if (nodeElem) nodeElem.remove();
-      if (edgeElem) edgeElem.remove();
-      if (nodeAttrsDefElem) nodeAttrsDefElem.remove();
-      if (edgeAttrsDefElem) edgeAttrsDefElem.remove();
-      if (nodesElem) nodesElem.remove();
-      if (edgesElem) edgesElem.remove();
-      if (graphElem) graphElem.remove();
-      if (metaElem) metaElem.remove();
-      if (rootElem) rootElem.remove();
+      if (attrDefElem) attrDefElem.parentNode.removeChild(attrDefElem);
+      if (attrsElem) attrsElem.parentNode.removeChild(attrsElem);
+      if (attrElem) attrElem.parentNode.removeChild(attrElem);
+      if (colorElem) colorElem.parentNode.removeChild(colorElem);
+      if (creatorElem) creatorElem.parentNode.removeChild(creatorElem);
+      if (descriptionElem) descriptionElem.parentNode.removeChild(descriptionElem);
+      if (textElem) textElem.parentNode.removeChild(textElem);
+      if (positionElem) positionElem.parentNode.removeChild(positionElem);
+      if (sizeElem) sizeElem.parentNode.removeChild(sizeElem);
+      if (nodeElem) nodeElem.parentNode.removeChild(nodeElem);
+      if (edgeElem) edgeElem.parentNode.removeChild(edgeElem);
+      if (nodeAttrsDefElem) nodeAttrsDefElem.parentNode.removeChild(nodeAttrsDefElem);
+      if (edgeAttrsDefElem) edgeAttrsDefElem.parentNode.removeChild(edgeAttrsDefElem);
+      if (nodesElem) nodesElem.parentNode.removeChild(nodesElem);
+      if (edgesElem) edgesElem.parentNode.removeChild(edgesElem);
+      if (graphElem) graphElem.parentNode.removeChild(graphElem);
+      if (metaElem) metaElem.parentNode.removeChild(metaElem);
+      if (rootElem) rootElem.parentNode.removeChild(rootElem);
       doc = null;
 
       return sXML;
