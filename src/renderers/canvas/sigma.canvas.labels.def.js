@@ -39,7 +39,11 @@
       (node.color || settings('defaultNodeColor')) :
       settings('defaultLabelColor');
 
-    labelWidth = context.measureText(node.label).width;
+    if (settings('approximateLabelWidth')) {
+      labelWidth = 0.5 * node.label.length * fontSize;
+    }else {
+      labelWidth = context.measureText(node.label).width;
+    }
     labelOffsetX = - labelWidth / 2;
     labelOffsetY = fontSize / 3;
 
