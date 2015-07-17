@@ -18,19 +18,28 @@
   if (typeof XLSX === 'undefined')
     throw new Error('XLSX is not declared');
 
-  function download(dataUrl, extension, filename) {
-    // Anchor
-    var anchor = document.createElement('a');
-    anchor.setAttribute('href', dataUrl);
-    anchor.setAttribute('download', filename || 'graph.' + extension);
+  function downloadBlob(blob, extension, filename) {
+    var objectUrl = window.URL.createObjectURL(blob);
 
-    // Click event
-    var event = document.createEvent('MouseEvent');
-    event.initMouseEvent('click', true, false, window, 0, 0, 0 ,0, 0,
-      false, false, false, false, 0, null);
+    if (navigator.msSaveBlob) { // IE11+ : (has Blob, but not a[download])
+      navigator.msSaveBlob(blob, filename);
+    } else if (navigator.msSaveOrOpenBlob) { // IE10+ : (has Blob, but not a[download])
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      // A-download
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', objectUrl);
+      anchor.setAttribute('download', filename || 'graph.' + extension);
 
-    anchor.dispatchEvent(event);
-    anchor.remove();
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
+
+    setTimeout(function() { // Firefox needs a timeout
+      window.URL.revokeObjectURL(objectUrl);
+    }, 0);
   }
 
   // string to array buffer
@@ -259,10 +268,6 @@
       var wbout = XLSX.write(wb, { bookType:'xlsx', bookSST:false, type:'binary' });
       var blob = new Blob([s2ab(wbout)], {type:''});
 
-      download(
-        URL.createObjectURL(blob),
-        'xlsx',
-        params.filename
-      );
+      downloadBlob(blob, 'xlsx', params.filename);
   };
 }).call(this);
