@@ -77,9 +77,13 @@
     // force horizontal alignment if not enough space to draw the text,
     // otherwise draw text along the edge line:
     if ('auto' === settings('edgeLabelAlignment')) {
-      var
-        labelWidth = context.measureText(edge.label).width,
-        edgeLength = sigma.utils.getDistance(
+      var labelWidth;
+      if(settings('approximateLabelWidth')){
+        labelWidth = 0.5*edge.label.length*fontSize;
+      }else{
+        labelWidth = context.measureText(edge.label).width;
+      }
+      var edgeLength = sigma.utils.getDistance(
           source[prefix + 'x'],
           source[prefix + 'y'],
           target[prefix + 'x'],
