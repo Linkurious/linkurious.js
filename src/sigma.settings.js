@@ -122,7 +122,8 @@
     //           several frames.
     canvasEdgesBatchSize: 500,
     webglEdgesBatchSize: 1000,
-
+    // {boolean} Approximate labels width instead of using canvas.measureText
+    approximateLabelWidth: false,
 
 
 
