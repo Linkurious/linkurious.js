@@ -112,7 +112,7 @@
         (node.color || defaultNodeColor) :
         settings('defaultLabelHoverColor');
 
-      var labelWidth = context.measureText(node.label).width,
+      var labelWidth = getTextWidth(node.label),
           labelOffsetX = - labelWidth * 0.5,
           labelOffsetY = fontSize / 3;
 
@@ -147,6 +147,12 @@
       );
     }
 
+    function getTextWidth(text) {
+      return settings('approximateLabelWidth') ?
+        0.5 * text.length * fontSize :
+        context.measureText(text).width;
+    }
+
     function prepareLabelBackground(context) {
       context.font = (fontStyle ? fontStyle + ' ' : '') +
         fontSize + 'px ' + (settings('hoverFont') || settings('font'));
@@ -167,7 +173,7 @@
     function drawHoverBorder(alignment, context, fontSize, node) {
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
-          w = Math.round(context.measureText(node.label).width + 4),
+          w = Math.round(getTextWidth(node.label) + 4),
           h = fontSize + 4,
           e = Math.round(size + fontSize * 0.25);
 
