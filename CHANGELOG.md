@@ -1,5 +1,55 @@
 ## linkurious.js - changelog:
 
+#### 1.0.10 (July 18, 2015)
+
+Core:
+
+  - #167 Optimize label alignment of latin fonts via a faster context.measureText() by adding `approximateLabelWidth` to Sigma settings (`false` by default) (~12% rendering overall speedup) (thanks @mdamien)
+  - #167 src/renderers/canvas/sigma.canvas.labels.def.js: Add backward-compatible support of `approximateLabelWidth` setting (thanks @mdamien)
+  - #158 src/renderers/sigma.renderers.webgl.js: Fix lines in reverse order
+  - #152 Add backward-compatible `beforeRender` event (see also https://github.com/jacomyal/sigma.js/pull/606) (thanks @mdamien)
+  - #143 Add backward-compatible `nodeQuadtreeMaxLevel` and `edgeQuadtreeMaxLevel` to Sigma settings (`4` by default) (see also https://github.com/jacomyal/sigma.js/pull/602)
+  - #96 use `throw new Error('msg')` instead of `throw 'msg'` to get stack trace (see also https://github.com/jacomyal/sigma.js/pull/536)
+
+Plugins:
+
+  - #185 exporters.gexf: File exports fail in IE10+
+  - #185 exporters.spreadsheet: File exports fail in IE10+
+  - #145 exporters.spreadsheet: Add column for node and edge categories/types
+  - #187 exporters.svg: Fix SVG export fails in IE10+ (see also https://github.com/jacomyal/sigma.js/pull/621)
+  - #185 exporters.xlsx: File exports fail in IE10+
+  - #136 exporters.xlsx: Add column for node and edge categories/types 
+  - #128 helpers.graph: Add option in adjacentNodes() to get non-hidden nodes only
+  - #128 helpers.graph: Add option in adjacentEdges() to get non-hidden edges only
+  - #126 Add layout.forceLink and restore original layout.forceAtlas
+  - #192 Add layouts.dagre for Direct Acyclic Graph (DAG) / hierarchical layout.
+  - #139 parsers.cypher: Fix edgeColor setting don't work
+  - #142 plugins.activeState: Fix event not fired on invert functions if no node/edge is active afterwards
+  - #138 plugins.design: Fix cannot format string labels using the nodes.labels.by function
+  - #122 plugins.design: Fix Error: Missing key "7" in nodes palette " of color scheme nodes.qualitative.categories"
+  - #137 plugins.dragNodes: Add stickiness setting
+  - #163 plugin.filter: Fix test not passing on firefox (thanks @mdamien)
+  - #185 plugins.image: File exports fail in IE10+
+  - #134 plugins.keyboard: Fix page jump on Chrome, Safari and IE when mouseover graph that isn't fully in view
+  - #121 plugins.keyboard: Fix zoom in/out ignores zoomMin/zoomMax settings
+  - #146 plugins.select: Fix do not select edges on mouse move (expected: panning)
+  - #174 renderers.customEdgeShapes: Fix hover erroring if edgeLabels plugin not here (thanks @mdamien)
+  - #167 renderers.edgeLabels: Add support of `approximateLabelWidth` setting
+  - #166 renderers.edgeLabels: Computations only if useful (thanks @mdamien)
+  - #125 renderers.edgeLabels: Add edge label hovering effects
+  - #124 renderers.edgeLabels: set angle=0 when edge length > text width
+  - #153 renderers.glyphs: Fix `drawGlyphs` setting not working
+  - #154 renderers.halo: Add `drawHalo` setting
+  - #133 renderers.halo: Add clustering of node halo
+  - #132 renderers.halo: Add stroke to node halo
+  - #129 renderers.halo: Fix halo is displayed on hidden nodes and edges
+  - #167 renderers.linkurious: Add support of `approximateLabelWidth` setting
+  - #125 renderers.linkurious: Add edge label hovering effects
+
+Tests:
+
+  - #159 Add smoke tests for renderers (see also https://github.com/jacomyal/sigma.js/pull/610) (thanks @mdamien)
+
 #### 1.0.9 (May 20, 2015)
 
 Plugins:
