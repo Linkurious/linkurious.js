@@ -100,7 +100,6 @@ module.exports = function(grunt) {
     'plugins.tooltips',
     'plugins.relativeSize',
     'renderers.customEdgeShapes',
-    'renderers.customShapes',
     'renderers.edgeLabels',
     'renderers.glyphs',
     'renderers.halo',
