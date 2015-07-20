@@ -1,4 +1,4 @@
-sigma.renderers.edgeLabels
+sigma.renderers.parallelEdges
 ==================
 
 Plugin developed by [Jack Miner](https://github.com/3ch01c).
