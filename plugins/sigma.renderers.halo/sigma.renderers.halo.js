@@ -62,9 +62,9 @@
    *
    * @param {array}   circles
    * @param {object}  context
-   * @param {boolean} withStroke
+   * @param {boolean} onlyStroke
    */
-  function drawCircles(circles, context, withStroke) {
+  function drawCircles(circles, context, onlyStroke) {
     for(var i = 0; i < circles.length ; i++) {
       if (circles[i] == null) continue;
 
@@ -80,9 +80,11 @@
       );
 
       context.closePath();
-      context.fill();
-
-      if (withStroke) context.stroke();
+      if (onlyStroke){
+        context.stroke();
+      }else{
+        context.fill();
+      }
     }
   }
 
@@ -286,7 +288,10 @@
       // Avoid crossing strokes:
       circles = clusterCircles(circles, margin, nHaloClusteringMaxRadius);
     }
-    drawCircles(circles, context, nHaloStroke);
+    if(nHaloStroke){
+      drawCircles(circles, context, true);
+    }
+    drawCircles(circles, context);
 
     context.restore();
   }
