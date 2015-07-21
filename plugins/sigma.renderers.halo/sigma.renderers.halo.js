@@ -1,4 +1,4 @@
-;(function(undefined) {
+(function(undefined) {
   'use strict';
 
   /**
@@ -21,7 +21,7 @@
    *
    * @see lodash
    * @param {...Array} [array] The arrays to inspect.
-   * @returns {Array} Returns an array of shared values.
+   * @return {Array} Returns an array of shared values.
    * @example
    *
    * _.intersection([1, 2, 3], [5, 2, 1, 4], [2, 1]);
@@ -65,7 +65,7 @@
    * @param {boolean} onlyStroke
    */
   function drawCircles(circles, context, onlyStroke) {
-    for(var i = 0; i < circles.length ; i++) {
+    for (var i = 0; i < circles.length; i++) {
       if (circles[i] == null) continue;
 
       context.beginPath();
@@ -80,9 +80,9 @@
       );
 
       context.closePath();
-      if (onlyStroke){
+      if (onlyStroke) {
         context.stroke();
-      }else{
+      } else {
         context.fill();
       }
     }
@@ -109,12 +109,12 @@
         d,
         points;
 
-      while(intersecting) {
+      while (intersecting) {
         intersecting = false;
-        for(var i = 0; i < circles.length; i++) {
+        for (var i = 0; i < circles.length; i++) {
           if (circles[i] === null) continue;
 
-          for(var j = i + 1; j < circles.length; j++) {
+          for (var j = i + 1; j < circles.length; j++) {
             if (circles[j] === null) continue;
 
             // distance between i-1 and i
@@ -126,8 +126,8 @@
 
               // Centers of the merged circles:
               points = [
-                {x:circles[i].x, y: circles[i].y, radius: circles[i].radius},
-                {x:circles[j].x, y: circles[j].y, radius: circles[j].radius}
+                {x: circles[i].x, y: circles[i].y, radius: circles[i].radius},
+                {x: circles[j].x, y: circles[j].y, radius: circles[j].radius}
               ];
               if (circles[i].points) {
                 points = points.concat(circles[i].points);
@@ -138,7 +138,7 @@
 
               // Compute the centroid:
               centroid = {x: 0, y: 0};
-              for(var p = 0; p < points.length; p++) {
+              for (var p = 0; p < points.length; p++) {
                 centroid.x += points[p].x;
                 centroid.y += points[p].y;
               }
@@ -212,8 +212,8 @@
         tY,
         margin,
         circles;
-    
-    if(!drawHalo){
+
+    if (!drawHalo) {
       return;
     }
 
@@ -281,14 +281,14 @@
         x: node[nPrefix + 'x'],
         y: node[nPrefix + 'y'],
         radius: node[nPrefix + 'size'] + margin,
-      }
+      };
     });
 
     if (nHaloClustering) {
       // Avoid crossing strokes:
       circles = clusterCircles(circles, margin, nHaloClusteringMaxRadius);
     }
-    if(nHaloStroke){
+    if (nHaloStroke) {
       drawCircles(circles, context, true);
     }
     drawCircles(circles, context);
