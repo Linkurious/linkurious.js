@@ -358,6 +358,9 @@ This plugin provides the following edge label renderers:
    * default value: `0`
    * available values: `0` (no shadow), `1` (low), `2`, `3`, `4`, `5` (high)
 
+
+### Edge labels settings
+
  * **defaultEdgeLabelColor**
    * type: *string*
    * default value: `#000`

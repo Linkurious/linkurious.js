@@ -4,7 +4,8 @@
   sigma.utils.pkg('sigma.canvas.edgehovers');
 
   /**
-   * This hover renderer will display the edge with a different color or size.
+   * This hover renderer will display the edge with a different color or size..
+   * It will also display the label with a background.
    *
    * @param  {object}                   edge         The edge object.
    * @param  {object}                   source node  The edge source node.
@@ -22,6 +23,7 @@
         edgeColor = settings('edgeColor'),
         defaultNodeColor = settings('defaultNodeColor'),
         defaultEdgeColor = settings('defaultEdgeColor'),
+        level = settings('edgeHoverLevel'),
         sX = source[prefix + 'x'],
         sY = source[prefix + 'y'],
         tX = target[prefix + 'x'],
@@ -58,6 +60,39 @@
 
     context.save();
 
+    // Level:
+    if (level) {
+      context.shadowOffsetX = 0;
+      // inspired by Material Design shadows, level from 1 to 5:
+      switch(level) {
+        case 1:
+          context.shadowOffsetY = 1.5;
+          context.shadowBlur = 4;
+          context.shadowColor = 'rgba(0,0,0,0.36)';
+          break;
+        case 2:
+          context.shadowOffsetY = 3;
+          context.shadowBlur = 12;
+          context.shadowColor = 'rgba(0,0,0,0.39)';
+          break;
+        case 3:
+          context.shadowOffsetY = 6;
+          context.shadowBlur = 12;
+          context.shadowColor = 'rgba(0,0,0,0.42)';
+          break;
+        case 4:
+          context.shadowOffsetY = 10;
+          context.shadowBlur = 20;
+          context.shadowColor = 'rgba(0,0,0,0.47)';
+          break;
+        case 5:
+          context.shadowOffsetY = 15;
+          context.shadowBlur = 24;
+          context.shadowColor = 'rgba(0,0,0,0.52)';
+          break;
+      }
+    }
+
     context.strokeStyle = color;
     context.lineWidth = size;
     context.beginPath();
@@ -72,6 +107,20 @@
     context.closePath();
     context.stroke();
 
+    // reset shadow
+    if (level) {
+      context.shadowOffsetY = 0;
+      context.shadowBlur = 0;
+      context.shadowColor = '#000000'
+    }
+
     context.restore();
+
+    // draw label with a background
+    if (sigma.canvas.edges.labels) {
+      edge.hover = true;
+      sigma.canvas.edges.labels.def(edge, source, target, context, settings);
+      edge.hover = false;
+    }
   };
 })();
