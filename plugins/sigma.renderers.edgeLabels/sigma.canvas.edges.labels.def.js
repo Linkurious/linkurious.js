@@ -7,6 +7,22 @@
   // Initialize packages:
   sigma.utils.pkg('sigma.canvas.edges.labels');
 
+  var PREV_FONT = null; //contains the current context.font value
+  //the ctx.font value is cached because accesing it is costly
+
+  sigma.canvas.edges.labels.def = {
+  /**
+   * This is executed before a render batch
+   * It just reset PREV_FONT
+   *
+   * @param  {CanvasRenderingContext2D} context      The canvas context.
+   * @param  {configurable}             settings     The settings function.
+   */
+    pre: function(context, settings) {
+      PREV_FONT = '';
+    },
+  };
+  
   /**
    * This label renderer will just display the label on the line of the edge.
    * The label is rendered at half distance of the edge extremities, and is
@@ -18,7 +34,7 @@
    * @param  {CanvasRenderingContext2D} context      The canvas context.
    * @param  {configurable}             settings     The settings function.
    */
-  sigma.canvas.edges.labels.def =
+  sigma.canvas.edges.labels.def.render =
     function(edge, source, target, context, settings) {
     if (typeof edge.label !== 'string' || source == target)
       return;
@@ -48,27 +64,29 @@
     // The final form is:
     // f'(x) = b * x * x^(-1 / a), thus f'(1) = b. Application:
     // fontSize = defaultEdgeLabelSize if edgeLabelSizePowRatio = 1
+
     fontSize = (settings('edgeLabelSize') === 'fixed') ?
       settings('defaultEdgeLabelSize') :
       settings('defaultEdgeLabelSize') *
       size *
       Math.pow(size, -1 / settings('edgeLabelSizePowRatio'));
 
-    context.save();
-
+    var new_font = [
+        fontStyle,
+        fontSize + 'px',
+        settings('font')
+      ].join(' ');
     if (edge.active) {
-      context.font = [
+     new_font = [
         settings('activeFontStyle') || settings('fontStyle'),
         fontSize + 'px',
         settings('activeFont') || settings('font')
       ].join(' ');
     }
-    else {
-      context.font = [
-        fontStyle,
-        fontSize + 'px',
-        settings('font')
-      ].join(' ');
+
+    if (PREV_FONT != new_font) { //use font value caching
+      context.font = new_font;
+      PREV_FONT = new_font;
     }
 
     context.textAlign = 'center';
@@ -78,9 +96,9 @@
     // otherwise draw text along the edge line:
     if ('auto' === settings('edgeLabelAlignment')) {
       var labelWidth;
-      if(settings('approximateLabelWidth')){
-        labelWidth = 0.5*edge.label.length*fontSize;
-      }else{
+      if (settings('approximateLabelWidth')) {
+        labelWidth = 0.5 * edge.label.length * fontSize;
+      }else {
         labelWidth = context.measureText(edge.label).width;
       }
       var edgeLength = sigma.utils.getDistance(
@@ -141,26 +159,27 @@
       0,
       (-size / 2) - 3
     );
-
-    context.restore();
-
-    function drawBackground(angle, context, fontSize, size, label, x, y) {
-      var w = Math.round(
-            context.measureText(label).width + size + 1.5 + fontSize / 3
-          ),
-          h = fontSize + 4;
-
-      context.save();
-      context.beginPath();
-
-      // draw a rectangle for the label
-      context.translate(x, y);
-      context.rotate(angle);
-      context.rect(-w / 2, -h -size/2, w, h);
-
-      context.closePath();
-      context.fill();
-      context.restore();
-    }
+    context.rotate(-angle);
+    context.translate(-x, -y);
   };
+
+
+  function drawBackground(angle, context, fontSize, size, label, x, y) {
+    var w = Math.round(
+          context.measureText(label).width + size + 1.5 + fontSize / 3
+        ),
+        h = fontSize + 4;
+
+    context.save();
+    context.beginPath();
+
+    // draw a rectangle for the label
+    context.translate(x, y);
+    context.rotate(angle);
+    context.rect(-w / 2, -h - size / 2, w, h);
+
+    context.closePath();
+    context.fill();
+    context.restore();
+  }
 }).call(this);
