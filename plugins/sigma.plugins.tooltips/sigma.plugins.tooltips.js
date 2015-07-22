@@ -52,7 +52,9 @@
       template: '',       // HTML string
       renderer: null      // function
     },
-    doubleClickDelay: 800
+    doubleClickDelay: 800,
+  	hideDelay: 1000
+
   };
 
 
@@ -293,7 +295,7 @@
     function cancel() {
       clearTimeout(_timeoutHandle);
       _timeoutHandle = false;
-      remove();
+  	  setTimeout(function(){   remove(); }, settings.hideDelay);
     };
 
     // INTERFACE:
