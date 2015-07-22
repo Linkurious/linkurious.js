@@ -205,6 +205,41 @@ They may be used to reinforce a highligh effect on hover or selected nodes and e
 
 Levels are supported in Canvas only.
 
+
+## Edges shapes
+
+Registers custom edge shape renderers on **Canvas** only. See the following [example code](../../examples/plugin-customEdgeShapes.html) for full usage.
+
+### Shapes available
+
+The plugin implements the following shapes:
+  * `dashed`
+  * `dotted`
+  * `parallel`: two solid parallel lines representing an edge aggregating multiple edges in the original graph.
+  * `tapered` (see Danny Holten, Petra Isenberg, Jean-Daniel Fekete, and J. Van Wijk (2010) Performance Evaluation of Tapered, Curved, and Animated Directed-Edge Representations in Node-Link Graphs. Research Report, Sep 2010.)
+
+To assign a shape renderer to an edge, simply set `edge.type='shape-name'` e.g. `edge.type='dotted'`. The default renderer implemented by sigma.js is named `def` (alias `line`) - see also [generic custom edge renderer example](../../examples/custom-edge-renderer.html).
+
+![dashed](https://github.com/Linkurious/sigma.js/wiki/media/dashed1.png)
+![dotted](https://github.com/Linkurious/sigma.js/wiki/media/dotted1.png)
+![parallel](https://github.com/Linkurious/sigma.js/wiki/media/parallel1.png)
+![tapered](https://github.com/Linkurious/sigma.js/wiki/media/tapered1.png)
+
+## Edges labels
+
+Displays edge labels on **Canvas** only.
+
+See the following [example](../../examples/edge-renderers.html) for full usage.
+
+### Renderers
+
+This plugin provides the following edge label renderers:
+- `line` (default)
+- `arrow` (use default)
+- `curve`
+- `curvedArrow`
+
+
 ## Settings
 
  * **defaultLabelActiveColor**
@@ -323,6 +358,68 @@ Levels are supported in Canvas only.
    * default value: `0`
    * available values: `0` (no shadow), `1` (low), `2`, `3`, `4`, `5` (high)
 
+
+### Edge labels settings
+
+ * **defaultEdgeLabelColor**
+   * type: *string*
+   * default value: `#000`
+
+ * **defaultEdgeLabelActiveColor**
+   * type: *string*
+   * default value: `rgb(236, 81, 72)`
+
+ * **defaultEdgeLabelSize**
+   * type: *number*
+   * default value: `10`
+
+ * **edgeLabelSize**
+   * Indicates how to choose the edge labels size.
+   * type: *string*
+   * default value: `fixed`
+   * available values: `fixed`, `proportional`
+
+ * **edgeLabelAlignment**
+   * Indicates how to position the label relative to its edge.
+   * type: *string*
+   * default value: `auto`
+   * available values: `auto`, `horizontal`
+
+ * **edgeLabelSizePowRatio**
+   * The opposite power ratio between the font size of the label and the edge size.
+   * type: *number*
+   * default value: `0.8`
+
+````javascript
+// Formula:
+Math.pow(size, - 1 / edgeLabelSizePowRatio) * size * defaultEdgeLabelSize
+````
+
+ * **edgeLabelThreshold**
+   * The minimum size an edge must have to see its label displayed.
+   * type: *number*
+   * default value: `1`
+
+ * **defaultEdgeHoverLabelBGColor**
+   * type: *string*
+   * default value: `#fff`
+
+ * **edgeLabelHoverBGColor**
+   * Indicates how to choose the hovered edge labels color.
+   * type: *string*
+   * default value: `default`
+   * available values: `edge`, `default`
+
+ * **edgeLabelHoverShadow**
+   * Indicates how to choose the hovered edges shadow color.
+   * type: *string*
+   * default value: `default`
+   * available values: `edge`, `default`
+
+ * **edgeLabelHoverShadowColor**
+   * type: *string*
+   * default value: `#000`
+
 You may override the default values when instantiating Sigma, e.g.:
 
 ````javascript
@@ -334,6 +431,8 @@ var sigInst = new sigma({
   }
 });
 ````
+
+When included, the plugin change `drawEdgeLabels` default to `true`.
 
 #### Notes on spritesheets
 
