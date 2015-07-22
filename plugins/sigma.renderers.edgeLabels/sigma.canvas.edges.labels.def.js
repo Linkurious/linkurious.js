@@ -8,8 +8,16 @@
   sigma.utils.pkg('sigma.canvas.edges.labels');
 
   var PREV_FONT = null; //contains the current context.font value
+  //the ctx.font value is cached because accesing it is costly
 
   sigma.canvas.edges.labels.def = {
+  /**
+   * This is executed before a render batch
+   * It just reset PREV_FONT
+   *
+   * @param  {CanvasRenderingContext2D} context      The canvas context.
+   * @param  {configurable}             settings     The settings function.
+   */
     pre: function(context, settings) {
       PREV_FONT = '';
     },
