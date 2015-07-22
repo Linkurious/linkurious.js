@@ -80,7 +80,7 @@
     imageThreshold: 8,
     // {string} Controls the security policy of the image loading, from the
     // browser's side.
-    imgCrossOrigin: 'anonymous',
+    imgCrossOrigin: 'anonymous'
   };
 
   // Export the previously designed settings:
