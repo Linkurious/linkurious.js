@@ -112,9 +112,10 @@
         (node.color || defaultNodeColor) :
         settings('defaultLabelHoverColor');
 
-      var labelWidth = getTextWidth(node.label),
-          labelOffsetX = - labelWidth * 0.5,
-          labelOffsetY = fontSize / 3;
+      var labelOffsetX = 0,
+          labelOffsetY = fontSize / 3,
+          labelWidth;
+      context.textAlign = "center";
 
       switch (alignment) {
         case 'bottom':
@@ -123,12 +124,14 @@
         case 'center':
           break;
         case 'left':
+          context.textAlign = "right";
           labelOffsetX = - size - borderSize - settings('outerBorderSize') - 3 - labelWidth;
           break;
         case 'top':
           labelOffsetY = - size - 2 * fontSize / 3;
           break;
         case 'inside':
+          labelWidth = getTextWidth(node.label);
           if (labelWidth <= (size + fontSize / 3) * 2) {
             break;
           }
@@ -137,6 +140,7 @@
         /* falls through*/
         default:
           labelOffsetX = size + borderSize + settings('outerBorderSize') + 3;
+          context.textAlign = "left";
           break;
       }
 
@@ -149,7 +153,7 @@
 
     function getTextWidth(text) {
       return settings('approximateLabelWidth') ?
-        0.5 * text.length * fontSize :
+        0.6 * text.length * fontSize :
         context.measureText(text).width;
     }
 
