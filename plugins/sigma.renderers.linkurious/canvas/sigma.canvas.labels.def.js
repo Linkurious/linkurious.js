@@ -24,7 +24,7 @@
   };
 
   /**
-   * This label renderer will just display the label on the right of the node.
+   * This label renderer will display the label of the node
    *
    * @param  {object}                   node     The node object.
    * @param  {CanvasRenderingContext2D} context  The canvas context.
@@ -47,7 +47,7 @@
     if (size < settings('labelThreshold'))
       return;
 
-    if (typeof node.label !== 'string')
+    if (!node.label || typeof node.label !== 'string')
       return;
 
     fontSize = (settings('labelSize') === 'fixed') ?
