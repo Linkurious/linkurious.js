@@ -67,6 +67,10 @@
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.curve.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.arrow.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+
+<script src="build/sigma.layout.cola.js"></script>
+
+
 <div id="container">
   <style>
     #graph-container {
@@ -157,16 +161,11 @@ var keyboard = sigma.plugins.keyboard(s, s.renderers[0]);
 // Bind the Keyboard plugin to the Select plugin:
 select.bindKeyboard(keyboard);
 
-dragListener.bind('startdrag', function(event) {
-  console.log(event);
-});
-dragListener.bind('drag', function(event) {
-  console.log(event);
-});
-dragListener.bind('drop', function(event) {
-  console.log(event);
-});
-dragListener.bind('dragend', function(event) {
-  console.log(event);
+
+s.startCola({
+    handleDisconnected: true,
+    convergenceThreshold: 0.01,
+    flow: {axis: 'y', minSeparation: 45},
+    alignment: 'y'
 });
 </script>

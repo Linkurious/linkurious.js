@@ -63,16 +63,15 @@ halo.def = function(){
   });
 }
 
-glyphs_defs = {}
-
-glyphs = {}
-glyphs.def = function(){
-  renderer.glyphs();
-}
 
 renderer.bind('render', function(e) {
   halo.def();
-  glyphs.def();
+  renderer.glyphs();
 });
+
+
+var activeState = sigma.plugins.activeState(s);
+
+var dragListener = new sigma.plugins.dragNodes(s, renderer, activeState);
 
 s.refresh();

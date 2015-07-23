@@ -1,19 +1,7 @@
-;(function(undefined) {
-  "use strict";
 
-  /**
-   * Sigma Renderer Glyphs Utility
-   * ================================
-   *
-   * The aim of this plugin is to display customized glyphs around a node,
-   * at four possible positions.
-   *
-   * Author: Florent Schildknecht (Flo-Schield-Bobby)
-   * Version: 0.0.1
-   */
-  if (typeof sigma === 'undefined') {
-    throw 'sigma is not declared';
-  }
+glyphs_defs = {}
+
+
 
   // Utility function
   function degreesToRadians (degrees) {
@@ -28,7 +16,7 @@
   }
 
   // Main method: create glyphs canvas and append it to the scene
-  function glyphs (params) {
+  glyphs_defs.previous = function (params) {
     params = params || {};
 
     var defFont = params.font || this.settings('glyphFont'),
@@ -107,12 +95,23 @@
           context.strokeStyle = o.strokeColor;
         }
         context.beginPath();
-        context.arc(Math.round(x), Math.round(y), o.radius, 2 * Math.PI, false);
+        context.arc(x, y, o.radius, 2 * Math.PI, false);
         context.closePath();
         if (!o.strokeIfText || o.radius > o.textThreshold) {
           context.stroke();
         }
         context.fill();
+
+        // Glyph content rendering
+        if (o.radius > o.textThreshold) {
+          var fontSize = Math.round(o.fontScale * o.radius);
+          var font =  o.fontStyle + ' ' + fontSize + 'px ' + o.font;
+          if (font !== context.font) {
+            context.font = font;
+          }
+          context.fillStyle = o.textColor;
+          context.fillText(o.content, x, y);
+        }
       }
     };
 
@@ -151,7 +150,3 @@
       }
     });
   }
-
-  // Bind glyphs method to renderers
-  sigma.renderers.canvas.prototype.glyphs = glyphs;
-}).call(this);

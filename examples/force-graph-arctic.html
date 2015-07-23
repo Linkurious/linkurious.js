@@ -51,6 +51,9 @@
 <script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
 <script src="../plugins/sigma.layout.forceLink/worker.js"></script>
 <script src="../plugins/sigma.layout.forceLink/supervisor.js"></script>
+
+<script src="build/sigma.layout.cola.js"></script>
+
 <div id="container">
   <style>
     #graph-container {
@@ -70,7 +73,7 @@
       font-weight: bold;
     }
   </style>
-  <div id="graph-container"><span id="layout-notification">Layout in progress...</span></div>
+  <div id="graph-container"><span id="layout-notification">Cola in progress...</span></div>
 </div>
 <script>
 /**
@@ -155,27 +158,12 @@ sigma.parsers.gexf('data/arctic.gexf', {
   });
   s.refresh();
 
-  // Configure the ForceLink algorithm:
-  var fa = sigma.layouts.configForceLink(s, {
-    worker: true,
-    autoStop: true,
-    background: true,
-    scaleRatio: 30,
-    gravity: 3,
-    easing: 'cubicInOut'
+  s.startCola({
+      handleDisconnected: true,
+      convergenceThreshold: 0.01,
+      flow: {axis: 'y', minSeparation: 45},
+      alignment: 'y'
   });
-
-  // Bind the events:
-  fa.bind('start stop', function(e) {
-    console.log(e.type);
-    document.getElementById('layout-notification').style.visibility = '';
-    if (e.type == 'start') {
-      document.getElementById('layout-notification').style.visibility = 'visible';
-    }
-  });
-
-  // Start the ForceLink algorithm:
-  sigma.layouts.startForceLink();
 });
 
 

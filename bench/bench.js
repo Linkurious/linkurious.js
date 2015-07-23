@@ -34,7 +34,7 @@ function tocsv(results, name){
 
 function bench(name, fn, options){
   options = options || {};
-  samples = options.samples || 100;
+  samples = options.samples || 50;
   maxtime = options.maxtime || 5/samples; //seconds
   var start, total, times = [];
   var i = 0;
@@ -84,15 +84,14 @@ var URL_PARAMS = {
 };
 this.query_params(URL_PARAMS);
 
-all_defs = {}
-
-all_defs['sigma.canvas.edges.labels'] = {}//edges_def;
-
-all_defs['sigma.canvas.labels'] = {}//nodes_def;
-
-all_defs['halo'] = halo_defs;
-
-all_defs['glyphs'] = glyphs_defs;
+all_defs = {
+  //'sigma.canvas.edges.labels.def': {},//edges_def
+  //'sigma.canvas.labels.def': {},//nodes_def
+  //sigma.canvas.edges.def' = {}
+  //'sigma.canvas.nodes.def'] = {}
+  //'halo.def'] = halo_defs;
+  'sigma.renderers.canvas.prototype.glyphs': glyphs_defs,
+}
 
 to_test = function(){
     s.refresh({skipIndexation:true})
@@ -100,20 +99,20 @@ to_test = function(){
 
 if(URL_PARAMS.run){
   for(thing_dot_def in all_defs){
+    document.title = thing_dot_def;
     console.group(thing_dot_def);
     var table = []
     var defs = all_defs[thing_dot_def];
-    var thing = eval(thing_dot_def);
-    defs.current = thing.def;
+    defs.current = eval(thing_dot_def);
     defs.hidden = function(){};
-    console.groupCollapsed('details')
+    console.groupCollapsed('details',"   ["+Object.keys(defs).join(', ')+']');
     for(def in defs){
-      thing.def = defs[def];
+      eval(thing_dot_def+' = defs[def]');;
       var res = bench(thing_dot_def+' - '+def,to_test);
       table.push({'def':def,med:milli2nice2(res.median), min:milli2nice2(res.min)})
     }
     console.groupEnd()
-    thing.def = defs.current;
+    eval(thing_dot_def+' = defs.current')
     table = table.sort(function(x,y){return x.min-y.min})
     var min = table[0].min;
     table.forEach(function(x){
