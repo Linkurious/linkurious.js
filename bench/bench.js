@@ -86,9 +86,13 @@ this.query_params(URL_PARAMS);
 
 all_defs = {}
 
-//all_defs['sigma.canvas.edges.labels'] = edges_def;
+all_defs['sigma.canvas.edges.labels'] = {}//edges_def;
 
-all_defs['sigma.canvas.labels'] = nodes_def;
+all_defs['sigma.canvas.labels'] = {}//nodes_def;
+
+all_defs['halo'] = halo_defs;
+
+all_defs['glyphs'] = glyphs_defs;
 
 to_test = function(){
     s.refresh({skipIndexation:true})

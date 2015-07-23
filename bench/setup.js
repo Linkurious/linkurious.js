@@ -54,11 +54,25 @@ var renderer = s.addRenderer({
   camera: 'cam'
 });
 
+halo_defs = {}
+
+halo = {}
+halo.def = function(){
+  renderer.halo({
+    nodes: s.graph.nodes()
+  });
+}
+
+glyphs_defs = {}
+
+glyphs = {}
+glyphs.def = function(){
+  renderer.glyphs();
+}
+
 renderer.bind('render', function(e) {
-  //renderer.halo({
-  //  nodes: s.graph.nodes()
-  //});
-  //renderer.glyphs();
+  halo.def();
+  glyphs.def();
 });
 
 s.refresh();
