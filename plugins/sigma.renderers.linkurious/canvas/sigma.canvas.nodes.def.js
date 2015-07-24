@@ -43,10 +43,10 @@
     // Draw the actual image
     context.drawImage(
       image,
-      x + Math.sin(-3.142 / 4) * r * xratio,
-      y - Math.cos(-3.142 / 4) * r * yratio,
-      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
-      r * yratio * 2 * Math.cos(-3.142 / 4)
+      Math.round(x + Math.sin(-3.142 / 4) * r * xratio),
+      Math.round(y - Math.cos(-3.142 / 4) * r * yratio),
+      Math.round(r * xratio * 2 * Math.sin(-3.142 / 4) * (-1)),
+      Math.round(r * yratio * 2 * Math.cos(-3.142 / 4))
     );
     context.restore(); // exit clipping mode
   };
