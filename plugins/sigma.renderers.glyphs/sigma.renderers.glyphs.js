@@ -107,12 +107,23 @@
           context.strokeStyle = o.strokeColor;
         }
         context.beginPath();
-        context.arc(Math.round(x), Math.round(y), o.radius, 2 * Math.PI, false);
+        context.arc(x, y, o.radius, 2 * Math.PI, false);
         context.closePath();
         if (!o.strokeIfText || o.radius > o.textThreshold) {
           context.stroke();
         }
         context.fill();
+
+        // Glyph content rendering
+        if (o.radius > o.textThreshold) {
+          var fontSize = Math.round(o.fontScale * o.radius);
+          var font =  o.fontStyle + ' ' + fontSize + 'px ' + o.font;
+          if (font !== context.font) {
+            context.font = font;
+          }
+          context.fillStyle = o.textColor;
+          context.fillText(o.content, x, y);
+        }
       }
     };
 
