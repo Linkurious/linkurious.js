@@ -34,7 +34,7 @@ function tocsv(results, name){
 
 function bench(name, fn, options){
   options = options || {};
-  samples = options.samples || 50;
+  samples = options.samples || 100;
   maxtime = options.maxtime || 5/samples; //seconds
   var start, total, times = [];
   var i = 0;
@@ -73,24 +73,28 @@ this.query_params = function(dict) {
         if (rigth == 'false'){
           rigth = false;
         }
-        if(rigth == 'true'){
+        else if(rigth == 'true'){
           rigth = true;
+        }else if((rigth - parseFloat( rigth ) + 1) >= 0){
+          rigth = parseFloat(rigth);
         }
         dict[decodeURIComponent(pair[0])] = rigth;
     }
 }
 var URL_PARAMS = {
     run: true,
+    wait:0,
 };
 this.query_params(URL_PARAMS);
+console.log(URL_PARAMS);
 
 all_defs = {
   //'sigma.canvas.edges.labels.def': {},//edges_def
   //'sigma.canvas.labels.def': {},//nodes_def
   //sigma.canvas.edges.def' = {}
-  //'sigma.canvas.nodes.def'] = {}
+  'sigma.canvas.nodes.def': node_node_def,
   //'halo.def'] = halo_defs;
-  'sigma.renderers.canvas.prototype.glyphs': glyphs_defs,
+  //'sigma.renderers.canvas.prototype.glyphs': glyphs_defs,
 }
 
 to_test = function(){
@@ -98,29 +102,31 @@ to_test = function(){
 }
 
 if(URL_PARAMS.run){
-  for(thing_dot_def in all_defs){
-    document.title = thing_dot_def;
-    console.group(thing_dot_def);
-    var table = []
-    var defs = all_defs[thing_dot_def];
-    defs.current = eval(thing_dot_def);
-    defs.hidden = function(){};
-    console.groupCollapsed('details',"   ["+Object.keys(defs).join(', ')+']');
-    for(def in defs){
-      eval(thing_dot_def+' = defs[def]');;
-      var res = bench(thing_dot_def+' - '+def,to_test);
-      table.push({'def':def,med:milli2nice2(res.median), min:milli2nice2(res.min)})
+  setTimeout(function(){
+    for(thing_dot_def in all_defs){
+      document.title = thing_dot_def;
+      console.group(thing_dot_def);
+      var table = []
+      var defs = all_defs[thing_dot_def];
+      defs.current = eval(thing_dot_def);
+      defs.hidden = function(){};
+      console.groupCollapsed('details',"   ["+Object.keys(defs).join(', ')+']');
+      for(def in defs){
+        eval(thing_dot_def+' = defs[def]');;
+        var res = bench(thing_dot_def+' - '+def,to_test);
+        table.push({'def':def,med:milli2nice2(res.median), min:milli2nice2(res.min)})
+      }
+      console.groupEnd()
+      eval(thing_dot_def+' = defs.current')
+      table = table.sort(function(x,y){return x.min-y.min})
+      var min = table[0].min;
+      table.forEach(function(x){
+        x.diff = milli2nice2(x.min - min);
+        x.min = milli2nice2(x.min);
+        x.med = milli2nice2(x.med);
+      })
+      console.table(table);
+      console.groupEnd();
     }
-    console.groupEnd()
-    eval(thing_dot_def+' = defs.current')
-    table = table.sort(function(x,y){return x.min-y.min})
-    var min = table[0].min;
-    table.forEach(function(x){
-      x.diff = milli2nice2(x.min - min);
-      x.min = milli2nice2(x.min);
-      x.med = milli2nice2(x.med);
-    })
-    console.table(table);
-    console.groupEnd();
-  }
+  },URL_PARAMS.wait);
 }

@@ -62,7 +62,7 @@ var settings = {
      * *****************
      */
     minNodeSize: 5,
-    maxNodeSize: 5,
+    maxNodeSize: 30,
     minEdgeSize: 2,
     maxEdgeSize: 2,
 
