@@ -93,6 +93,7 @@
 
     // Node:
     var nodeRenderer = sigma.canvas.nodes[node.type] || sigma.canvas.nodes.def;
+    nodeRenderer = nodeRenderer.render || nodeRenderer;
     nodeRenderer(node, context, settings, { color: color });
 
     // reset shadow
