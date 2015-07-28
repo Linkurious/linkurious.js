@@ -140,26 +140,6 @@ Draw a star. Example:
 
 Note: defining an inner star radius is not yet supported in WebGL mode.
 
-## Edge shape
-This plugin registers custom edge shape renderers on **Canvas** only. See the following [example code](../../examples/plugin-customEdgeShapes.html) for full usage.
-
-To use, include all .js files under the canvas/ folder.
-
-## Shapes
-The following shapes are available:
-  * `dashed`
-  * `dotted`
-  * `parallel`: two solid parallel lines representing an edge aggregating multiple edges in the original graph.
-  * `tapered` (see Danny Holten, Petra Isenberg, Jean-Daniel Fekete, and J. Van Wijk (2010) Performance Evaluation of Tapered, Curved, and Animated Directed-Edge Representations in Node-Link Graphs. Research Report, Sep 2010.)
-
-To assign a shape renderer to an edge, simply set `edge.type='shape-name'` e.g. `edge.type='dotted'`. The default renderer implemented by sigma.js is named `def` (alias `line`) - see also [generic custom edge renderer example](../../examples/custom-edge-renderer.html).
-
-![dashed](https://github.com/Linkurious/linkurious.js/wiki/media/dashed1.png)
-![dotted](https://github.com/Linkurious/linkurious.js/wiki/media/dotted1.png)
-![parallel](https://github.com/Linkurious/linkurious.js/wiki/media/parallel1.png)
-![tapered](https://github.com/Linkurious/linkurious.js/wiki/media/tapered1.png)
-
-
 ## Images
 
 ![image1](https://github.com/Linkurious/linkurious.js/wiki/media/node-image1.png)
@@ -223,6 +203,26 @@ mySigma.graph.addNode({
 They may be used to reinforce a highligh effect on hover or selected nodes and edges. Set a value from 1 to 5 for the `nodeHoverLevel` setting to use levels on hover nodes. Set a value from 1 to 5  for the `nodeActiveLevel` setting to use levels on active nodes. Set `edgeHoverLevel` and `edgeActiveLevel` for the edges. The default value of these settings is `0`. It means no effect.
 
 Levels are supported in Canvas only.
+
+## Edge shape
+This plugin registers custom edge shape renderers on **Canvas** only. See the following [example code](../../examples/plugin-customEdgeShapes.html) for full usage.
+
+To use, include all .js files under the canvas/ folder.
+
+### Shapes
+The following shapes are available:
+  * `dashed`
+  * `dotted`
+  * `parallel`: two solid parallel lines representing an edge aggregating multiple edges in the original graph.
+  * `tapered` (see Danny Holten, Petra Isenberg, Jean-Daniel Fekete, and J. Van Wijk (2010) Performance Evaluation of Tapered, Curved, and Animated Directed-Edge Representations in Node-Link Graphs. Research Report, Sep 2010.)
+
+To assign a shape renderer to an edge, simply set `edge.type='shape-name'` e.g. `edge.type='dotted'`. The default renderer implemented by sigma.js is named `def` (alias `line`) - see also [generic custom edge renderer example](../../examples/custom-edge-renderer.html).
+
+![dashed](https://github.com/Linkurious/linkurious.js/wiki/media/dashed1.png)
+![dotted](https://github.com/Linkurious/linkurious.js/wiki/media/dotted1.png)
+![parallel](https://github.com/Linkurious/linkurious.js/wiki/media/parallel1.png)
+![tapered](https://github.com/Linkurious/linkurious.js/wiki/media/tapered1.png)
+
 
 ## Settings
 
