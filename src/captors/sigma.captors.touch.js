@@ -156,8 +156,10 @@
               _startTouchX1 - _startTouchX0
             );
             _startTouchDistance = Math.sqrt(
-              (_startTouchY1 - _startTouchY0) * (_startTouchY1 - _startTouchY0) +
-              (_startTouchX1 - _startTouchX0) * (_startTouchX1 - _startTouchX0)
+              (_startTouchY1 - _startTouchY0) *
+                (_startTouchY1 - _startTouchY0) +
+              (_startTouchX1 - _startTouchX0) *
+                (_startTouchX1 - _startTouchX0)
             );
 
             e.preventDefault();

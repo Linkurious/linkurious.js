@@ -1,11 +1,10 @@
 ;(function() {
   'use strict';
 
-  sigma.utils.pkg('sigma.canvas.edgehovers');
+  sigma.utils.pkg('sigma.canvas.edges');
 
   /**
-   * This hover renderer will display the edge with a different color or size..
-   * It will also display the label with a background.
+   * This method renders the edge as two parallel lines.
    *
    * @param  {object}                   edge         The edge object.
    * @param  {object}                   source node  The edge source node.
@@ -13,8 +12,7 @@
    * @param  {CanvasRenderingContext2D} context      The canvas context.
    * @param  {configurable}             settings     The settings function.
    */
-  sigma.canvas.edgehovers.parallel =
-    function(edge, source, target, context, settings) {
+  sigma.canvas.edges.parallel = function(edge, source, target, context, settings) {
     var color = edge.active ?
           edge.active_color || settings('defaultEdgeActiveColor') :
           edge.color,
@@ -23,7 +21,7 @@
         edgeColor = settings('edgeColor'),
         defaultNodeColor = settings('defaultNodeColor'),
         defaultEdgeColor = settings('defaultEdgeColor'),
-        level = settings('edgeHoverLevel'),
+        level = edge.active ? settings('edgeActiveLevel') : edge.level,
         sX = source[prefix + 'x'],
         sY = source[prefix + 'y'],
         tX = target[prefix + 'x'],
@@ -44,13 +42,6 @@
           color = defaultEdgeColor;
           break;
       }
-
-    if (settings('edgeHoverColor') === 'edge') {
-      color = edge.hover_color || color;
-    } else {
-      color = edge.hover_color || settings('defaultEdgeHoverColor') || color;
-    }
-    size *= settings('edgeHoverSizeRatio');
 
     // Intersection points of the source node circle:
     c = sigma.utils.getCircleIntersection(sX, sY, size, tX, tY, dist);
@@ -93,7 +84,15 @@
       }
     }
 
-    context.strokeStyle = color;
+    if (edge.active) {
+      context.strokeStyle = settings('edgeActiveColor') === 'edge' ?
+        (color || defaultEdgeColor) :
+        settings('defaultEdgeActiveColor');
+    }
+    else {
+      context.strokeStyle = color;
+    }
+
     context.lineWidth = size;
     context.beginPath();
     context.moveTo(c.xi, c.yi);
@@ -115,13 +114,5 @@
     }
 
     context.restore();
-
-    // draw label with a background
-    if (sigma.canvas.edges.labels) {
-      edge.hover = true;
-      var def = sigma.canvas.edges.labels.def;
-      (def.render || def)(edge, source, target, context, settings);
-      edge.hover = false;
-    }
   };
 })();
