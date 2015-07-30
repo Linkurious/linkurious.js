@@ -62,7 +62,7 @@ var settings = {
      * *****************
      */
     minNodeSize: 5,
-    maxNodeSize: 30,
+    maxNodeSize: 10,
     minEdgeSize: 2,
     maxEdgeSize: 2,
 
@@ -99,4 +99,6 @@ var settings = {
 
 
     approximateLabelWidth:true,
+
+    singleHover: true,
   }

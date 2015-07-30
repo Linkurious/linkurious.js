@@ -22,7 +22,7 @@ for (i = 0; i < N; i++)
     label: 'Node ' + i,
     x: Math.random()*20,
     y: Math.random()*10,
-    size: Math.random()*100,
+    size: Math.random(),
     color: '#666',
     glyphs: [{
      'position': 'top-left',
@@ -32,11 +32,6 @@ for (i = 0; i < N; i++)
       'content': 'B'
     }],
     active: [false, true][Math.random() > 0.95 ? 1: 0],
-    image: {
-      url: urls[Math.floor(Math.random() * urls.length)],
-      scale: 10,
-      clip: 0.85
-    }
   });
 
 for (i = 0; i < E; i++)
