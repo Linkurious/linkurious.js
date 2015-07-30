@@ -17,32 +17,10 @@
    */
   sigma.misc.drawHovers = function(prefix) {
     var self = this,
-        hoveredNodes = {},
-        hoveredEdges = {};
+        current = {nodes: [], edges: []};
 
-    this.bind('overNode', function(event) {
-      var node = event.data.node;
-      if (!node.hidden) {
-        hoveredNodes[node.id] = node;
-        draw();
-      }
-    });
-
-    this.bind('outNode', function(event) {
-      delete hoveredNodes[event.data.node.id];
-      draw();
-    });
-
-    this.bind('overEdge', function(event) {
-      var edge = event.data.edge;
-      if (!edge.hidden) {
-        hoveredEdges[edge.id] = edge;
-        draw();
-      }
-    });
-
-    this.bind('outEdge', function(event) {
-      delete hoveredEdges[event.data.edge.id];
+    this.bind('mouseover', function(event) {
+      current = event.data.current;
       draw();
     });
 
@@ -54,18 +32,12 @@
       // Clear self.contexts.hover:
       self.contexts.hover.canvas.width = self.contexts.hover.canvas.width;
 
-      var hoveredNodesArr = Object.keys(hoveredNodes).map(function(key) {
-                return hoveredNodes[key];
-          }),
-          hoveredEdgesArr = Object.keys(hoveredEdges).map(function(key) {
-                return hoveredEdges[key];
-          }),
-          embedSettings = self.settings.embedObjects({
+      var embedSettings = self.settings.embedObjects({
             prefix: prefix
           }),
           end = embedSettings('singleHover') ? 1 : undefined,
           renderParams = {
-            elements: hoveredNodesArr,
+            elements: current.nodes,
             renderers: sigma.canvas.hovers,
             type: 'nodes',
             ctx: self.contexts.hover,
@@ -75,14 +47,14 @@
           };
 
       // Node render
-      if (embedSettings('enableHovering')) {
+      if (current.nodes.length > 0 && embedSettings('enableHovering')) {
         sigma.renderers.canvas.applyRenderers(renderParams);
       }
 
       // Edge render
-      if (embedSettings('enableEdgeHovering')) {
+      if (current.edges.length > 0 && embedSettings('enableEdgeHovering')) {
         renderParams.renderers = sigma.canvas.edgehovers;
-        renderParams.elements = hoveredEdgesArr;
+        renderParams.elements = current.edges;
         renderParams.type = 'edges';
         sigma.renderers.canvas.applyRenderers(renderParams);
 
@@ -93,7 +65,7 @@
           renderParams.ctx = self.contexts.nodes;
           renderParams.type = 'nodes';
           renderParams.renderers = sigma.canvas.nodes;
-          renderParams.elements = hoveredNodes;
+          renderParams.elements = current.nodes;
           sigma.renderers.canvas.applyRenderers(renderParams);
         }
       }
