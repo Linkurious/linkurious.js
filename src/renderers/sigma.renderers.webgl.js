@@ -574,12 +574,7 @@
    * @return {sigma.renderers.webgl} Returns the instance itself.
    */
   sigma.renderers.webgl.prototype.clear = function() {
-    var k;
-
-    for (k in this.domElements)
-      if (this.domElements[k].tagName === 'CANVAS')
-        this.domElements[k].width = this.domElements[k].width;
-
+    this.contexts.labels.clearRect(0, 0, this.width, this.height);
     this.contexts.nodes.clear(this.contexts.nodes.COLOR_BUFFER_BIT);
     this.contexts.edges.clear(this.contexts.edges.COLOR_BUFFER_BIT);
 
