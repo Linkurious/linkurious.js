@@ -616,17 +616,17 @@
     var i,
         l,
         a,
-        fn,
+        render,
         self = this;
 
-    fn = function() {
-      a = this.renderersPerCamera[camera.id];
+    render = function() {
+      a = self.renderersPerCamera[camera.id];
       for (i = 0, l = a.length; i < l; i++) {
-        if (this.settings('skipErrors'))
+        if (self.settings('skipErrors'))
           try {
             a[i].render();
           } catch (e) {
-            if (this.settings('verbose'))
+            if (self.settings('verbose'))
               console.log(
                 'Warning: The renderer "' +
                   a[i].id +
@@ -636,12 +636,12 @@
         else
           a[i].render();
       }
-    }.bind(this);
+    };
 
     if (force) {
-      fn();
+      render();
     } else {
-      self.cameraFrames[camera.id] = fn;
+      self.cameraFrames[camera.id] = render;
       requestAnimationFrame(function() {
         self.cameraFrames[camera.id]();
       });
