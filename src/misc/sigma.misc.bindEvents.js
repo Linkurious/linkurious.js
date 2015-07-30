@@ -445,7 +445,7 @@
             delete overEdges[k];
           }
 
-        if(newOutEdges.length || newOverEdges.length ||
+        if (newOutEdges.length || newOverEdges.length ||
              newOutNodes.length || newOverNodes.length) {
           self.dispatchEvent('mouseover', {
             current: {

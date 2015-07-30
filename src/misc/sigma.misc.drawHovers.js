@@ -17,7 +17,7 @@
    */
   sigma.misc.drawHovers = function(prefix) {
     var self = this,
-        current = {nodes:[],edges:[]};
+        current = {nodes: [], edges: []};
 
     this.bind('mouseover', function(event) {
       current = event.data.current;
