@@ -109,9 +109,9 @@
         borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
-		borderColor = settings('nodeBorderColor') === 'node'
-          ? (o.borderColor || node.border_color || defaultNodeColor)
-          : settings('defaultNodeBorderColor'),
+		borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (node.border_color || o.borderColor || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
 
     // Level:
@@ -207,7 +207,7 @@
       context.closePath();
       context.fill();
 
-      if (borderSize > 0) {
+      if (!node.active && borderSize > 0) {
 		drawBorder(context, x, y, size, borderColor, borderSize);
       }
     }
