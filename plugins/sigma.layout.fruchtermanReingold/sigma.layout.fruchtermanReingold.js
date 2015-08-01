@@ -55,7 +55,6 @@
       }
 
       // State
-      this.started = false;
       this.running = false;
     };
 
@@ -194,27 +193,23 @@
 
       this.running = true;
 
-      if (!this.started) {
-        // Init nodes
-        for (var i = 0; i < nodes.length; i++) {
-          nodes[i].fr_x = nodes[i].x;
-          nodes[i].fr_y = nodes[i].y;
-          nodes[i].fr = {
-            dx: 0,
-            dy: 0
-          };
-        }
-        this.started = true;
-        _eventEmitter[self.sigInst.id].dispatchEvent('start');
-        this.go();
+      // Init nodes
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].fr_x = nodes[i].x;
+        nodes[i].fr_y = nodes[i].y;
+        nodes[i].fr = {
+          dx: 0,
+          dy: 0
+        };
       }
+      _eventEmitter[self.sigInst.id].dispatchEvent('start');
+      this.go();
     };
 
     this.stop = function() {
       var nodes = this.sigInst.graph.nodes();
 
       this.running = false;
-      _eventEmitter[self.sigInst.id].dispatchEvent('stop');
 
       if (this.easing) {
         _eventEmitter[self.sigInst.id].dispatchEvent('interpolate');
@@ -253,6 +248,7 @@
           nodes[i].fr_x = null;
           nodes[i].fr_y = null;
         }
+        _eventEmitter[self.sigInst.id].dispatchEvent('stop');
       }
     };
 
