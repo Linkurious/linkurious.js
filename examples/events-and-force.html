@@ -117,10 +117,13 @@ s = new sigma({
 });
 
 // Bind the events:
-s.bind('overNode outNode clickNode doubleClickNode rightClickNode', function(e) {
+s.bind('mouseover', function(e) {
+  console.log(e.type, e.data);
+});
+s.bind('clickNode doubleClickNode rightClickNode', function(e) {
   console.log(e.type, e.data.node.label, e.data.captor);
 });
-s.bind('overEdge outEdge clickEdge doubleClickEdge rightClickEdge', function(e) {
+s.bind('clickEdge doubleClickEdge rightClickEdge', function(e) {
   console.log(e.type, e.data.edge, e.data.captor);
 });
 s.bind('clickStage', function(e) {
