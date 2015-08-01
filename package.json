@@ -11,6 +11,8 @@
   "license": "MIT",
   "main": "build/sigma.require.js",
   "dependencies": {
+    "animation-frame": "~0.1.7",
+    "webcola": "~0.1.1",
     "xlsx": "~0.7.12"
   },
   "devDependencies": {
