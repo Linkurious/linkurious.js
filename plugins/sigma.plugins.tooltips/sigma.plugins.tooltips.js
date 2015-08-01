@@ -174,11 +174,6 @@
         _tooltip.innerHTML = options.template;
       }
 
-      // container position:
-      var containerRect = renderer.container.getBoundingClientRect();
-      x = ~~(x - containerRect.left);
-      y = ~~(y - containerRect.top);
-
       // Style it:
       _tooltip.className = options.cssClass;
 
