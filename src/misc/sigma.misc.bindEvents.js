@@ -458,7 +458,7 @@
             },
             leave: {
               nodes: newOutNodes,
-              edges: newOutNodes,
+              edges: newOutEdges,
             },
             captor: e.data
           });
