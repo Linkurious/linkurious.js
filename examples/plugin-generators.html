@@ -68,6 +68,15 @@
       right: 0;
       position: absolute;
     }
+    #notice {
+      bottom: 1em;
+      right: 1em;
+      position: absolute;
+      color: #000;
+      padding: 5px;
+      font-weight: bold;
+      background: #f1c40f;
+    }
     #control-pane {
       top: 10px;
       /*bottom: 10px;*/
@@ -114,11 +123,13 @@
       width: 160px;
     }
   </style>
-  <div id="graph-container"></div>
+  <div id="graph-container"><div id="notice" class="hidden">layout in progress...</div></div>
   <div id="control-pane">
     <h2 class="underline">generators</h2>
     <div>
       <select id="generator">
+        <option value="path">Path</option>
+        <option value="grid">Grid</option>
         <option value="random" selected>Random</option>
         <option value="balancedTree">Balanced tree</option>
         <option value="barabasiAlbert">Barabasi-Albert</option>
@@ -129,6 +140,13 @@
       </select>
     </div>
     <div id="generator-options">
+      <div id="path-options" class="hidden">
+        nb nodes <input id="path-n" type="number" min="1" max="1000" value="10">
+      </div>
+      <div id="grid-options" class="hidden">
+        nb rows <input id="grid-n" type="number" min="1" max="30" value="10">
+        nb columns <input id="grid-m" type="number" min="1" max="30" value="10">
+      </div>
       <div id="random-options">
         nb nodes <input id="random-n" type="number" min="3" max="1000" value="100"><br>
         nb edges <input id="random-e" type="number" min="0" max="5000" value="500">
@@ -152,13 +170,13 @@
       </div>
       <div id="wattsStrogatz-alpha-options" class="hidden">
         nb nodes <input id="wattsStrogatz-alpha-n" type="number" min="3" max="1000" value="100"><br>
-        k <input id="wattsStrogatz-alpha-k" type="number" min="2" step="2" max="100" value="10"><br>
-        alpha <input id="wattsStrogatz-alpha-alpha" type="number" min="0" max="1" step="0.01" value="0.2">
+        k <input id="wattsStrogatz-alpha-k" type="number" min="2" step="2" max="100" value="20"><br>
+        alpha <input id="wattsStrogatz-alpha-alpha" type="number" min="0" max="1" step="0.01" value="0.1">
       </div>
       <div id="wattsStrogatz-beta-options" class="hidden">
         nb nodes <input id="wattsStrogatz-beta-n" type="number" min="3" max="1000" value="100"><br>
         k <input id="wattsStrogatz-beta-k" type="number" min="2" step="2" max="100" value="10"><br>
-        beta <input id="wattsStrogatz-beta-beta" type="number" min="0" max="1" step="0.01" value="0.2">
+        beta <input id="wattsStrogatz-beta-beta" type="number" min="0" max="1" step="0.01" value="0.1">
       </div>
     </div>
     <span class="line"></span>
@@ -229,10 +247,40 @@ var generatorName = 'random';
 _.$('apply-btn').addEventListener("click", function(event) {
   var graph;
   switch (generatorName) {
+    case 'path':
+      graph = sigma.plugins.generators.path(+_.$('path-n').value);
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+    case 'grid':
+      graph = sigma.plugins.generators.grid(+_.$('grid-n').value, +_.$('grid-m').value);
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
     case 'random':
       graph = sigma.plugins.generators.random({
         nbNodes: +_.$('random-n').value,
         nbEdges: +_.$('random-e').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
       });
     break;
     case 'balancedTree':
@@ -247,17 +295,41 @@ _.$('apply-btn').addEventListener("click", function(event) {
         m0: +_.$('barabasiAlbert-m0').value,
         m: +_.$('barabasiAlbert-m').value
       });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: true,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
     break;
     case 'erdosRenyi-nm':
       graph = sigma.plugins.generators.erdosRenyi({
         nbNodes: +_.$('erdosRenyi-nm-n').value,
         nbEdges: +_.$('erdosRenyi-nm-e').value
       });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: true,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
     break;
     case 'erdosRenyi-np':
       graph = sigma.plugins.generators.erdosRenyi({
         nbNodes: +_.$('erdosRenyi-np-n').value,
         p: +_.$('erdosRenyi-np-p').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: true,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
       });
     break;
     case 'wattsStrogatz-alpha':
@@ -266,12 +338,28 @@ _.$('apply-btn').addEventListener("click", function(event) {
         k: +_.$('wattsStrogatz-alpha-k').value,
         alpha: +_.$('wattsStrogatz-alpha-alpha').value
       });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
     break;
     case 'wattsStrogatz-beta':
       graph = sigma.plugins.generators.wattsStrogatz({
         nbNodes: +_.$('wattsStrogatz-beta-n').value,
         k: +_.$('wattsStrogatz-beta-k').value,
         beta: +_.$('wattsStrogatz-beta-beta').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
       });
     break;
   }
@@ -336,7 +424,7 @@ sigma.layouts.dagre.configure(s, {
 });
 
 // Configure the ForceLink algorithm:
-sigma.layouts.configForceLink(s, {
+var layout = sigma.layouts.configForceLink(s, {
   scalingRatio: 5,
   worker: true,
   linLogMode: true,
@@ -344,6 +432,19 @@ sigma.layouts.configForceLink(s, {
   background: true,
   easing: 'cubicInOut'
 });
+
+// Bind the events:
+layout.bind('start interpolate stop', function(e) {
+  console.log(e.type);
+  var el = document.getElementById('notice');
+  if (e.type === 'start') {
+    el.className = '';
+  }
+  else if (e.type === 'interpolate') {
+    el.className = 'hidden';
+  }
+});
+
 sigma.layouts.startForceLink();
 
 

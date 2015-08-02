@@ -172,4 +172,51 @@ test('API', function(assert) {
 
   sigmaGraph.clear();
 
+  //////////////////////////
+  //        PATH
+  //////////////////////////
+
+  var nbNodes = 10;
+  var path = sigma.plugins.generators.path(nbNodes);
+
+  sigmaGraph.read(path);
+
+  equal(
+    sigmaGraph.nodes().length,
+    nbNodes,
+    '"generator.path()" generates a graph of a specified number of nodes.'
+  );
+
+  equal(
+    sigmaGraph.edges().length,
+    nbNodes - 1,
+    '"generator.path()" generates a graph of the correct number of edges.'
+  );
+
+  sigmaGraph.clear();
+
+  //////////////////////////
+  //        GRID
+  //////////////////////////
+
+  var rows = 10;
+  var columns = 10;
+  var grid = sigma.plugins.generators.grid(rows, columns);
+
+  sigmaGraph.read(grid);
+
+  equal(
+    sigmaGraph.nodes().length,
+    rows * columns,
+    '"generator.grid()" generates a graph of a correct number of nodes.'
+  );
+
+  equal(
+    sigmaGraph.edges().length,
+    (rows - 1) * columns + rows * (columns - 1),
+    '"generator.grid()" generates a graph of the correct number of edges.'
+  );
+
+  sigmaGraph.clear();
+
 });

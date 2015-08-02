@@ -504,4 +504,138 @@
     return graph;
   };
 
+  /**
+   * Generates a path.
+   * Source: https://github.com/anvaka/ngraph.generators (license: MIT)
+   *
+   * @param  {number} length The number of nodes.
+   * @return {object}        A graph object that can be read by sigma.classes.graph
+   */
+  sigma.plugins.generators.path = function(length) {
+    if (!length || length < 0) {
+      throw new TypeError('Invalid argument: "length" is not a positive number, was ' + length);
+    }
+
+    var graph = {
+      nodes: [{
+        id: 'n0',
+        label: 'Node 0',
+        x: Math.random(),
+        y: Math.random(),
+        size: 1
+      }],
+      edges: []
+    };
+
+    for (var i = 1; i < length; ++i) {
+      graph.nodes.push({
+        id: 'n' + i,
+        label: 'Node ' + i,
+        x: Math.random(),
+        y: Math.random(),
+        size: 1
+      });
+      graph.edges.push({
+        id: 'e' + i,
+        label: 'Edge '+ i,
+        source: 'n' + (i - 1),
+        target: 'n' + i
+      });
+    }
+    return graph;
+  };
+
+  /**
+   * Generates a grid with n rows and m columns.
+   * Source: https://github.com/anvaka/ngraph.generators (license: MIT)
+   *
+   * @param  {Number} n The number of rows in the graph.
+   * @param  {Number} m The number of columns in the graph.
+   * @return {object}   A graph object that can be read by sigma.classes.graph
+   */
+  sigma.plugins.generators.grid = function(n, m) {
+    if (n < 1)
+      throw new TypeError('Invalid argument: "n" is not a positive integer, was ' + n);
+    if (m < 1)
+      throw new TypeError('Invalid argument: "m" is not a positive integer, was ' + m);
+
+    var graph = { nodes: [], edges: [] },
+      i,
+      j,
+      k = 0,
+      nodeids = [],
+      source,
+      target;
+
+    nodeids.length = n * m;
+
+    if (n === 1 && m === 1) {
+      graph.nodes.push({
+        id: 'n0',
+        label: 'Node 0',
+        x: Math.random(),
+        y: Math.random(),
+        size: 1
+      });
+      return graph;
+    }
+
+    for (i = 0; i < n; ++i) {
+      for (j = 0; j < m; ++j) {
+        source = i + j * n;
+        if (!nodeids[source]) {
+          graph.nodes.push({
+            id: 'n' + source,
+            label: 'Node ' + source,
+            x: Math.random(),
+            y: Math.random(),
+            size: 1
+          });
+          nodeids[source] = true;
+        }
+
+        if (i > 0) {
+          target = i - 1 + j * n;
+          if (!nodeids[target]) {
+            graph.nodes.push({
+              id: 'n' + target,
+              label: 'Node ' + target,
+              x: Math.random(),
+              y: Math.random(),
+              size: 1
+            });
+            nodeids[target] = true;
+          }
+          graph.edges.push({
+            id: 'e' + (k++),
+            label: 'Edge '+ k,
+            source: 'n' + source,
+            target: 'n' + target
+          });
+        }
+        if (j > 0) {
+          target = i + (j - 1) * n;
+          if (!nodeids[target]) {
+            graph.nodes.push({
+              id: 'n' + target,
+              label: 'Node ' + target,
+              x: Math.random(),
+              y: Math.random(),
+              size: 1
+            });
+            nodeids[target] = true;
+          }
+          graph.edges.push({
+            id: 'e' + (k++),
+            label: 'Edge '+ k,
+            source: 'n' + source,
+            target: 'n' + target
+          });
+        }
+      }
+    }
+
+    return graph;
+  };
+
 }).call(this);
