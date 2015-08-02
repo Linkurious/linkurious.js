@@ -1,0 +1,451 @@
+<script src="lib/dagre.js"></script>
+<!-- START SIGMA IMPORTS -->
+<script src="../src/sigma.core.js"></script>
+<script src="../src/conrad.js"></script>
+<script src="../src/utils/sigma.utils.js"></script>
+<script src="../src/utils/sigma.polyfills.js"></script>
+<script src="../src/sigma.settings.js"></script>
+<script src="../src/classes/sigma.classes.dispatcher.js"></script>
+<script src="../src/classes/sigma.classes.configurable.js"></script>
+<script src="../src/classes/sigma.classes.graph.js"></script>
+<script src="../src/classes/sigma.classes.camera.js"></script>
+<script src="../src/classes/sigma.classes.quad.js"></script>
+<script src="../src/classes/sigma.classes.edgequad.js"></script>
+<script src="../src/captors/sigma.captors.mouse.js"></script>
+<script src="../src/captors/sigma.captors.touch.js"></script>
+<script src="../src/renderers/sigma.renderers.canvas.js"></script>
+<script src="../src/renderers/sigma.renderers.webgl.js"></script>
+<script src="../src/renderers/sigma.renderers.svg.js"></script>
+<script src="../src/renderers/sigma.renderers.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.nodes.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.fast.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.utils.js"></script>
+<script src="../src/renderers/svg/sigma.svg.nodes.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.curve.js"></script>
+<script src="../src/renderers/svg/sigma.svg.labels.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.hovers.def.js"></script>
+<script src="../src/middlewares/sigma.middlewares.rescale.js"></script>
+<script src="../src/middlewares/sigma.middlewares.copy.js"></script>
+<script src="../src/misc/sigma.misc.animation.js"></script>
+<script src="../src/misc/sigma.misc.bindEvents.js"></script>
+<script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
+<script src="../src/misc/sigma.misc.drawHovers.js"></script>
+<!-- END SIGMA IMPORTS -->
+<script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
+<script src="../plugins/sigma.layout.forceLink/worker.js"></script>
+<script src="../plugins/sigma.layout.forceLink/supervisor.js"></script>
+<script src="../plugins/sigma.layout.dagre/sigma.layout.dagre.js"></script>
+
+<script src="../plugins/sigma.plugins.generators/sigma.plugins.generators.js"></script>
+<link href='http://fonts.googleapis.com/css?family=Lato:300,700' rel='stylesheet' type='text/css'>
+<div id="container">
+  <style>
+    body {
+      color: #333;
+      font-size: 14px;
+      font-family: Lato, sans-serif;
+    }
+    #graph-container {
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      position: absolute;
+    }
+    #notice {
+      bottom: 1em;
+      right: 1em;
+      position: absolute;
+      color: #000;
+      padding: 5px;
+      font-weight: bold;
+      background: #f1c40f;
+    }
+    #control-pane {
+      top: 10px;
+      /*bottom: 10px;*/
+      right: 10px;
+      position: absolute;
+      width: 230px;
+      background-color: rgb(249, 247, 237);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    #control-pane > div {
+      margin: 10px;
+      overflow-x: auto;
+    }
+    .line {
+      clear: both;
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 12px 0 0 0;
+      border-bottom: 1px solid #aac789;
+      background: transparent;
+    }
+    h2, h3, h4 {
+      padding: 0;
+      font-variant: small-caps;
+    }
+    .green {
+      color: #437356;
+    }
+    h2.underline {
+      color: #437356;
+      background: #f4f0e4;
+      margin: 0;
+      border-radius: 2px;
+      padding: 8px 12px;
+      font-weight: 700;
+    }
+    .hidden {
+      display: none;
+      visibility: hidden;
+    }
+
+    input[type=range] {
+      width: 160px;
+    }
+  </style>
+  <div id="graph-container"><div id="notice" class="hidden">layout in progress...</div></div>
+  <div id="control-pane">
+    <h2 class="underline">generators</h2>
+    <div>
+      <select id="generator">
+        <option value="path">Path</option>
+        <option value="grid">Grid</option>
+        <option value="random" selected>Random</option>
+        <option value="balancedTree">Balanced tree</option>
+        <option value="barabasiAlbert">Barabasi-Albert</option>
+        <option value="erdosRenyi-np">Erdos-Renyi np</option>
+        <option value="erdosRenyi-nm">Erdos-Renyi nm</option>
+        <option value="wattsStrogatz-alpha">Watts-Strogatz alpha</option>
+        <option value="wattsStrogatz-beta">Watts-Strogatz beta</option>
+      </select>
+    </div>
+    <div id="generator-options">
+      <div id="path-options" class="hidden">
+        nb nodes <input id="path-n" type="number" min="1" max="1000" value="10">
+      </div>
+      <div id="grid-options" class="hidden">
+        nb rows <input id="grid-n" type="number" min="1" max="30" value="10">
+        nb columns <input id="grid-m" type="number" min="1" max="30" value="10">
+      </div>
+      <div id="random-options">
+        nb nodes <input id="random-n" type="number" min="3" max="1000" value="100"><br>
+        nb edges <input id="random-e" type="number" min="0" max="5000" value="500">
+      </div>
+      <div id="balancedTree-options" class="hidden">
+        nb children <input id="balancedTree-c" type="number" min="1" max="5" value="2"><br>
+        height <input id="balancedTree-h" type="number" min="0" max="5" value="3">
+      </div>
+      <div id="barabasiAlbert-options" class="hidden">
+        nb nodes <input id="barabasiAlbert-n" type="number" min="3" max="1000" value="100"><br>
+        m0 <input id="barabasiAlbert-m0" type="number" min="1" max="100" value="20"><br>
+        M <input id="barabasiAlbert-m" type="number" min="1" max="100" value="1">
+      </div>
+      <div id="erdosRenyi-nm-options" class="hidden">
+        nb nodes <input id="erdosRenyi-nm-n" type="number" min="3" max="1000" value="100"><br>
+        nb edges <input id="erdosRenyi-nm-e" type="number" min="0" max="5000" value="500">
+      </div>
+      <div id="erdosRenyi-np-options" class="hidden">
+        nb nodes <input id="erdosRenyi-np-n" type="number" min="3" max="1000" value="100"><br>
+        p <input id="erdosRenyi-np-p" type="number" min="0" max="1" step="0.1" value="0.2">
+      </div>
+      <div id="wattsStrogatz-alpha-options" class="hidden">
+        nb nodes <input id="wattsStrogatz-alpha-n" type="number" min="3" max="1000" value="100"><br>
+        k <input id="wattsStrogatz-alpha-k" type="number" min="2" step="2" max="100" value="20"><br>
+        alpha <input id="wattsStrogatz-alpha-alpha" type="number" min="0" max="1" step="0.01" value="0.1">
+      </div>
+      <div id="wattsStrogatz-beta-options" class="hidden">
+        nb nodes <input id="wattsStrogatz-beta-n" type="number" min="3" max="1000" value="100"><br>
+        k <input id="wattsStrogatz-beta-k" type="number" min="2" step="2" max="100" value="10"><br>
+        beta <input id="wattsStrogatz-beta-beta" type="number" min="0" max="1" step="0.01" value="0.1">
+      </div>
+    </div>
+    <span class="line"></span>
+    <div>
+      <button id="apply-btn">Apply</button>
+    </div>
+  </div>
+</div>
+<script>
+/**
+ * This is a basic example on how to instantiate sigma. A random graph is
+ * generated, and then sigma is instantiated directly with the graph.
+ *
+ * The simple instance of sigma is enough to make it render the graph on the on
+ * the screen, since the graph is given directly to the constructor.
+ */
+var i,
+    s,
+    N = 100,
+    E = 500;
+
+/**
+ * DOM utility functions
+ */
+var _ = {
+  $: function (id) {
+    return document.getElementById(id);
+  },
+
+  all: function (selectors) {
+    return document.querySelectorAll(selectors);
+  },
+
+  removeClass: function(selectors, cssClass) {
+    var nodes = document.querySelectorAll(selectors);
+    var l = nodes.length;
+    for ( i = 0 ; i < l; i++ ) {
+      var el = nodes[i];
+      // Bootstrap compatibility
+      el.className = el.className.replace(cssClass, '');
+    }
+  },
+
+  addClass: function (selectors, cssClass) {
+    var nodes = document.querySelectorAll(selectors);
+    var l = nodes.length;
+    for ( i = 0 ; i < l; i++ ) {
+      var el = nodes[i];
+      // Bootstrap compatibility
+      if (-1 == el.className.indexOf(cssClass)) {
+        el.className += ' ' + cssClass;
+      }
+    }
+  },
+
+  show: function (selectors) {
+    this.removeClass(selectors, 'hidden');
+  },
+
+  hide: function (selectors) {
+    this.addClass(selectors, 'hidden');
+  }
+};
+
+
+var generatorName = 'random';
+
+_.$('apply-btn').addEventListener("click", function(event) {
+  var graph;
+  switch (generatorName) {
+    case 'path':
+      graph = sigma.plugins.generators.path(+_.$('path-n').value);
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+    case 'grid':
+      graph = sigma.plugins.generators.grid(+_.$('grid-n').value, +_.$('grid-m').value);
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+    case 'random':
+      graph = sigma.plugins.generators.random({
+        nbNodes: +_.$('random-n').value,
+        nbEdges: +_.$('random-e').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+    case 'balancedTree':
+      graph = sigma.plugins.generators.balancedTree({
+        nbChildren: +_.$('balancedTree-c').value,
+        height: +_.$('balancedTree-h').value
+      });
+    break;
+    case 'barabasiAlbert':
+      graph = sigma.plugins.generators.barabasiAlbert({
+        nbNodes: +_.$('barabasiAlbert-n').value,
+        m0: +_.$('barabasiAlbert-m0').value,
+        m: +_.$('barabasiAlbert-m').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: true,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+    case 'erdosRenyi-nm':
+      graph = sigma.plugins.generators.erdosRenyi({
+        nbNodes: +_.$('erdosRenyi-nm-n').value,
+        nbEdges: +_.$('erdosRenyi-nm-e').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: true,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+    case 'erdosRenyi-np':
+      graph = sigma.plugins.generators.erdosRenyi({
+        nbNodes: +_.$('erdosRenyi-np-n').value,
+        p: +_.$('erdosRenyi-np-p').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: true,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+    case 'wattsStrogatz-alpha':
+      graph = sigma.plugins.generators.wattsStrogatz({
+        nbNodes: +_.$('wattsStrogatz-alpha-n').value,
+        k: +_.$('wattsStrogatz-alpha-k').value,
+        alpha: +_.$('wattsStrogatz-alpha-alpha').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+    case 'wattsStrogatz-beta':
+      graph = sigma.plugins.generators.wattsStrogatz({
+        nbNodes: +_.$('wattsStrogatz-beta-n').value,
+        k: +_.$('wattsStrogatz-beta-k').value,
+        beta: +_.$('wattsStrogatz-beta-beta').value
+      });
+      sigma.layouts.configForceLink(s, {
+        scalingRatio: 5,
+        worker: true,
+        linLogMode: false,
+        autoStop: true,
+        background: true,
+        easing: 'cubicInOut'
+      });
+    break;
+  }
+
+  s.graph.clear();
+  s.graph.read(graph);
+  s.refresh({ skipIndexation: true });
+
+  if (generatorName === 'balancedTree') {
+    // Start the DAG layout:
+    sigma.layouts.dagre.start(s);
+  }
+  else {
+    // Start the ForceLink algorithm:
+    sigma.layouts.startForceLink();
+  }
+});
+
+function toggleOptions() {
+  _.hide('#generator-options > div');
+  _.show('#' + generatorName + '-options');
+};
+
+_.$('generator').addEventListener("change", function(event) {
+  generatorName = event.target[event.target.selectedIndex].value;
+  toggleOptions();
+});
+
+_.$('barabasiAlbert-m0').addEventListener("change", function(event) {
+  var m0 = +event.target.value;
+  var n = +_.$('barabasiAlbert-n').value;
+  _.$('barabasiAlbert-m').max = m0;
+  if (m0 >= n) event.target.value = n - 1;
+});
+
+_.$('barabasiAlbert-m').addEventListener("change", function(event) {
+  var m = +event.target.value;
+  var m0 = +_.$('barabasiAlbert-m0').value;
+  _.$('barabasiAlbert-m0').min = m;
+  if (m > m0) event.target.value = m0;
+});
+
+
+// Instantiate sigma:
+s = new sigma({
+  graph: sigma.plugins.generators.random({ nbNodes:N, nbEdges:E }),
+  container: 'graph-container',
+  settings: {
+    enableHovering: false,
+    drawLabels: false,
+    maxNodeSize: 5,
+    edgeColor: 'default',
+    defaultEdgeColor: '#aaa'
+  }
+});
+
+sigma.layouts.dagre.configure(s, {
+  directed: true, // take edge direction into account
+  rankdir: 'TB',  // Direction for rank nodes. Can be TB, BT, LR, or RL,
+                  // where T = top, B = bottom, L = left, and R = right.
+  easing: 'cubicInOut', // animation transition function
+});
+
+// Configure the ForceLink algorithm:
+var layout = sigma.layouts.configForceLink(s, {
+  scalingRatio: 5,
+  worker: true,
+  linLogMode: true,
+  autoStop: true,
+  background: true,
+  easing: 'cubicInOut'
+});
+
+// Bind the events:
+layout.bind('start interpolate stop', function(e) {
+  console.log(e.type);
+  var el = document.getElementById('notice');
+  if (e.type === 'start') {
+    el.className = '';
+  }
+  else if (e.type === 'interpolate') {
+    el.className = 'hidden';
+  }
+});
+
+sigma.layouts.startForceLink();
+
+
+</script>
