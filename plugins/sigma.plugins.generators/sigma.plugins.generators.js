@@ -90,7 +90,14 @@
         R = options.nbChildren,
         H = options.height,
         graph = {
-          nodes: [{ id: 'n0', label: 'Node 0', index: 0 }],
+          nodes: [{
+            id: 'n0',
+            label: 'Node 0',
+            x: Math.random(),
+            y: Math.random(),
+            size: 1,
+            index: 0
+          }],
           edges: []
         },
         newLeaves = [],
@@ -100,6 +107,9 @@
       node = {
         id: 'n' + (++v),
         label: 'Node '+ v,
+        x: Math.random(),
+        y: Math.random(),
+        size: 1,
         index: (v - 1)
       };
       graph.nodes.push(node);
@@ -120,6 +130,9 @@
           node = {
             id: 'n' + (++v),
             label: 'Node '+ v,
+            x: Math.random(),
+            y: Math.random(),
+            size: 1,
             index: (v - 1)
           };
           newLeaves.push(node);
@@ -173,7 +186,10 @@
       for (i = 0; i < N; i++) {
         graph.nodes.push({
           id: 'n' + i,
-          label: 'Node '+ i
+          label: 'Node '+ i,
+          x: Math.random(),
+          y: Math.random(),
+          size: 1
         });
         for (j = 0; j < i; j++) {
           if (Math.random() < P) {
@@ -198,7 +214,10 @@
       for (i = 0; i < N; i++) {
         graph.nodes.push({
           id: 'n' + i,
-          label: 'Node '+ i
+          label: 'Node '+ i,
+          x: Math.random(),
+          y: Math.random(),
+          size: 1
         });
         for (j = i + 1; j < N; j++) {
           tmpEdges.push({
@@ -261,7 +280,10 @@
     for (i = 0; i < m0; i++) {
       graph.nodes.push({
         id: 'n' + i,
-        label: 'node '+ i
+        label: 'node '+ i,
+        x: Math.random(),
+        y: Math.random(),
+        size: 1
       });
       degrees[i] = 0;
     }
@@ -284,7 +306,10 @@
     for (i = m0; i < N; i++) {
       graph.nodes.push({
         id: 'n' + i,
-        label: 'node '+ i
+        label: 'node '+ i,
+        x: Math.random(),
+        y: Math.random(),
+        size: 1
       });
       degrees[i] = 0;
       sum = 0;  // sum of all nodes degrees
@@ -368,7 +393,7 @@
       return mij;
     };
 
-    if (options.alpha) {
+    if ('alpha' in options) {
       if (!isNumber(options.alpha) || options.alpha < 0 || options.alpha > 1)
         throw new TypeError('Invalid argument: options.alpha is not a number between [0,1], was ' + options.alpha);
 
@@ -381,7 +406,10 @@
       for (i = 0; i < N; i++) {
         graph.nodes.push({
           id: 'n' + i,
-          label: 'Node '+ i
+          label: 'Node '+ i,
+          x: Math.random(),
+          y: Math.random(),
+          size: 1
         });
         // create a latice ring structure
         edge = {
@@ -430,7 +458,7 @@
     }
     else { // beta
       if (!isNumber(options.beta) || options.beta < 0 || options.beta > 1)
-        throw new TypeError('Invalid argument: options.alpha is not a number between [0,1], was ' + options.beta);
+        throw new TypeError('Invalid argument: options.beta is not a number between [0,1], was ' + options.beta);
 
       var t;
 
@@ -438,7 +466,10 @@
       for (i = 0; i < N; i++) {
         graph.nodes.push({
           id: 'n' + i,
-          label: 'node '+ i
+          label: 'node '+ i,
+          x: Math.random(),
+          y: Math.random(),
+          size: 1
         });
         // create a latice ring structure
         for (j = 1; j <= K; j++) {
