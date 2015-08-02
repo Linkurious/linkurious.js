@@ -51,7 +51,8 @@
         id: 'n' + i,
         label: 'Node ' + i,
         x: Math.random(),
-        y: Math.random()
+        y: Math.random(),
+        size: 1
       });
 
     for (i = 0; i < E; i++)
@@ -89,7 +90,7 @@
         R = options.nbChildren,
         H = options.height,
         graph = {
-          nodes: [{ id: 'n0', label: 'node 0', index: 0 }],
+          nodes: [{ id: 'n0', label: 'Node 0', index: 0 }],
           edges: []
         },
         newLeaves = [],
@@ -349,6 +350,24 @@
       N = options.nbNodes,
       K = options.k;
 
+    function calculateRij(i, j) {
+      if (i == j || edge_lut[i + '-' + j]) return 0;
+      var mij = calculatemij(i, j);
+      if (mij >= K) return 1;
+      if (mij === 0) return p;
+      return Math.pow(mij / K, options.alpha) * (1 - p) + p;
+    };
+
+    function calculatemij(i, j) {
+      var mij = 0, l;
+      for (l = 0; l < N; l++) {
+        if (l != i && l != j && edge_lut[i + '-' + l] && edge_lut[j + '-' + l]) {
+          mij++;
+        }
+      }
+      return mij;
+    };
+
     if (options.alpha) {
       if (!isNumber(options.alpha) || options.alpha < 0 || options.alpha > 1)
         throw new TypeError('Invalid argument: options.alpha is not a number between [0,1], was ' + options.alpha);
@@ -407,24 +426,6 @@
             }
           }
         }
-      }
-
-      function calculateRij(i, j) {
-        if (i == j || edge_lut[i + '-' + j]) return 0;
-        var mij = calculatemij(i, j);
-        if (mij >= K) return 1;
-        if (mij === 0) return p;
-        return Math.pow(mij / K, options.alpha) * (1 - p) + p;
-      }
-
-      function calculatemij(i, j) {
-        var mij = 0, l;
-        for (l = 0; l < N; l++) {
-          if (l != i && l != j && edge_lut[i + '-' + l] && edge_lut[j + '-' + l]) {
-            mij++;
-          }
-        }
-        return mij;
       }
     }
     else { // beta

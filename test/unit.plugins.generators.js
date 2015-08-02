@@ -1,6 +1,6 @@
 module('sigma.plugins.generators');
 
-asyncTest('API', function(assert) {
+test('API', function(assert) {
   var sigmaGraph = new sigma.classes.graph();
 
   //////////////////////////

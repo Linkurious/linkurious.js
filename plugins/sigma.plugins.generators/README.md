@@ -13,11 +13,11 @@ See the following [example code](../../examples/plugin-generators.html) and [uni
 
 To use, include all .js files under this folder, then call one of the graph generator.
 
-### Random graph
+## Random graph
 
 Generates a random graph.
 
-**Parameters:**
+### Parameters
 
  * **nbNodes**
    * The number of nodes.
@@ -26,7 +26,7 @@ Generates a random graph.
    * The number of edges.
    * type: *number*
 
-**Example:**
+### Example
 
 ````javascript
 var graph = sigma.plugins.generators.random({
@@ -36,11 +36,11 @@ var graph = sigma.plugins.generators.random({
 sigmaInstance.graph.read(graph);
 ````
 
-### Balanced tree
+## Balanced tree
 
 Generates a perfectly balanced r-tree of specified height (edges are undirected).
 
-**Parameters:**
+### Parameters
 
  * **nbChildren**
    * The number of children each node has.
@@ -49,7 +49,7 @@ Generates a perfectly balanced r-tree of specified height (edges are undirected)
    * The height of the tree.
    * type: *number*
 
-**Example:**
+### Example
 
 ````javascript
 var graph = sigma.plugins.generators.balancedTree({
@@ -59,11 +59,11 @@ var graph = sigma.plugins.generators.balancedTree({
 sigmaInstance.graph.read(graph);
 ````
 
-### Erdős–Rényi
+## Erdős–Rényi
 
 Generates an undirected not necessarily connected graph from the Erdős–Rényi model. Call it with options (n,p) or (n,m).
 
-**Parameters:**
+### Parameters
 
  * **nbNodes**
    * The number of nodes.
@@ -75,7 +75,7 @@ Generates an undirected not necessarily connected graph from the Erdős–Rényi
    * The probability [0..1] of a edge between any two nodes.
    * type: *number*
 
-**(n, p) Example:**
+### (n, p) Example
 
 ````javascript
 var graph = sigma.plugins.generators.erdosRenyi({
@@ -85,7 +85,7 @@ var graph = sigma.plugins.generators.erdosRenyi({
 sigmaInstance.graph.read(graph);
 ````
 
-**(n, M) Example:**
+### (n, M) Example
 
 ````javascript
 var graph = sigma.plugins.generators.erdosRenyi({
@@ -95,15 +95,15 @@ var graph = sigma.plugins.generators.erdosRenyi({
 sigmaInstance.graph.read(graph);
 ````
 
-**References:**
+### References
 - [Erdős, Rényi. On the evolution of random graphs. 1960](http://www.math-inst.hu/~p_erdos/1960-10.pdf)
 - [Batagelj, Brandes. Efficient Generation of Large Random Networks. 2004](http://algo.uni-konstanz.de/publications/bb-eglrn-05.pdf)
 
-### Barabási–Albert
+## Barabási–Albert
 
 Generates an undirected connected graph from the Barabási–Albert model.
 
-**Parameters:**
+### Parameters
 
  * **nbNodes**
    * The number of nodes.
@@ -115,7 +115,7 @@ Generates an undirected connected graph from the Barabási–Albert model.
    * M  > 0 && M  <= m0
    * type: *number*
 
-**Example:**
+### Example
 
 ````javascript
 var graph = sigma.plugins.generators.barabasiAlbert({
@@ -126,21 +126,21 @@ var graph = sigma.plugins.generators.barabasiAlbert({
 sigmaInstance.graph.read(graph);
 ````
 
-**References:**
+### References
 - [Barabasi, Albert. Emergence of Scaling in Random Networks. 1999](http://www.barabasilab.com/pubs/CCNR-ALB_Publications/199910-15_Science-Emergence/199910-15_Science-Emergence.pdf)
 - [Albert, Barabasi. Topology of evolving networks: local events and universality. 2000](http://www.facweb.iitkgp.ernet.in/~niloy/COURSE/Spring2006/CNT/Resource/ba-model-2.pdf)
 
-### Watts-Strogatz
+## Watts-Strogatz
 
 Generates an undirected "small world" graph from the Watts-Strogatz model. Call it with options alpha or beta to run the corresponding model.
 
-**Parameters:**
+### Parameters
 
  * **nbNodes**
    * The number of nodes.
    * type: *number*
  * **k**
-   * The mean degree of nodes (even integer).
+   * The mean degree of nodes (even integer). Originally nodes are connected on average with k other nodes.
    * type: *number*
  * **alpha**
    * The rewiring probability [0..1] of the Alpha model.
@@ -149,7 +149,7 @@ Generates an undirected "small world" graph from the Watts-Strogatz model. Call 
    * The rewiring probability [0..1] of the Beta model.
    * type: *number*
 
-**Alpha model Example:**
+### Alpha model Example
 
 ````javascript
 var graph = sigma.plugins.generators.wattsStrogatz({
@@ -160,11 +160,9 @@ var graph = sigma.plugins.generators.wattsStrogatz({
 sigmaInstance.graph.read(graph);
 ````
 
-**Beta model Example:**
+### Beta model Example
 
 ````javascript
-// Creates graph with 100 nodes, each node is connected with 20 neighbours,
-// and probability of neighbour to be outside of local node community is 1%.
 var graph = sigma.plugins.generators.wattsStrogatz({
   nbNodes: 100,
   k: 20,
@@ -173,6 +171,6 @@ var graph = sigma.plugins.generators.wattsStrogatz({
 sigmaInstance.graph.read(graph);
 ````
 
-**References:**
+### References
 - [Wikipedia](http://en.wikipedia.org/wiki/Watts_and_Strogatz_model)
 - [Watts. Networks, Dynamics, and the Small-World Phenomenon. 1999](http://www.cc.gatech.edu/~mihail/D.8802readings/watts-swp.pdf)
