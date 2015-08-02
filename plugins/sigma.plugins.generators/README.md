@@ -13,6 +13,43 @@ See the following [example code](../../examples/plugin-generators.html) and [uni
 
 To use, include all .js files under this folder, then call one of the graph generator.
 
+## Path
+
+Generates a path.
+
+### Parameters
+
+ * **nbNodes**
+   * The number of nodes.
+   * type: *number*
+
+### Example
+
+````javascript
+var graph = sigma.plugins.generators.path(100);
+sigmaInstance.graph.read(graph);
+````
+
+## Grid
+
+Generates a grid.
+
+### Parameters
+
+ * **nbRows**
+   * The number of rows.
+   * type: *number*
+ * **nbColumns**
+   * The number of columns.
+   * type: *number*
+
+### Example
+
+````javascript
+var graph = sigma.plugins.generators.grid(10, 10);
+sigmaInstance.graph.read(graph);
+````
+
 ## Random graph
 
 Generates a random graph.
