@@ -29,10 +29,8 @@
     });
 
     function draw() {
-      // Clear self.contexts.hover:
-      self.contexts.hover.canvas.width = self.contexts.hover.canvas.width;
-
-      var embedSettings = self.settings.embedObjects({
+      var c = self.contexts.hover.canvas,
+          embedSettings = self.settings.embedObjects({
             prefix: prefix
           }),
           end = embedSettings('singleHover') ? 1 : undefined,
@@ -45,6 +43,8 @@
             graph: self.graph,
             settings: embedSettings,
           };
+
+      self.contexts.hover.clearRect(0, 0, c.width, c.height);
 
       // Node render
       if (current.nodes.length > 0 && embedSettings('enableHovering')) {

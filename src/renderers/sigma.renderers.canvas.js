@@ -433,9 +433,9 @@
   sigma.renderers.canvas.prototype.clear = function() {
     var k;
 
-    for (k in this.domElements)
-      if (this.domElements[k].tagName === 'CANVAS')
-        this.domElements[k].width = this.domElements[k].width;
+    for (k in this.contexts) {
+      this.contexts[k].clearRect(0, 0, this.width, this.height);
+    }
 
     return this;
   };

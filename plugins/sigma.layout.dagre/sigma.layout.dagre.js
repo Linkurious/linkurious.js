@@ -117,7 +117,6 @@
       }
 
       // State
-      this.started = false;
       this.running = false;
     };
 
@@ -126,50 +125,47 @@
 
       this.running = true;
 
-      if (!this.started) {
-        // Create a new directed graph
-        dg = new dagre.graphlib.Graph({
-          directed: this.config.directed,
-          multigraph: this.config.multigraph,
-          compound: this.config.compound
-        });
+      // Create a new directed graph
+      dg = new dagre.graphlib.Graph({
+        directed: this.config.directed,
+        multigraph: this.config.multigraph,
+        compound: this.config.compound
+      });
 
-        // Set an object for the graph label
-        dg.setGraph(this.config);
+      // Set an object for the graph label
+      dg.setGraph(this.config);
 
-        var nodes = this.nodes || this.sigInst.graph.nodes();
-        for (var i = 0; i < nodes.length; i++) {
-          if (!nodes[i].fixed) {
-            dg.setNode(nodes[i].id, {});
-          }
+      var nodes = this.nodes || this.sigInst.graph.nodes();
+      for (var i = 0; i < nodes.length; i++) {
+        if (!nodes[i].fixed) {
+          dg.setNode(nodes[i].id, {});
         }
-
-        if (this.boundingBox === true) {
-          this.boundingBox = getBoundaries(nodes);
-        }
-
-        var edges = this.sigInst.graph.edges();
-        for (var i = 0; i < edges.length; i++) {
-          if (dg.node(edges[i].source) != null && dg.node(edges[i].target) != null) {
-            dg.setEdge(edges[i].source, edges[i].target, { id: edges[i].id });
-          }
-        };
-
-        this.started = true;
-        _eventEmitter[self.sigInst.id].dispatchEvent('start');
-
-        // console.time('sigma.layout.dagre');
-        dagre.layout(dg);
-        // console.timeEnd('sigma.layout.dagre');
-
-        var edge;
-        dg.edges().map(function(e) {
-          edge = self.sigInst.graph.edges(dg.edge(e).id);
-          edge.points = dg.edge(e).points;
-        });
-
-        this.stop();
       }
+
+      if (this.boundingBox === true) {
+        this.boundingBox = getBoundaries(nodes);
+      }
+
+      var edges = this.sigInst.graph.edges();
+      for (var i = 0; i < edges.length; i++) {
+        if (dg.node(edges[i].source) != null && dg.node(edges[i].target) != null) {
+          dg.setEdge(edges[i].source, edges[i].target, { id: edges[i].id });
+        }
+      };
+
+      _eventEmitter[self.sigInst.id].dispatchEvent('start');
+
+      // console.time('sigma.layout.dagre');
+      dagre.layout(dg);
+      // console.timeEnd('sigma.layout.dagre');
+
+      var edge;
+      dg.edges().map(function(e) {
+        edge = self.sigInst.graph.edges(dg.edge(e).id);
+        edge.points = dg.edge(e).points;
+      });
+
+      this.stop();
     };
 
     this.stop = function() {
