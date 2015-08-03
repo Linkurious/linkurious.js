@@ -358,18 +358,9 @@
 
         var k,
             event = {
-              current: {
-                nodes: [],
-                edges: [],
-              },
-              enter: {
-                nodes: [],
-                edges: [],
-              },
-              leave: {
-                nodes: [],
-                edges: [],
-              },
+              current: { nodes: [], edges: [], },
+              enter: { nodes: [], edges: [], },
+              leave: { nodes: [], edges: [], },
               captor: e.data
             },
             leave = event.leave;

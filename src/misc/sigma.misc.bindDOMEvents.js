@@ -17,7 +17,7 @@
   sigma.misc.bindDOMEvents = function(container) {
     var self = this,
         graph = this.graph,
-        hovered = {nodes:[], edges:[]};
+        hovered = {nodes: [], edges: []};
 
     // DOMElement abstraction
     function Element(domElement) {
@@ -99,8 +99,8 @@
 
       var el_svg = new Element(target),
         event = {
-          leave:{nodes:[], edges:[]},
-          enter:{nodes:[], edges:[]}
+          leave: {nodes: [], edges: []},
+          enter: {nodes: [], edges: []}
         },
         el;
 
@@ -127,8 +127,8 @@
 
       var el_svg = new Element(target),
         event = {
-          leave:{nodes:[], edges:[]},
-          enter:{nodes:[], edges:[]}
+          leave: {nodes: [], edges: []},
+          enter: {nodes: [], edges: []}
         },
         el;
 
