@@ -190,17 +190,18 @@ s = new sigma({
   container: 'graph-container'
 });
 
-// Minimal example of the tooltip plugin instanciation:
-/*sigma.plugins.tooltip(s, {
+/* Minimal example of the tooltip plugin instantiation:
+sigma.plugins.tooltips(s, s.renderers[0], {
   node: {
     template: 'Hello node!'
   }
-});*/
+});
+*/
 
 var config = {
   node: {
-    show: 'mouseover',
-    hide: 'mouseover',
+    show: 'hovers',
+    hide: 'hovers',
     cssClass: 'sigma-tooltip',
     position: 'top',
     //autoadjust: true,

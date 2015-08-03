@@ -420,10 +420,10 @@
         if (!n && event.data.enter) {
           n = event.data.enter.nodes[0];
         }
+        if (n == undefined) return;
+
         var clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
-
-        if (n == undefined) return;
 
         clearTimeout(_timeoutHandle);
         _timeoutHandle = setTimeout(function() {
@@ -479,8 +479,13 @@
           return;
         }
 
-        var e = event.data.edge || event.data.edges[0],
-            clientX = event.data.captor.clientX,
+        var e = event.data.edge;
+        if (!e && event.data.enter) {
+          e = event.data.enter.edges[0];
+        }
+        if (e == undefined) return;
+
+        var clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
 
         clearTimeout(_timeoutHandle);
@@ -496,6 +501,8 @@
       });
 
       s.bind(eo.hide, function(event) {
+        if (event.data.leave && event.data.leave.edges.length == 0)
+          return
         var p = _tooltip;
         cancel();
         if (p)
