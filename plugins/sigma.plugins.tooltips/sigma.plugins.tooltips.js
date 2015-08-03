@@ -425,7 +425,7 @@
         var clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
 
-        if (n == undefined) return
+        if (n == undefined) return;
 
         clearTimeout(_timeoutHandle);
         _timeoutHandle = setTimeout(function() {
