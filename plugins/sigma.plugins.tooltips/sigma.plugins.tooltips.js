@@ -72,12 +72,11 @@
    *   {?string}   show       The event that triggers the tooltip. Default
    *                          values: "clickNode", "clickEdge". Other suggested
    *                          values: "overNode", "doubleClickNode",
-   *                          "rightClickNode", "overEdge", "doubleClickEdge",
+   *                          "rightClickNode", "mouseover", "doubleClickEdge",
    *                          "rightClickEdge", "doubleClickNode",
    *                          "rightClickNode".
    *   {?string}   hide       The event that hides the tooltip. Default value:
-   *                          "clickStage". Other suggested values: "outNode",
-   *                          "outEdge".
+   *                          "clickStage". Other suggested values: "mouseover"
    *   {?string}   template   The HTML template. It is directly inserted inside
    *                          a div element unless a renderer is specified.
    *   {?function} renderer   This function may process the template or be used
@@ -417,9 +416,13 @@
           return;
         }
 
-        var n = event.data.node || event.data.nodes[0],
+        var n = event.data.node ||
+                (event.data.nodes && event.data.nodes[0]) ||
+                (event.data.enter && event.data.enter.nodes[0]),
             clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
+
+        if (n == undefined ) return
 
         clearTimeout(_timeoutHandle);
         _timeoutHandle = setTimeout(function() {
@@ -434,6 +437,8 @@
       });
 
       s.bind(no.hide, function(event) {
+        if (event.data.leave && event.data.leave.nodes.length == 0)
+          return
         var p = _tooltip;
         cancel();
         if (p)

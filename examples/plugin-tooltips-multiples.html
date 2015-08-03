@@ -197,29 +197,6 @@ for (i = 0; i < E; i++)
     color: '#ccc'
   });
 
-// Instanciate sigma:
-// s = new sigma({
-//   graph: g,
-//   container: 'graph-container'
-// });
-var sigmaCanvas = new sigma({
-  graph: g,
-  renderer: {
-    container: document.getElementById('graph-canvas-left'),
-    type: 'canvas'
-  }
-});
-sigmaCanvas.refresh();
-
-var sigmaWebgl = new sigma({
-  graph: g,
-  renderer: {
-    container: document.getElementById('graph-webgl-right'),
-    type: 'webgl'
-  }
-});
-sigmaWebgl.refresh();
-
 // Minimal example of the tooltip plugin instanciation:
 /*sigma.plugins.tooltip(s, {
   node: {
@@ -229,8 +206,8 @@ sigmaWebgl.refresh();
 
 var config = {
   node: {
-    show: 'overNode',
-    hide: 'outNode',
+    show: 'mouseover',
+    hide: 'mouseover',
     cssClass: 'sigma-tooltip',
     position: 'top',
     //autoadjust: true,
@@ -260,6 +237,15 @@ var config = {
   }
 };
 
+var sigmaCanvas = new sigma({
+  graph: g,
+  renderer: {
+    container: document.getElementById('graph-canvas-left'),
+    type: 'canvas'
+  }
+});
+sigmaCanvas.refresh();
+
 // Instanciate the tooltips plugin with a Mustache renderer for node tooltips:
 var tooltipsCanvas = sigma.plugins.tooltips(sigmaCanvas, sigmaCanvas.renderers[0], config);
 
@@ -271,6 +257,14 @@ tooltipsCanvas.bind('hidden', function(event) {
   console.log('tooltip hidden', event);
 });
 
+var sigmaWebgl = new sigma({
+  graph: g,
+  renderer: {
+    container: document.getElementById('graph-webgl-right'),
+    type: 'webgl'
+  }
+});
+sigmaWebgl.refresh();
 
 var tooltipsWebgl = sigma.plugins.tooltips(sigmaWebgl, sigmaWebgl.renderers[0], config);
 
