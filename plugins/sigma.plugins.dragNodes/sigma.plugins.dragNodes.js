@@ -69,8 +69,8 @@
         _mouse = renderer.container.firstChild;
     }
 
-    renderer.bind('mouseover', nodeMouseOver);
-    renderer.bind('mouseover', treatOutNode);
+    renderer.bind('hovers', nodeMouseOver);
+    renderer.bind('hovers', treatOutNode);
     renderer.bind('click', click);
 
     _s.bind('kill', function() {
@@ -84,8 +84,8 @@
       _mouse.removeEventListener('mousedown', nodeMouseDown);
       _body.removeEventListener('mousemove', nodeMouseMove);
       _body.removeEventListener('mouseup', nodeMouseUp);
-      _renderer.unbind('mouseover', nodeMouseOver);
-      _renderer.unbind('mouseover', treatOutNode);
+      _renderer.unbind('hovers', nodeMouseOver);
+      _renderer.unbind('hovers', treatOutNode);
     }
 
     // Calculates the global offset of the given element more accurately than

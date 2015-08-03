@@ -19,7 +19,7 @@
     var self = this,
         current = {nodes: [], edges: []};
 
-    this.bind('mouseover', function(event) {
+    this.bind('hovers', function(event) {
       current = event.data.current;
       draw();
     });

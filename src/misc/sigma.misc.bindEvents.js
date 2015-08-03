@@ -384,7 +384,7 @@
         overEdges = {};
 
         if (leave.nodes.length || leave.edges.length) {
-          self.dispatchEvent('mouseover', event);
+          self.dispatchEvent('hovers', event);
         }
       }
 
@@ -442,7 +442,7 @@
 
         if (newOutEdges.length || newOverEdges.length ||
              newOutNodes.length || newOverNodes.length) {
-          self.dispatchEvent('mouseover', {
+          self.dispatchEvent('hovers', {
             current: {
               nodes: nodes,
               edges: edges,

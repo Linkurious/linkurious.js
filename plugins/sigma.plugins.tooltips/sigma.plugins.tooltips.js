@@ -72,11 +72,11 @@
    *   {?string}   show       The event that triggers the tooltip. Default
    *                          values: "clickNode", "clickEdge". Other suggested
    *                          values: "overNode", "doubleClickNode",
-   *                          "rightClickNode", "mouseover", "doubleClickEdge",
+   *                          "rightClickNode", "hovers", "doubleClickEdge",
    *                          "rightClickEdge", "doubleClickNode",
    *                          "rightClickNode".
    *   {?string}   hide       The event that hides the tooltip. Default value:
-   *                          "clickStage". Other suggested values: "mouseover"
+   *                          "clickStage". Other suggested values: "hovers"
    *   {?string}   template   The HTML template. It is directly inserted inside
    *                          a div element unless a renderer is specified.
    *   {?function} renderer   This function may process the template or be used
