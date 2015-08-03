@@ -416,13 +416,16 @@
           return;
         }
 
-        var n = event.data.node ||
-                (event.data.nodes && event.data.nodes[0]) ||
-                (event.data.enter && event.data.enter.nodes[0]),
-            clientX = event.data.captor.clientX,
+        var n = event.data.node;
+        if (!n && event.data.nodes){
+          n = event.data.nodes[0];
+        } else if (!n && event.data.enter) {
+          n = event.data.enter.nodes[0];
+        }
+        var clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
 
-        if (n == undefined ) return
+        if (n == undefined) return
 
         clearTimeout(_timeoutHandle);
         _timeoutHandle = setTimeout(function() {
