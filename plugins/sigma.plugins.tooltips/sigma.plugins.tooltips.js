@@ -417,9 +417,7 @@
         }
 
         var n = event.data.node;
-        if (!n && event.data.nodes){
-          n = event.data.nodes[0];
-        } else if (!n && event.data.enter) {
+        if (!n && event.data.enter) {
           n = event.data.enter.nodes[0];
         }
         var clientX = event.data.captor.clientX,
