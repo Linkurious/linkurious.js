@@ -357,40 +357,35 @@
           return;
 
         var k,
-            i,
-            l,
-            le,
-            outNodes = [],
-            outEdges = [];
+            event = {
+              current: {
+                nodes: [],
+                edges: [],
+              },
+              enter: {
+                nodes: [],
+                edges: [],
+              },
+              leave: {
+                nodes: [],
+                edges: [],
+              },
+              captor: e.data
+            },
+            leave = event.leave;
 
         for (k in overNodes)
-          outNodes.push(overNodes[k]);
+          leave.nodes.push(overNodes[k]);
+
+        for (k in overEdges)
+          leave.edges.push(overEdges[k]);
 
         overNodes = {};
-        // Dispatch both single and multi events:
-        for (i = 0, l = outNodes.length; i < l; i++)
-          self.dispatchEvent('outNode', {
-            node: outNodes[i],
-            captor: e.data
-          });
-        if (outNodes.length)
-          self.dispatchEvent('outNodes', {
-            nodes: outNodes,
-            captor: e.data
-          });
-
         overEdges = {};
-        // Dispatch both single and multi events:
-        for (i = 0, le = outEdges.length; i < le; i++)
-          self.dispatchEvent('outEdge', {
-            edge: outEdges[i],
-            captor: e.data
-          });
-        if (outEdges.length)
-          self.dispatchEvent('outEdges', {
-            edges: outEdges,
-            captor: e.data
-          });
+
+        if (leave.nodes.length || leave.edges.length) {
+          self.dispatchEvent('mouseover', event);
+        }
       }
 
       function onMove(e) {
