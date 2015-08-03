@@ -111,7 +111,7 @@
         color = o.color || node.color || defaultNodeColor,
 		borderColor = settings('nodeBorderColor') === 'default'
           ? settings('defaultNodeBorderColor')
-          : (node.border_color || o.borderColor || defaultNodeColor),
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
 
     // Level:
