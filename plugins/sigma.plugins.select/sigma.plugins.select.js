@@ -259,8 +259,13 @@
 
     // Drop selected nodes and edges
     function spaceDel() {
-      s.graph.dropNodes(a.nodes().map(function(n) { return n.id; }));
-      s.graph.dropEdges(a.edges().map(function(e) { return e.id; }));
+      var nodes = a.nodes().map(function(n) { return n.id; }),
+        edges = a.edges().map(function(e) { return e.id; });
+
+      a.dropEdges(edges);
+      a.dropNodes(nodes);
+      s.graph.dropEdges(edges);
+      s.graph.dropNodes(nodes);
       s.refresh();
     }
 
