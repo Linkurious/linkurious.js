@@ -137,7 +137,7 @@
     for (i = params.start; i < params.end; i++) {
       if (!els[i].hidden) {
         specializedRenderer = params.renderers[
-          els[i].type || params.settings(params.options, elementType)
+          els[i].type || params.settings(elementType)
         ];
         def = (specializedRenderer || params.renderers.def);
         if (params.type == 'edges') {
