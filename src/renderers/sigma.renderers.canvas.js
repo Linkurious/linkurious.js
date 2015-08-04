@@ -120,11 +120,13 @@
    */
   sigma.renderers.canvas.applyRenderers = function(params) {
     var i,
+        k,
         renderer,
         specializedRenderer,
         def,
         render,
         els = params.elements,
+        ctx_infos = {font: params.ctx.font},
         elementType = (params.elements || params.type == 'edges' ?
               'defaultEdgeType' : 'defaultNodeType');
 
@@ -134,38 +136,30 @@
 
     params.ctx.save();
 
-    for (renderer in params.renderers) {
-      if (params.renderers[renderer].pre) {
-        params.renderers[renderer].pre(params.ctx, params.settings);
-      }
-    }
     for (i = params.start; i < params.end; i++) {
       if (!els[i].hidden) {
         specializedRenderer = params.renderers[
           els[i].type || params.settings(params.options, elementType)
         ];
         def = (specializedRenderer || params.renderers.def);
-        render = (def.render || def);
+        def = def.render || def;
         if (params.type == 'edges') {
-          render(
+          def(
             els[i],
             params.graph.nodes(els[i].source),
             params.graph.nodes(els[i].target),
             params.ctx,
-            params.settings
+            params.settings,
+            {ctx: ctx_infos}
           );
         }else {
-          render(
+          def(
             els[i],
             params.ctx,
-            params.settings
+            params.settings,
+            {ctx: ctx_infos}
           );
         }
-      }
-    }
-    for (renderer in params.renderers) {
-      if (params.renderers[renderer].post) {
-        params.renderers[renderer].post(params.ctx, params.settings);
       }
     }
 
@@ -433,9 +427,9 @@
   sigma.renderers.canvas.prototype.clear = function() {
     var k;
 
-    for (k in this.contexts) {
-      this.contexts[k].clearRect(0, 0, this.width, this.height);
-    }
+    for (k in this.domElements)
+      if (this.domElements[k].tagName === 'CANVAS')
+        this.domElements[k].width = this.domElements[k].width;
 
     return this;
   };

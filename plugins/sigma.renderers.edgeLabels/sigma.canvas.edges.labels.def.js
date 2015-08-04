@@ -7,22 +7,6 @@
   // Initialize packages:
   sigma.utils.pkg('sigma.canvas.edges.labels');
 
-  var PREV_FONT = null; //contains the current context.font value
-  //the ctx.font value is cached because accesing it is costly
-
-  sigma.canvas.edges.labels.def = {
-  /**
-   * This is executed before a render batch
-   * It just reset PREV_FONT
-   *
-   * @param  {CanvasRenderingContext2D} context      The canvas context.
-   * @param  {configurable}             settings     The settings function.
-   */
-    pre: function(context, settings) {
-      PREV_FONT = '';
-    },
-  };
-  
   /**
    * This label renderer will just display the label on the line of the edge.
    * The label is rendered at half distance of the edge extremities, and is
@@ -33,9 +17,10 @@
    * @param  {object}                   target node  The edge target node.
    * @param  {CanvasRenderingContext2D} context      The canvas context.
    * @param  {configurable}             settings     The settings function.
+   * @param  {object?}                  infos        The current batch infos.
    */
-  sigma.canvas.edges.labels.def.render =
-    function(edge, source, target, context, settings) {
+  sigma.canvas.edges.labels.def =
+    function(edge, source, target, context, settings, infos) {
     if (typeof edge.label !== 'string' || source == target)
       return;
 
@@ -84,9 +69,11 @@
       ].join(' ');
     }
 
-    if (PREV_FONT != new_font) { //use font value caching
+    if (infos && infos.ctx.font != new_font) { //use font value caching
       context.font = new_font;
-      PREV_FONT = new_font;
+      infos.ctx.font = new_font;
+    } else {
+      context.font = new_font;
     }
 
     context.textAlign = 'center';
