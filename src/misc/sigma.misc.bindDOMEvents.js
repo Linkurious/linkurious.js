@@ -16,7 +16,8 @@
    */
   sigma.misc.bindDOMEvents = function(container) {
     var self = this,
-        graph = this.graph;
+        graph = this.graph,
+        hovered = {nodes: [], edges: []};
 
     // DOMElement abstraction
     function Element(domElement) {
@@ -96,21 +97,25 @@
       if (!self.settings('eventsEnabled') || !target)
         return;
 
-      var el = new Element(target);
+      var el_svg = new Element(target),
+        event = {
+          leave: {nodes: [], edges: []},
+          enter: {nodes: [], edges: []}
+        },
+        el;
 
-      if (el.isNode()) {
-        self.dispatchEvent('overNode', {
-          node: graph.nodes(el.attr('data-node-id'))
-        });
+      if (el_svg.isNode()) {
+        el = graph.nodes(el_svg.attr('data-node-id'));
+        event.enter.nodes = [el];
+        hovered.nodes.push(el);
+      } else if (el_svg.isEdge()) {
+        el = graph.edges(el_svg.attr('data-edge-id'));
+        event.enter.edges = [el];
+        hovered.edges.push(el);
       }
-      else if (el.isEdge()) {
-        var edge = graph.edges(el.attr('data-edge-id'));
-        self.dispatchEvent('overEdge', {
-          edge: edge,
-          source: graph.nodes(edge.source),
-          target: graph.nodes(edge.target)
-        });
-      }
+
+      event.current = hovered;
+      self.dispatchEvent('hovers', event);
     }
 
     // On out
@@ -120,21 +125,27 @@
       if (!self.settings('eventsEnabled'))
         return;
 
-      var el = new Element(target);
+      var el_svg = new Element(target),
+        event = {
+          leave: {nodes: [], edges: []},
+          enter: {nodes: [], edges: []}
+        },
+        el;
 
-      if (el.isNode()) {
-        self.dispatchEvent('outNode', {
-          node: graph.nodes(el.attr('data-node-id'))
-        });
+      if (el_svg.isNode()) {
+        el = graph.nodes(el_svg.attr('data-node-id'));
+        event.leave.nodes = [el];
+        hovered.nodes.push(el);
+      } else if (el_svg.isEdge()) {
+        el = graph.edges(el_svg.attr('data-edge-id'));
+        event.leave.edges = [el];
+        hovered.edges.push(el);
+      } else {
+        return;
       }
-      else if (el.isEdge()) {
-        var edge = graph.edges(el.attr('data-edge-id'));
-        self.dispatchEvent('outEdge', {
-          edge: edge,
-          source: graph.nodes(edge.source),
-          target: graph.nodes(edge.target)
-        });
-      }
+
+      event.current = hovered;
+      self.dispatchEvent('hovers', event);
     }
 
     // Registering Events:

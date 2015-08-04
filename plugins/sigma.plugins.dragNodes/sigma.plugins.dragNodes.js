@@ -69,8 +69,8 @@
         _mouse = renderer.container.firstChild;
     }
 
-    renderer.bind('overNode', nodeMouseOver);
-    renderer.bind('outNode', treatOutNode);
+    renderer.bind('hovers', nodeMouseOver);
+    renderer.bind('hovers', treatOutNode);
     renderer.bind('click', click);
 
     _s.bind('kill', function() {
@@ -84,8 +84,8 @@
       _mouse.removeEventListener('mousedown', nodeMouseDown);
       _body.removeEventListener('mousemove', nodeMouseMove);
       _body.removeEventListener('mouseup', nodeMouseUp);
-      _renderer.unbind('overNode', nodeMouseOver);
-      _renderer.unbind('outNode', treatOutNode);
+      _renderer.unbind('hovers', nodeMouseOver);
+      _renderer.unbind('hovers', treatOutNode);
     }
 
     // Calculates the global offset of the given element more accurately than
@@ -121,14 +121,18 @@
     };
 
     function nodeMouseOver(event) {
+      if (event.data.enter.nodes.length == 0) {
+        return;
+      }
+      var n = event.data.enter.nodes[0];
       // Don't treat the node if it is already registered
-      if (_hoverIndex[event.data.node.id]) {
+      if (_hoverIndex[n.id]) {
         return;
       }
 
       // Add node to array of current nodes over
-      _hoverStack.push(event.data.node);
-      _hoverIndex[event.data.node.id] = true;
+      _hoverStack.push(n);
+      _hoverIndex[n.id] = true;
 
       if(!_isMouseDown) {
         // Set the current node to be the last one in the array
@@ -138,10 +142,14 @@
     };
 
     function treatOutNode(event) {
+      if (event.data.leave.nodes.length == 0) {
+        return;
+      }
+      var n = event.data.leave.nodes[0];
       // Remove the node from the array
-      var indexCheck = _hoverStack.map(function(e) { return e; }).indexOf(event.data.node);
+      var indexCheck = _hoverStack.map(function(e) { return e; }).indexOf(n);
       _hoverStack.splice(indexCheck, 1);
-      delete _hoverIndex[event.data.node.id];
+      delete _hoverIndex[n.id];
 
       if(_hoverStack.length && ! _isMouseDown) {
         // On out, set the current node to be the next stated in array

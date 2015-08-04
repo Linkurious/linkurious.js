@@ -72,12 +72,11 @@
    *   {?string}   show       The event that triggers the tooltip. Default
    *                          values: "clickNode", "clickEdge". Other suggested
    *                          values: "overNode", "doubleClickNode",
-   *                          "rightClickNode", "overEdge", "doubleClickEdge",
+   *                          "rightClickNode", "hovers", "doubleClickEdge",
    *                          "rightClickEdge", "doubleClickNode",
    *                          "rightClickNode".
    *   {?string}   hide       The event that hides the tooltip. Default value:
-   *                          "clickStage". Other suggested values: "outNode",
-   *                          "outEdge".
+   *                          "clickStage". Other suggested values: "hovers"
    *   {?string}   template   The HTML template. It is directly inserted inside
    *                          a div element unless a renderer is specified.
    *   {?function} renderer   This function may process the template or be used
@@ -412,8 +411,13 @@
           return;
         }
 
-        var n = event.data.node || event.data.nodes[0],
-            clientX = event.data.captor.clientX,
+        var n = event.data.node;
+        if (!n && event.data.enter) {
+          n = event.data.enter.nodes[0];
+        }
+        if (n == undefined) return;
+
+        var clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
 
         clearTimeout(_timeoutHandle);
@@ -429,6 +433,8 @@
       });
 
       s.bind(no.hide, function(event) {
+        if (event.data.leave && event.data.leave.nodes.length == 0)
+          return
         var p = _tooltip;
         cancel();
         if (p)
@@ -468,8 +474,13 @@
           return;
         }
 
-        var e = event.data.edge || event.data.edges[0],
-            clientX = event.data.captor.clientX,
+        var e = event.data.edge;
+        if (!e && event.data.enter) {
+          e = event.data.enter.edges[0];
+        }
+        if (e == undefined) return;
+
+        var clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
 
         clearTimeout(_timeoutHandle);
@@ -485,6 +496,8 @@
       });
 
       s.bind(eo.hide, function(event) {
+        if (event.data.leave && event.data.leave.edges.length == 0)
+          return
         var p = _tooltip;
         cancel();
         if (p)

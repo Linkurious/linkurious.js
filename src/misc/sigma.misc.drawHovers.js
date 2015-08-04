@@ -8,8 +8,8 @@
   sigma.utils.pkg('sigma.misc');
 
   /**
-   * This method listens to "overNode", "outNode", "overEdge" and "outEdge"
-   * events from a renderer and renders the nodes differently on the top layer.
+   * This method listens to "hovers" events from a renderer and renders
+   * the nodes differently on the top layer.
    * The goal is to make any node label readable with the mouse, and to
    * highlight hovered nodes and edges.
    *
@@ -19,7 +19,7 @@
     var self = this,
         current = {nodes: [], edges: []};
 
-    this.bind('mouseover', function(event) {
+    this.bind('hovers', function(event) {
       current = event.data.current;
       draw();
     });
