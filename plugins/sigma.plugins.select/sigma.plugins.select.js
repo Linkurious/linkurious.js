@@ -264,8 +264,15 @@
 
       a.dropEdges(edges);
       a.dropNodes(nodes);
-      s.graph.dropEdges(edges);
-      s.graph.dropNodes(nodes);
+
+      if (nodes.length == s.graph.nodes().length) {
+        s.graph.clear();
+      }
+      else {
+        s.graph.dropEdges(edges);
+        s.graph.dropNodes(nodes);
+      }
+
       s.refresh();
     }
 
