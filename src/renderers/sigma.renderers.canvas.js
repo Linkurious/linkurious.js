@@ -27,8 +27,7 @@
     if (!(options.container instanceof HTMLElement))
       throw 'Container not found.';
 
-    var k,
-        i,
+    var i,
         l,
         a,
         fn,
@@ -120,7 +119,6 @@
    */
   sigma.renderers.canvas.applyRenderers = function(params) {
     var i,
-        k,
         renderer,
         specializedRenderer,
         def,
@@ -142,7 +140,6 @@
           els[i].type || params.settings(params.options, elementType)
         ];
         def = (specializedRenderer || params.renderers.def);
-        def = def.render || def;
         if (params.type == 'edges') {
           def(
             els[i],
@@ -425,11 +422,9 @@
    * @return {sigma.renderers.canvas} Returns the instance itself.
    */
   sigma.renderers.canvas.prototype.clear = function() {
-    var k;
-
-    for (k in this.domElements)
-      if (this.domElements[k].tagName === 'CANVAS')
-        this.domElements[k].width = this.domElements[k].width;
+    for (var k in this.contexts) {
+      this.contexts[k].clearRect(0, 0, this.width, this.height);
+    }
 
     return this;
   };
