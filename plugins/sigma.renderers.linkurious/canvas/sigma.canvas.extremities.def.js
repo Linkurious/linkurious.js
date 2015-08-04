@@ -20,19 +20,15 @@
   sigma.canvas.extremities.def =
     function(edge, source, target, context, settings) {
     // Source Node:
-    var def = (
+    (
       sigma.canvas.hovers[source.type] ||
       sigma.canvas.hovers.def
-    );
-    def = def.render || def;
-    def(source, context, settings);
+    )(def(source, context, settings));
 
     // Target Node:
-    def = (
+    (
       sigma.canvas.hovers[target.type] ||
       sigma.canvas.hovers.def
-    );
-    def = def.render || def;
-    def(target, context, settings);
+    )(def(target, context, settings));
   };
 }).call(this);
