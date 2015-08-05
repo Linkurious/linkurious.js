@@ -5,7 +5,7 @@
     throw new Error('sigma is not declared');
 
   if (typeof dagre === 'undefined' || typeof dagre.graphlib === 'undefined')
-    console.warning('to use the dagre plugin, '
+    console.warn('to use the dagre plugin, '
       +'you have to include dagre and dagre.graphlib');
 
   // Initialize package:
