@@ -120,8 +120,7 @@
     // draw label with a background
     if (sigma.canvas.edges.labels.arrow) {
       edge.hover = true;
-      var def = sigma.canvas.edges.labels.arrow;
-      (def.render || def)(edge, source, target, context, settings);
+      sigma.canvas.edges.labels.arrow(edge, source, target, context, settings);
       edge.hover = false;
     }
   };

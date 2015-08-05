@@ -7,31 +7,15 @@
   // Initialize packages:
   sigma.utils.pkg('sigma.canvas.labels');
 
-  var PREV_FONT = null; //contains the current context.font value
-  //the ctx.font value is cached because accesing it is costly
-
-  sigma.canvas.labels.def = {
-  /**
-   * This is executed before a render batch
-   * It just reset PREV_FONT
-   *
-   * @param  {CanvasRenderingContext2D} context      The canvas context.
-   * @param  {configurable}             settings     The settings function.
-   */
-    pre: function(context, settings) {
-      PREV_FONT = '';
-    },
-  };
-
   /**
    * This label renderer will display the label of the node
    *
    * @param  {object}                   node     The node object.
    * @param  {CanvasRenderingContext2D} context  The canvas context.
    * @param  {configurable}             settings The settings function.
+   * @param  {object?}                  infos    The batch infos.
    */
-  sigma.canvas.labels.def.render = 
-        function(node, context, settings) {
+  sigma.canvas.labels.def = function(node, context, settings, infos) {
     var fontSize,
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'] || 1,
@@ -60,9 +44,11 @@
         settings('activeFont') || settings('font') :
         settings('font'));
 
-    if (PREV_FONT != new_font) { //use font value caching
+    if (infos && infos.ctx.font != new_font) { //use font value caching
       context.font = new_font;
-      PREV_FONT = new_font;
+      infos.ctx.font = new_font;
+    } else {
+      context.font = new_font;
     }
 
     if (node.active)

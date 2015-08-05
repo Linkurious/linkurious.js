@@ -27,8 +27,7 @@
     if (!(options.container instanceof HTMLElement))
       throw 'Container not found.';
 
-    var k,
-        i,
+    var i,
         l,
         a,
         fn,
@@ -125,6 +124,7 @@
         def,
         render,
         els = params.elements,
+        ctx_infos = {font: params.ctx.font},
         elementType = (params.elements || params.type == 'edges' ?
               'defaultEdgeType' : 'defaultNodeType');
 
@@ -134,38 +134,29 @@
 
     params.ctx.save();
 
-    for (renderer in params.renderers) {
-      if (params.renderers[renderer].pre) {
-        params.renderers[renderer].pre(params.ctx, params.settings);
-      }
-    }
     for (i = params.start; i < params.end; i++) {
       if (!els[i].hidden) {
         specializedRenderer = params.renderers[
-          els[i].type || params.settings(params.options, elementType)
+          els[i].type || params.settings(elementType)
         ];
         def = (specializedRenderer || params.renderers.def);
-        render = (def.render || def);
         if (params.type == 'edges') {
-          render(
+          def(
             els[i],
             params.graph.nodes(els[i].source),
             params.graph.nodes(els[i].target),
             params.ctx,
-            params.settings
+            params.settings,
+            {ctx: ctx_infos}
           );
         }else {
-          render(
+          def(
             els[i],
             params.ctx,
-            params.settings
+            params.settings,
+            {ctx: ctx_infos}
           );
         }
-      }
-    }
-    for (renderer in params.renderers) {
-      if (params.renderers[renderer].post) {
-        params.renderers[renderer].post(params.ctx, params.settings);
       }
     }
 
@@ -431,9 +422,7 @@
    * @return {sigma.renderers.canvas} Returns the instance itself.
    */
   sigma.renderers.canvas.prototype.clear = function() {
-    var k;
-
-    for (k in this.contexts) {
+    for (var k in this.contexts) {
       this.contexts[k].clearRect(0, 0, this.width, this.height);
     }
 

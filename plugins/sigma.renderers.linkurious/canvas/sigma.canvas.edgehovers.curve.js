@@ -108,8 +108,7 @@
     // draw label with a background
     if (sigma.canvas.edges.labels.curve) {
       edge.hover = true;
-      var def = sigma.canvas.edges.labels.curve;
-      (def.render || def)(edge, source, target, context, settings);
+      sigma.canvas.edges.labels.curve(edge, source, target, context, settings);
       edge.hover = false;
     }
   };
