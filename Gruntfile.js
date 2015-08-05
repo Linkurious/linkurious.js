@@ -110,24 +110,16 @@ module.exports = function(grunt) {
     'statistics.louvain'
   ];
 
-  var pluginFiles = [],
-      subGrunts = {};
+  var pluginFiles = [];
 
   plugins.forEach(function(p) {
     var dir = './plugins/sigma.' + p + '/';
-
-    if (fs.existsSync(dir + 'Gruntfile.js'))
-      subGrunts[p] = {
-        gruntfile: dir + 'Gruntfile.js'
-      };
-    else
-      pluginFiles.push(dir + '**/*.js');
+    pluginFiles.push(dir + '**/*.js');
   });
 
   // Project configuration:
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    grunt: subGrunts,
     closureLint: {
       app: {
         closureLinterPath: '/usr/local/bin',
@@ -164,7 +156,16 @@ module.exports = function(grunt) {
         },
         options: {
           sourceMap: true,
-          banner: '/* sigma.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Alexis Jacomy, Sciences-Po Médialab - License: MIT */\n'
+          banner: '/* linkurious.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Alexis Jacomy, Sciences-Po Médialab - License: GPLv3 */\n'
+        }
+      },
+      prod: {
+        files: {
+          'build/plugins.min.js': pluginFiles
+        },
+        options: {
+          sourceMap: true,
+          banner: '/* linkurious.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Alexis Jacomy, Sciences-Po Médialab - License: GPLv3 */\n'
         }
       },
       plugins: {
@@ -176,7 +177,7 @@ module.exports = function(grunt) {
         options: {
           sourceMap: true
         }
-      }
+      },
     },
     concat: {
       options: {
@@ -185,6 +186,10 @@ module.exports = function(grunt) {
       dist: {
         src: coreJsFiles,
         dest: 'build/sigma.js'
+      },
+      plugins: {
+        src: pluginFiles,
+        dest: 'build/plugins.js'
       },
       require: {
         src: npmJsFiles,
@@ -220,10 +225,10 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   // By default, will check lint, hint, test and minify:
-  grunt.registerTask('default', ['closureLint', 'jshint', 'qunit', 'sed', 'grunt', 'uglify']);
-  grunt.registerTask('release', ['closureLint', 'jshint', 'qunit', 'sed', 'grunt', 'uglify', 'zip']);
-  grunt.registerTask('npmPrePublish', ['uglify:plugins', 'grunt', 'concat:require']);
-  grunt.registerTask('build', ['uglify', 'grunt', 'concat:require']);
+  grunt.registerTask('default', ['closureLint', 'jshint', 'qunit', 'sed', 'uglify', 'concat']);
+  grunt.registerTask('release', ['closureLint', 'jshint', 'qunit', 'sed', 'uglify', 'concat', 'zip']);
+  grunt.registerTask('npmPrePublish', ['uglify:plugins', 'concat:require']);
+  grunt.registerTask('build', ['uglify', 'concat:require']);
   grunt.registerTask('test', ['qunit']);
 
   // For travis-ci.org, only launch tests:

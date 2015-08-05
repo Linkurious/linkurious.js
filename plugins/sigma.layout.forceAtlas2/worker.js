@@ -1109,17 +1109,14 @@
 
   // Exporting
   function getWorkerFn() {
-    var fnString = crush ? crush(Worker.toString()) : Worker.toString();
-    return ';(' + fnString + ').call(this);';
+    return ';(' + crush(Worker.toString()) + ').call(this);';
   }
 
   if (inWebWorker) {
-
     // We are in a webworker, so we launch the Worker function
     eval(getWorkerFn());
   }
   else {
-
     // We are requesting the worker from sigma, we retrieve it therefore
     if (typeof sigma === 'undefined')
       throw 'sigma is not declared';

@@ -1535,8 +1535,7 @@
 
   // Exporting
   function getWorkerFn() {
-    var fnString = crush ? crush(Worker.toString()) : Worker.toString();
-    return ';(' + fnString + ').call(this);';
+    return ';(' + crush(Worker.toString()) + ').call(this);';
   }
 
   if (inWebWorker) {

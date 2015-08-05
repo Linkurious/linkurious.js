@@ -4,11 +4,9 @@
   if (typeof sigma === 'undefined')
     throw new Error('sigma is not declared');
 
-  if (typeof dagre === 'undefined')
-    throw new Error('dagre is not declared');
-
-  if (typeof dagre.graphlib === 'undefined')
-    throw new Error('dagre.graphlib is not declared');
+  if (typeof dagre === 'undefined' || typeof dagre.graphlib === 'undefined')
+    console.warn('to use the dagre plugin, '
+      +'you have to include dagre and dagre.graphlib');
 
   // Initialize package:
   sigma.utils.pkg('sigma.layouts.dagre');
@@ -21,7 +19,6 @@
    * Author: Sébastien Heymann @ Linkurious
    * Version: 0.1
    */
-
 
   // see https://github.com/cpettitt/dagre/wiki#configuring-the-layout
   var settings = {
@@ -36,13 +33,11 @@
 
   var _instance = {};
 
-
   /**
    * Event emitter Object
    * ------------------
    */
   var _eventEmitter = {};
-
 
   function getBoundaries(nodes, prefix) {
     var i,
@@ -89,6 +84,12 @@
    * ------------------
    */
   function dagreLayout() {
+    if (typeof dagre === 'undefined')
+      throw new Error('dagre is not declared');
+
+    if (typeof dagre.graphlib === 'undefined')
+      throw new Error('dagre.graphlib is not declared');
+
     var
       self = this,
       dg;
