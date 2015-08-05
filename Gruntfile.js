@@ -156,7 +156,7 @@ module.exports = function(grunt) {
         },
         options: {
           sourceMap: true,
-          banner: '/* linkurious.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Alexis Jacomy, Sciences-Po Médialab - License: GPLv3 */\n'
+          banner: '/* linkurious.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Linkurious SAS - License: GPLv3 */\n'
         }
       },
       prod: {
@@ -165,7 +165,7 @@ module.exports = function(grunt) {
         },
         options: {
           sourceMap: true,
-          banner: '/* linkurious.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Alexis Jacomy, Sciences-Po Médialab - License: GPLv3 */\n'
+          banner: '/* linkurious.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Linkurious SAS - License: GPLv3 */\n'
         }
       },
       plugins: {
