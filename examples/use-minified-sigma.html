@@ -19,11 +19,11 @@ To be able to use it, you have to run `grunt` before
 </div>
 <script>
 g = sigma.plugins.generators.grid(10,10);
+
 s = new sigma({
   graph: g,
   renderer: {
-    container: 'graph-container',
-    type: 'svg'
+    container: 'graph-container'
   },
   settings: {
     hideEdgesOnMove: true,
@@ -32,5 +32,12 @@ s = new sigma({
     defaultEdgeColor: '#333',
     edgeColor: 'default'
   }
+});
+
+sigma.layouts.startForceLink(s, {
+  worker: true,
+  autoStop: true,
+  background: true,
+  easing: 'cubicInOut'
 });
 </script>
