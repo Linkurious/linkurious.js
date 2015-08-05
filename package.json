@@ -8,10 +8,11 @@
     "type": "git",
     "url": "http://github.com/Linkurious/linkurious.js.git"
   },
-  "license": "MIT",
+  "license": "GPLv3",
   "main": "build/sigma.require.js",
   "dependencies": {
-    "xlsx": "~0.7.12"
+    "xlsx": "~0.7.12",
+    "dagre": "~0.7.4"
   },
   "devDependencies": {
     "grunt-cli": "^0.1.13",

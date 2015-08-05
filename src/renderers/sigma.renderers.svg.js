@@ -373,7 +373,7 @@
         hoveredNode = node;
       } else if (e.data.leave.nodes.length > 0) { // out
         node = e.data.leave.nodes[0];
-        
+
         // Deleting element
         self.domElements.groups.hovers.removeChild(
           self.domElements.hovers[node.id]

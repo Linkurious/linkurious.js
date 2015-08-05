@@ -15,9 +15,6 @@
   if (typeof sigma === 'undefined')
     throw new Error('sigma is not declared');
 
-  if (typeof XLSX === 'undefined')
-    throw new Error('XLSX is not declared');
-
   function downloadBlob(blob, extension, filename) {
     var objectUrl = window.URL.createObjectURL(blob);
 
@@ -220,6 +217,9 @@
    * @return {string}        The Spreadsheet string.
    */
   sigma.prototype.toXLSX = function(params) {
+      if (typeof XLSX === 'undefined')
+        throw new Error('XLSX is not declared');
+
       params = params || {};
 
       var wb = new Workbook(),

@@ -1,14 +1,9 @@
 ;(function(undefined) {
   'use strict';
 
+
   if (typeof sigma === 'undefined')
     throw new Error('sigma is not declared');
-
-  if (typeof dagre === 'undefined')
-    throw new Error('dagre is not declared');
-
-  if (typeof dagre.graphlib === 'undefined')
-    throw new Error('dagre.graphlib is not declared');
 
   // Initialize package:
   sigma.utils.pkg('sigma.layouts.dagre');
@@ -89,6 +84,12 @@
    * ------------------
    */
   function dagreLayout() {
+    if (typeof dagre === 'undefined')
+      throw new Error('dagre is not declared');
+
+    if (typeof dagre.graphlib === 'undefined')
+      throw new Error('dagre.graphlib is not declared');
+
     var
       self = this,
       dg;
