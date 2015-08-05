@@ -15,6 +15,10 @@
   if (typeof sigma === 'undefined')
     throw new Error('sigma is not declared');
 
+  if (typeof dagre === 'undefined' || typeof dagre.graphlib === 'undefined')
+    console.warning('to use the xlx plugin, you have to include the XLSX library');
+
+
   function downloadBlob(blob, extension, filename) {
     var objectUrl = window.URL.createObjectURL(blob);
 
