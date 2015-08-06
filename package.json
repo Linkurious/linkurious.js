@@ -34,6 +34,6 @@
     "start": "http-server -p 8000",
     "test": "grunt test",
     "build": "grunt build",
-    "preparepublish": "grunt build",
+    "preparepublish": "grunt build"
   }
 }
