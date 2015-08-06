@@ -159,7 +159,7 @@ module.exports = function(grunt) {
           banner: '/* linkurious.js - <%= pkg.description %> - Version: <%= pkg.version %> - Author: Linkurious SAS - License: GPLv3 */\n'
         }
       },
-      prod: {
+      prod_plugins: {
         files: {
           'build/plugins.min.js': pluginFiles
         },
