@@ -518,7 +518,8 @@
   sigma.renderers.webgl.prototype.resize = function(w, h) {
     var k,
         oldWidth = this.width,
-        oldHeight = this.height;
+        oldHeight = this.height,
+        pixelRatio = sigma.utils.getPixelRatio();
 
     if (w !== undefined && h !== undefined) {
       this.width = w;
@@ -539,8 +540,11 @@
         if (this.domElements[k].tagName.toLowerCase() === 'canvas') {
           // If simple 2D canvas:
           if (this.contexts[k] && this.contexts[k].scale) {
-            this.domElements[k].setAttribute('width', w + 'px');
-            this.domElements[k].setAttribute('height', h + 'px');
+            this.domElements[k].setAttribute('width', (w * pixelRatio) + 'px');
+            this.domElements[k].setAttribute('height', (h * pixelRatio) + 'px');
+
+            if (pixelRatio !== 1)
+              this.contexts[k].scale(pixelRatio, pixelRatio);
           } else {
             this.domElements[k].setAttribute(
               'width',

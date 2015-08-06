@@ -249,11 +249,12 @@
      * @param {event} e A mouse event.
      */
     function _clickHandler(e) {
-      if (_settings('mouseEnabled'))
+      if (_settings('mouseEnabled')) {
         var event = mouseCoords(e, sigma.utils.getX(e), sigma.utils.getY(e));
         event.isDragging =
           (((new Date()).getTime() - _downStartTime) > 100) && _hasDragged;
         _self.dispatchEvent('click', event);
+      }
 
       if (e.preventDefault)
         e.preventDefault();
