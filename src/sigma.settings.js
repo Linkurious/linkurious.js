@@ -124,7 +124,8 @@
     webglEdgesBatchSize: 1000,
     // {boolean} Approximate labels width instead of using canvas.measureText
     approximateLabelWidth: false,
-
+    // {boolean} Hide edges from nodes too far away
+    edgesClippingWithNodes: true,
 
 
     /**

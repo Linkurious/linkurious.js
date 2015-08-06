@@ -252,7 +252,6 @@
         conrad.killJob(k);
 
     // Find which nodes are on screen:
-    this.edgesOnScreen = [];
     this.nodesOnScreen = this.camera.quadtree.area(
       this.camera.getRectangle(this.width, this.height)
     );
@@ -264,17 +263,23 @@
     // - If settings('batchEdgesDrawing') is true, the edges are displayed per
     //   batches. If not, they are drawn in one frame.
     if (drawEdges) {
-      // First, let's identify which edges to draw. To do this, we just keep
-      // every edges that have at least one extremity displayed according to
-      // the quadtree and the "hidden" attribute. We also do not keep hidden
-      // edges.
-      for (a = graph.edges(), i = 0, l = a.length; i < l; i++) {
-        o = a[i];
-        if (
-          (index[o.source] || index[o.target]) &&
-          (!o.hidden && !nodes(o.source).hidden && !nodes(o.target).hidden)
-        )
-          this.edgesOnScreen.push(o);
+      this.edgesOnScreen = [];
+      if (embedSettings('edgesClippingWithNodes')) {
+        // Identify which edges to draw by keeping every edges that have at
+        // least one extremity displayed according to the quadtree and the
+        // "hidden" attribute. We also do not keep hidden edges.
+        for (a = graph.edges(), i = 0, l = a.length; i < l; i++) {
+          o = a[i];
+          if (
+            (index[o.source] || index[o.target]) &&
+            (!o.hidden && !nodes(o.source).hidden && !nodes(o.target).hidden)
+          )
+            this.edgesOnScreen.push(o);
+        }
+      } else {
+        this.edgesOnScreen = this.camera.edgequadtree.area(
+          this.camera.getRectangle(this.width, this.height)
+        );
       }
 
       // If the "batchEdgesDrawing" settings is true, edges are batched:

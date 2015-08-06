@@ -534,7 +534,8 @@
         if (
           c.edgequadtree !== undefined &&
           c.settings('drawEdges') &&
-          c.settings('enableEdgeHovering')
+          (c.settings('enableEdgeHovering') ||
+            c.settings('edgesClippingWithNodes'))
         ) {
           c.edgequadtree.index(this.graph, {
             prefix: c.readPrefix,
