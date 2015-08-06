@@ -591,6 +591,24 @@
   };
 
   /**
+   * The pixel ratio of the screen. Taking zoom into account
+   *
+   * @return {number}        Pixel ratio of the screen
+   */
+  sigma.utils.getPixelRatio = function() {
+    var ratio = 1;
+    if (window.screen.deviceXDPI !== undefined &&
+         window.screen.logicalXDPI !== undefined &&
+         window.screen.deviceXDPI > window.screen.logicalXDPI) {
+        ratio = window.screen.systemXDPI / window.screen.logicalXDPI;
+    }
+    else if (window.devicePixelRatio !== undefined) {
+        ratio = window.devicePixelRatio;
+    }
+    return ratio;
+  };
+
+  /**
    * Extract the width from a mouse or touch event.
    *
    * @param  {event}  e A mouse or touch event.
@@ -604,7 +622,7 @@
     return (
       (typeof w === 'number' && w) ||
       (w !== undefined && w.baseVal !== undefined && w.baseVal.value)
-    );
+    ) / sigma.utils.getPixelRatio();
   };
 
   /**
@@ -621,7 +639,7 @@
     return (
       (typeof h === 'number' && h) ||
       (h !== undefined && h.baseVal !== undefined && h.baseVal.value)
-    );
+    ) / sigma.utils.getPixelRatio();
   };
 
   /**
