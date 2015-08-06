@@ -120,6 +120,7 @@ module.exports = function(grunt) {
   // Project configuration:
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    clean: ['build/'],
     closureLint: {
       app: {
         closureLinterPath: '/usr/local/bin',
@@ -225,10 +226,9 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   // By default, will check lint, hint, test and minify:
-  grunt.registerTask('default', ['closureLint', 'jshint', 'qunit', 'sed', 'uglify', 'concat']);
-  grunt.registerTask('release', ['closureLint', 'jshint', 'qunit', 'sed', 'uglify', 'concat', 'zip']);
-  grunt.registerTask('npmPrePublish', ['uglify:plugins', 'concat:require']);
-  grunt.registerTask('build', ['uglify', 'concat:require']);
+  grunt.registerTask('default', ['closureLint', 'jshint', 'qunit', 'sed', 'clean', 'uglify', 'concat']);
+  grunt.registerTask('release', ['closureLint', 'jshint', 'qunit', 'sed', 'clean', 'uglify', 'concat', 'zip']);
+  grunt.registerTask('build', ['clean', 'uglify', 'concat']);
   grunt.registerTask('test', ['qunit']);
 
   // For travis-ci.org, only launch tests:
