@@ -95,16 +95,8 @@
 
       // Dispatch event:
       if (_settings('mouseEnabled'))
-        _self.dispatchEvent('mousemove', {
-          x: sigma.utils.getX(e) - sigma.utils.getWidth(e) / 2,
-          y: sigma.utils.getY(e) - sigma.utils.getHeight(e) / 2,
-          clientX: e.clientX,
-          clientY: e.clientY,
-          ctrlKey: e.ctrlKey,
-          metaKey: e.metaKey,
-          altKey: e.altKey,
-          shiftKey: e.shiftKey
-        });
+        _self.dispatchEvent('mousemove',
+          mouseCoords(e, sigma.utils.getX(e), sigma.utils.getY(e)));
 
       if (_settings('mouseEnabled') && _isMouseDown) {
         _isMoving = true;
@@ -190,16 +182,8 @@
             y: _camera.y
           });
 
-        _self.dispatchEvent('mouseup', {
-          x: x - sigma.utils.getWidth(e) / 2,
-          y: y - sigma.utils.getHeight(e) / 2,
-          clientX: e.clientX,
-          clientY: e.clientY,
-          ctrlKey: e.ctrlKey,
-          metaKey: e.metaKey,
-          altKey: e.altKey,
-          shiftKey: e.shiftKey
-        });
+        _self.dispatchEvent('mouseup',
+          mouseCoords(e, sigma.utils.getX(e), sigma.utils.getY(e)));
 
         // Update _isMoving flag:
         _isMoving = false;
@@ -233,32 +217,16 @@
             break;
           case 3:
             // Right mouse button pressed
-            _self.dispatchEvent('rightclick', {
-              x: _startMouseX - sigma.utils.getWidth(e) / 2,
-              y: _startMouseY - sigma.utils.getHeight(e) / 2,
-              clientX: e.clientX,
-              clientY: e.clientY,
-              ctrlKey: e.ctrlKey,
-              metaKey: e.metaKey,
-              altKey: e.altKey,
-              shiftKey: e.shiftKey
-            });
+            _self.dispatchEvent('rightclick',
+              mouseCoords(e, _startMouseX, _startMouseY));
             break;
           // case 1:
           default:
             // Left mouse button pressed
             _isMouseDown = true;
 
-            _self.dispatchEvent('mousedown', {
-              x: _startMouseX - sigma.utils.getWidth(e) / 2,
-              y: _startMouseY - sigma.utils.getHeight(e) / 2,
-              clientX: e.clientX,
-              clientY: e.clientY,
-              ctrlKey: e.ctrlKey,
-              metaKey: e.metaKey,
-              altKey: e.altKey,
-              shiftKey: e.shiftKey
-            });
+            _self.dispatchEvent('mousedown',
+              mouseCoords(e, _startMouseX, _startMouseY));
         }
       }
     }
@@ -282,19 +250,10 @@
      */
     function _clickHandler(e) {
       if (_settings('mouseEnabled'))
-        _self.dispatchEvent('click', {
-          x: sigma.utils.getX(e) - sigma.utils.getWidth(e) / 2,
-          y: sigma.utils.getY(e) - sigma.utils.getHeight(e) / 2,
-          clientX: e.clientX,
-          clientY: e.clientY,
-          ctrlKey: e.ctrlKey,
-          metaKey: e.metaKey,
-          altKey: e.altKey,
-          shiftKey: e.shiftKey,
-          isDragging:
-            (((new Date()).getTime() - _downStartTime) > 100) &&
-            _hasDragged
-        });
+        var event = mouseCoords(e, sigma.utils.getX(e), sigma.utils.getY(e));
+        event.isDragging =
+          (((new Date()).getTime() - _downStartTime) > 100) && _hasDragged;
+        _self.dispatchEvent('click', event);
 
       if (e.preventDefault)
         e.preventDefault();
@@ -319,21 +278,13 @@
       if (_settings('mouseEnabled')) {
         ratio = 1 / _settings('doubleClickZoomingRatio');
 
-        _self.dispatchEvent('doubleclick', {
-          x: _startMouseX - sigma.utils.getWidth(e) / 2,
-          y: _startMouseY - sigma.utils.getHeight(e) / 2,
-          clientX: e.clientX,
-          clientY: e.clientY,
-          ctrlKey: e.ctrlKey,
-          metaKey: e.metaKey,
-          altKey: e.altKey,
-          shiftKey: e.shiftKey
-        });
+        _self.dispatchEvent('doubleclick',
+            mouseCoords(e, _startMouseY, _startMouseY));
 
         if (_settings('doubleClickEnabled')) {
           pos = _camera.cameraPosition(
-            sigma.utils.getX(e) - sigma.utils.getWidth(e) / 2,
-            sigma.utils.getY(e) - sigma.utils.getHeight(e) / 2,
+            sigma.utils.getX(e) - sigma.utils.getCenter(e).x,
+            sigma.utils.getY(e) - sigma.utils.getCenter(e).y,
             true
           );
 
@@ -371,8 +322,8 @@
           _settings('zoomingRatio');
 
         pos = _camera.cameraPosition(
-          sigma.utils.getX(e) - sigma.utils.getWidth(e) / 2,
-          sigma.utils.getY(e) - sigma.utils.getHeight(e) / 2,
+          sigma.utils.getX(e) - sigma.utils.getCenter(e).x,
+          sigma.utils.getY(e) - sigma.utils.getCenter(e).y,
           true
         );
 
@@ -390,6 +341,19 @@
         e.stopPropagation();
         return false;
       }
+    }
+
+    function mouseCoords(e, x, y) {
+      return {
+          x: x - sigma.utils.getCenter(e).x,
+          y: y - sigma.utils.getCenter(e).y,
+          clientX: e.clientX,
+          clientY: e.clientY,
+          ctrlKey: e.ctrlKey,
+          metaKey: e.metaKey,
+          altKey: e.altKey,
+          shiftKey: e.shiftKey
+      };
     }
   };
 }).call(this);

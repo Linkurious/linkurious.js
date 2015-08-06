@@ -622,7 +622,20 @@
     return (
       (typeof w === 'number' && w) ||
       (w !== undefined && w.baseVal !== undefined && w.baseVal.value)
-    ) / sigma.utils.getPixelRatio();
+    );
+  };
+
+  /**
+   * Extract the center from a mouse or touch event.
+   *
+   * @param  {event}  e A mouse or touch event.
+   * @return {object}   The center of the event's target.
+   */
+  sigma.utils.getCenter = function(e) {
+    return {
+      x: sigma.utils.getWidth(e) / (2 * sigma.utils.getPixelRatio()),
+      y: sigma.utils.getHeight(e) / (2 * sigma.utils.getPixelRatio()),
+    };
   };
 
   /**
@@ -639,7 +652,7 @@
     return (
       (typeof h === 'number' && h) ||
       (h !== undefined && h.baseVal !== undefined && h.baseVal.value)
-    ) / sigma.utils.getPixelRatio();
+    );
   };
 
   /**
