@@ -140,10 +140,9 @@
 
         var activeNode = a.nodes()[0];
 
-        if(activeNode != null && sigma.plugins.dragNodes) {
+        if(activeNode != null) {
           if(_nodeReference === activeNode.id) {
             if(newTargets.length) {
-              // console.log('x');
               a.dropNodes();
               _nodeReference = null;
             }
@@ -157,7 +156,6 @@
               }, s.settings('doubleClickTimeout'));
             }
           } else {
-            // console.log('y');
             _nodeReference = activeNode.id;
           }
         }
