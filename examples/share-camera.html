@@ -122,18 +122,6 @@ for (i = 0; i < E; i++)
 
 // Initialize two distinct renderers, each with its own settings:
 s.addRenderer({
-  container: document.getElementById('webgl'),
-  type: 'webgl',
-  camera: cam,
-  settings: {
-    defaultLabelColor: '#fff',
-    defaultNodeColor: '#999',
-    defaultEdgeColor: '#333',
-    edgeColor: 'default'
-  }
-});
-
-s.addRenderer({
   container: document.getElementById('canvas'),
   type: 'canvas',
   camera: cam,
@@ -143,6 +131,18 @@ s.addRenderer({
     defaultLabelColor: '#000',
     defaultNodeColor: '#666',
     defaultEdgeColor: '#999',
+    edgeColor: 'default'
+  }
+});
+
+s.addRenderer({
+  container: document.getElementById('webgl'),
+  type: 'webgl',
+  camera: cam,
+  settings: {
+    defaultLabelColor: '#fff',
+    defaultNodeColor: '#999',
+    defaultEdgeColor: '#333',
     edgeColor: 'default'
   }
 });

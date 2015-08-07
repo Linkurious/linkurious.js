@@ -144,8 +144,6 @@
     );
     context.rotate(-angle);
     context.translate(-x, -y);
-  };
-
 
   function drawBackground(angle, context, fontSize, size, label, x, y) {
     var w = Math.round(
@@ -166,5 +164,6 @@
     context.closePath();
     context.fill();
     context.restore();
-  }
+  }    
+  };
 }).call(this);

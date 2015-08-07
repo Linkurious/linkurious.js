@@ -161,16 +161,16 @@ s = new sigma({
 // Initialize camera:
 s.addCamera('cam1'),
 
+s.addRenderer({
+  container: document.getElementById('graph-canvas-left'),
+  type: 'canvas',
+  camera: 'cam1'
+});
+
 // Initialize the two renderers:
 s.addRenderer({
   container: document.getElementById('graph-webgl-right'),
   type: 'webgl',
-  camera: 'cam1'
-});
-
-s.addRenderer({
-  container: document.getElementById('graph-canvas-left'),
-  type: 'canvas',
   camera: 'cam1'
 });
 
