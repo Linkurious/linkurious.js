@@ -141,10 +141,17 @@
 
     var ratio = calculateRatio(s, r, params);
 
+    var batchEdgesDrawing = s.settings('batchEdgesDrawing');
+    if (batchEdgesDrawing) {
+      s.settings('batchEdgesDrawing', false); // it may crash if true
+    }
+
     if(!params.clip)
       this.clone(s, params, ratio);
 
     var merged = this.draw(r, params, ratio);
+
+    s.settings('batchEdgesDrawing', batchEdgesDrawing); // restore setting
 
     var dataUrl = merged.toDataURL(_types[params.format || 'png']);
 
