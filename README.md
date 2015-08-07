@@ -46,7 +46,7 @@ The [wiki](https://github.com/Linkurious/linkurious.js/wiki) provides documentat
 To use it, clone the repository:
 
 ```
-git clone git@github.com:Linkurious/sigma.js.git
+git clone git@github.com:Linkurious/linkurious.js.git
 ```
 
 To build the code:
