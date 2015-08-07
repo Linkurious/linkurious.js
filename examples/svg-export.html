@@ -128,9 +128,9 @@ s.refresh();
 var force = false;
 document.getElementById('layout').onclick = function() {
   if (!force)
-    sigma.layouts.startForceAtlas2(s, {worker: true, slowDown: 10});
+    s.startForceAtlas2({worker: true, slowDown: 10});
   else
-    sigma.layouts.stopForceAtlas2(s);
+    s.stopForceAtlas2();
   force = !force;
 };
 
