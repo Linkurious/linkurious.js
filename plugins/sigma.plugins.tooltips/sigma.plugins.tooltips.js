@@ -173,11 +173,23 @@
         _tooltip.innerHTML = options.template;
       }
 
+      var containerPosition = window.getComputedStyle(renderer.container).position;
+
+      if(containerPosition !== 'static') {
+        _tooltip.style.position = 'absolute';
+        var containerRect = renderer.container.getBoundingClientRect();
+        x = ~~(x - containerRect.left);
+        y = ~~(y - containerRect.top);
+      }
+
+
       // Style it:
       _tooltip.className = options.cssClass;
 
       if (options.position !== 'css') {
-        _tooltip.style.position = 'relative';
+        if(containerPosition === 'static') {
+          _tooltip.style.position = 'absolute';
+        }
 
         // Default position is mouse position:
         _tooltip.style.left = x + 'px';
