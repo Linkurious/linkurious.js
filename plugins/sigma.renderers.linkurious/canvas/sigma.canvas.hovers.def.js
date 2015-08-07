@@ -152,6 +152,7 @@
     }
 
     function getTextWidth(text) {
+      if (!text) return 0;
       return settings('approximateLabelWidth') ?
         0.6 * text.length * fontSize :
         context.measureText(text).width;
