@@ -2,10 +2,23 @@
 
 #### 1.1.0 (August 7, 2015)
 
-This release provides BREAKING CHANGES from the core of Sigma.js (see #201) and focuses on performance.
+This release provides A BREAKING CHANGE from the core of Sigma.js and focuses on performance.
+
+Hightlights:
+ - linkurious is now available on npm: `npm install linkurious`
+ - Latest release files directly in `dist/` and a plugins.(.min).js containing all the plugins
+ - Crisp render on retina displays
+ - Added plugin.generators to generate graphs
+ - Panning, zooming and hovering is a lot smoother
+ - New setting: `edgesClippingWithNodes` to hide or not the edges when zooming
+ - Contributors, we have a new workflow: #201 (in short: all plugins are merged into one branch)
+
+How to upgrade:
+  - replace `overNode(s)`, `outNode(s)`, `overEdge(s)`, `outEdge(s)` events by the `hovers` event
 
 Core:
   - #235 Add plugins.js and plugins.min.js and clean grunt/package.json things
+  - #229 Alert the user if webgl is not supported but trying to render with the WebGL renderer 
   - #224 Fix Edges not rendered when extremities are far from the viewport
   - #223 Remove width hack and clear canvas via clearRect
   - #222 Improve pan/zoom smoothiness on canvas
@@ -27,10 +40,11 @@ Plugins:
   - #194 Include renderers.customEdgeShapes into renderers.linkurious
   - #181 Fix plugins.image crashes on batchEdgesDrawing: true
   - #177 Fix layout.fruchtermanReingold only runs the first time it is called
-  - #168 renderers.linkurious: Cache `context.font` value when rendering
+  - #168 renderers.linkurious: Cache `context.font` value when rendering  (~20% rendering overall speedup)
   - #104 Add plugins.generators
 
 Docs:
+  - #201 [NEWS] Changes on the dev workflow
   - #238 Add AUTHORS file
 
 #### 1.0.10 (July 18, 2015)
