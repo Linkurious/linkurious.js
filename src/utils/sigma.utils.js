@@ -632,9 +632,10 @@
    * @return {object}   The center of the event's target.
    */
   sigma.utils.getCenter = function(e) {
+    var ratio = (!e.target.ownerSVGElement) ? 1 : sigma.utils.getPixelRatio();
     return {
-      x: sigma.utils.getWidth(e) / (2 * sigma.utils.getPixelRatio()),
-      y: sigma.utils.getHeight(e) / (2 * sigma.utils.getPixelRatio()),
+      x: sigma.utils.getWidth(e) / (2 * ratio),
+      y: sigma.utils.getHeight(e) / (2 * ratio),
     };
   };
 
@@ -865,9 +866,6 @@
     return program;
   };
 
-
-
-
   /**
    * *********
    * MATRICES:
@@ -977,5 +975,30 @@
       a20 * b01 + a21 * b11 + a22 * b21,
       a20 * b02 + a21 * b12 + a22 * b22
     ];
+  };
+
+
+  /**
+   * ************
+   * CANVAS UTILS:
+   * ************
+   */
+  /**
+   * Calculate the width of the text either approximated via the font size or
+   * via the more expensive but accurate context.measureText.
+   *
+   * @param  {context2D}   ctx           The canvas context.
+   * @param  {boolean}     approximate   Approximate or not.
+   * @param  {integer}     fontSize      Font size of the text.
+   * @param  {string}      text          The text to use.
+   *
+   * @return {float}       Returns the width.
+   */
+   sigma.utils.canvas = {};
+   sigma.utils.canvas.getTextWidth =
+        function(ctx, approximate, fontSize, text) {
+    if (!text) return 0;
+    return approximate ? 0.6 * text.length * fontSize :
+      ctx.measureText(text).width;
   };
 }).call(this);

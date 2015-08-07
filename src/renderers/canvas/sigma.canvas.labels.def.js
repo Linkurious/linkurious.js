@@ -72,11 +72,8 @@
         labelOffsetY = - size - 2 * fontSize / 3;
         break;
       case 'inside':
-        if (settings('approximateLabelWidth')) {
-          labelWidth = 0.5 * node.label.length * fontSize;
-        } else {
-          labelWidth = context.measureText(node.label).width;
-        }
+        labelWidth = sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, node.label);
         if (labelWidth <= (size + fontSize / 3) * 2) {
           break;
         }

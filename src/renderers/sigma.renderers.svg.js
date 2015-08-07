@@ -431,35 +431,20 @@
    * @param  {?number}                height The new height of the container.
    * @return {sigma.renderers.svg}           Returns the instance itself.
    */
-  sigma.renderers.svg.prototype.resize = function(w, h) {
+  sigma.renderers.svg.prototype.resize = function() {
     var oldWidth = this.width,
-        oldHeight = this.height,
-        pixelRatio = 1;
+        oldHeight = this.height;
 
-    if (w !== undefined && h !== undefined) {
-      this.width = w;
-      this.height = h;
-    } else {
-      this.width = this.container.offsetWidth;
-      this.height = this.container.offsetHeight;
-
-      w = this.width;
-      h = this.height;
-    }
+    this.width = this.container.offsetWidth;
+    this.height = this.container.offsetHeight;
 
     if (oldWidth !== this.width || oldHeight !== this.height) {
-      this.domElements.graph.style.width = w + 'px';
-      this.domElements.graph.style.height = h + 'px';
-
-      if (this.domElements.graph.tagName.toLowerCase() === 'svg') {
-        this.domElements.graph.setAttribute('width', (w * pixelRatio));
-        this.domElements.graph.setAttribute('height', (h * pixelRatio));
-      }
+      this.domElements.graph.style.width = this.width + 'px';
+      this.domElements.graph.style.height = this.height + 'px';
     }
 
     return this;
   };
-
 
   /**
    * The labels, nodes and edges renderers are stored in the three following

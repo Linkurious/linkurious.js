@@ -77,7 +77,8 @@
       context.fillStyle = (settings('labelHoverColor') === 'node') ?
         (node.color || settings('defaultNodeColor')) :
         settings('defaultLabelHoverColor');
-      var labelWidth = context.measureText(node.label).width,
+      var labelWidth = sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, node.label),
           labelOffsetX = - labelWidth / 2,
           labelOffsetY = fontSize / 3;
 
@@ -115,11 +116,11 @@
     function drawHoverBorder(alignment, context, fontSize, node) {
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
-          w = Math.round(
-            context.measureText(node.label).width + size + 1.5 + fontSize / 3
-          ),
           h = fontSize + 4,
-          e = Math.round(size + fontSize / 4);
+          e = Math.round(size + fontSize / 4),
+          labelWidth = sigma.utils.canvas.getTextWidth(context,
+              settings('approximateLabelWidth'), fontSize, node.label),
+          w = Math.round(labelWidth + size + 1.5 + fontSize / 3);
 
       if (node.label && typeof node.label === 'string') {
         // draw a rectangle for the label
@@ -145,7 +146,7 @@
             context.rect(x - w / 2, y + e, w, h);
             break;
           case 'inside':
-            if (context.measureText(node.label).width <= e * 2) {
+            if (labelWidth <= e * 2) {
               // don't draw anything
               break;
             }

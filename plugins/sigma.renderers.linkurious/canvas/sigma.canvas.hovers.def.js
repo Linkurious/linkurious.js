@@ -151,13 +151,6 @@
       );
     }
 
-    function getTextWidth(text) {
-      if (!text) return 0;
-      return settings('approximateLabelWidth') ?
-        0.6 * text.length * fontSize :
-        context.measureText(text).width;
-    }
-
     function prepareLabelBackground(context) {
       context.font = (fontStyle ? fontStyle + ' ' : '') +
         fontSize + 'px ' + (settings('hoverFont') || settings('font'));
@@ -178,7 +171,9 @@
     function drawHoverBorder(alignment, context, fontSize, node) {
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
-          w = Math.round(getTextWidth(node.label) + 4),
+          labelWidth = sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, node.label),
+          w = Math.round(labelWidth + 4),
           h = fontSize + 4,
           e = Math.round(size + fontSize * 0.25);
 
@@ -209,7 +204,7 @@
             context.rect(x - w * 0.5, y + e, w, h);
             break;
           case 'inside':
-            if (context.measureText(node.label).width <= e * 2) {
+            if (labelWidth <= e * 2) {
               // don't draw anything
               break;
             }
