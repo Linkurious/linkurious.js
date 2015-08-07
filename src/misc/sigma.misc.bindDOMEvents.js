@@ -52,7 +52,7 @@
         return;
 
       // Generic event
-      self.dispatchEvent('click', e);
+      self.dispatchEvent('click', sigma.utils.mouseCoords(e));
 
       // Are we on a node?
       var element = new Element(e.target);
@@ -74,7 +74,7 @@
         return;
 
       // Generic event
-      self.dispatchEvent('doubleClick', e);
+      self.dispatchEvent('doubleClick', sigma.utils.mouseCoords(e));
 
       // Are we on a node?
       var element = new Element(e.target);
@@ -100,7 +100,8 @@
       var el_svg = new Element(target),
         event = {
           leave: {nodes: [], edges: []},
-          enter: {nodes: [], edges: []}
+          enter: {nodes: [], edges: []},
+          captor: sigma.utils.mouseCoords(e),
         },
         el;
 
@@ -128,7 +129,8 @@
       var el_svg = new Element(target),
         event = {
           leave: {nodes: [], edges: []},
-          enter: {nodes: [], edges: []}
+          enter: {nodes: [], edges: []},
+          captor: sigma.utils.mouseCoords(e),
         },
         el;
 

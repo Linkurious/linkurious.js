@@ -94,50 +94,51 @@
           pos;
 
       // Dispatch event:
-      if (_settings('mouseEnabled'))
+      if (_settings('mouseEnabled')) {
         _self.dispatchEvent('mousemove',
-          mouseCoords(e, sigma.utils.getX(e), sigma.utils.getY(e)));
+          sigma.utils.mouseCoords(e));
 
-      if (_settings('mouseEnabled') && _isMouseDown) {
-        _isMoving = true;
-        _hasDragged = true;
+        if (_isMouseDown) {
+          _isMoving = true;
+          _hasDragged = true;
 
-        if (_movingTimeoutId)
-          clearTimeout(_movingTimeoutId);
+          if (_movingTimeoutId)
+            clearTimeout(_movingTimeoutId);
 
-        _movingTimeoutId = setTimeout(function() {
-          _isMoving = false;
-        }, _settings('dragTimeout'));
+          _movingTimeoutId = setTimeout(function() {
+            _isMoving = false;
+          }, _settings('dragTimeout'));
 
-        sigma.misc.animation.killAll(_camera);
+          sigma.misc.animation.killAll(_camera);
 
-        _camera.isMoving = true;
-        pos = _camera.cameraPosition(
-          sigma.utils.getX(e) - _startMouseX,
-          sigma.utils.getY(e) - _startMouseY,
-          true
-        );
+          _camera.isMoving = true;
+          pos = _camera.cameraPosition(
+            sigma.utils.getX(e) - _startMouseX,
+            sigma.utils.getY(e) - _startMouseY,
+            true
+          );
 
-        x = _startCameraX - pos.x;
-        y = _startCameraY - pos.y;
+          x = _startCameraX - pos.x;
+          y = _startCameraY - pos.y;
 
-        if (x !== _camera.x || y !== _camera.y) {
-          _lastCameraX = _camera.x;
-          _lastCameraY = _camera.y;
+          if (x !== _camera.x || y !== _camera.y) {
+            _lastCameraX = _camera.x;
+            _lastCameraY = _camera.y;
 
-          _camera.goTo({
-            x: x,
-            y: y
-          });
+            _camera.goTo({
+              x: x,
+              y: y
+            });
+          }
+
+          if (e.preventDefault)
+            e.preventDefault();
+          else
+            e.returnValue = false;
+
+          e.stopPropagation();
+          return false;
         }
-
-        if (e.preventDefault)
-          e.preventDefault();
-        else
-          e.returnValue = false;
-
-        e.stopPropagation();
-        return false;
       }
     }
 
@@ -183,7 +184,7 @@
           });
 
         _self.dispatchEvent('mouseup',
-          mouseCoords(e, sigma.utils.getX(e), sigma.utils.getY(e)));
+          sigma.utils.mouseCoords(e));
 
         // Update _isMoving flag:
         _isMoving = false;
@@ -218,7 +219,7 @@
           case 3:
             // Right mouse button pressed
             _self.dispatchEvent('rightclick',
-              mouseCoords(e, _startMouseX, _startMouseY));
+              sigma.utils.mouseCoords(e, _startMouseX, _startMouseY));
             break;
           // case 1:
           default:
@@ -226,7 +227,7 @@
             _isMouseDown = true;
 
             _self.dispatchEvent('mousedown',
-              mouseCoords(e, _startMouseX, _startMouseY));
+              sigma.utils.mouseCoords(e, _startMouseX, _startMouseY));
         }
       }
     }
@@ -250,7 +251,7 @@
      */
     function _clickHandler(e) {
       if (_settings('mouseEnabled')) {
-        var event = mouseCoords(e, sigma.utils.getX(e), sigma.utils.getY(e));
+        var event = sigma.utils.mouseCoords(e);
         event.isDragging =
           (((new Date()).getTime() - _downStartTime) > 100) && _hasDragged;
         _self.dispatchEvent('click', event);
@@ -280,7 +281,7 @@
         ratio = 1 / _settings('doubleClickZoomingRatio');
 
         _self.dispatchEvent('doubleclick',
-            mouseCoords(e, _startMouseY, _startMouseY));
+            sigma.utils.mouseCoords(e, _startMouseX, _startMouseY));
 
         if (_settings('doubleClickEnabled')) {
           pos = _camera.cameraPosition(
@@ -342,19 +343,6 @@
         e.stopPropagation();
         return false;
       }
-    }
-
-    function mouseCoords(e, x, y) {
-      return {
-          x: x - sigma.utils.getCenter(e).x,
-          y: y - sigma.utils.getCenter(e).y,
-          clientX: e.clientX,
-          clientY: e.clientY,
-          ctrlKey: e.ctrlKey,
-          metaKey: e.metaKey,
-          altKey: e.altKey,
-          shiftKey: e.shiftKey
-      };
     }
   };
 }).call(this);

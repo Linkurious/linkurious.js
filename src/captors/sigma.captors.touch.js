@@ -73,9 +73,6 @@
       };
     }
 
-
-
-
     /**
      * This method unbinds every handlers that makes the captor work.
      */
@@ -87,9 +84,6 @@
       _target.addEventListener('touchleave', _handleLeave);
       _target.addEventListener('touchmove', _handleMove);
     };
-
-
-
 
     // TOUCH EVENTS:
     // *************
@@ -284,7 +278,7 @@
               });
 
               _self.dispatchEvent('mousemove',
-                mouseCoords(e, pos0.x, pos0.y));
+                sigma.utils.mouseCoords(e, pos0.x, pos0.y));
 
               _self.dispatchEvent('drag');
             }
@@ -384,7 +378,7 @@
 
         pos = position(e.touches[0]);
         _self.dispatchEvent('doubleclick',
-          mouseCoords(e, pos.x, pos.y));
+          sigma.utils.mouseCoords(e, pos.x, pos.y));
 
         if (_settings('doubleClickEnabled')) {
           pos = _camera.cameraPosition(
@@ -411,19 +405,6 @@
         e.stopPropagation();
         return false;
       }
-    }
-
-    function mouseCoords(e, x, y) {
-      return {
-          x: x - sigma.utils.getCenter(e).x,
-          y: y - sigma.utils.getCenter(e).y,
-          clientX: e.clientX,
-          clientY: e.clientY,
-          ctrlKey: e.ctrlKey,
-          metaKey: e.metaKey,
-          altKey: e.altKey,
-          shiftKey: e.shiftKey
-      };
     }
   };
 }).call(this);

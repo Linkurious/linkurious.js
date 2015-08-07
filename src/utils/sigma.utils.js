@@ -632,10 +632,35 @@
    * @return {object}   The center of the event's target.
    */
   sigma.utils.getCenter = function(e) {
-    var ratio = (!e.target.ownerSVGElement) ? 1 : sigma.utils.getPixelRatio();
+    var ratio = e.target.getAttribute('class') == 'sigma-svg' ? 1 :
+        sigma.utils.getPixelRatio();
     return {
       x: sigma.utils.getWidth(e) / (2 * ratio),
       y: sigma.utils.getHeight(e) / (2 * ratio),
+    };
+  };
+
+  /**
+   * Convert mouse coords to sigma coords
+   *
+   * @param  {event}   e A mouse or touch event.
+   * @param  {number?} x The x coord to convert
+   * @param  {number?} x The y coord to convert
+   *
+   * @return {object}    The standardized event
+   */
+  sigma.utils.mouseCoords = function(e, x, y) {
+    x = x || sigma.utils.getX(e);
+    y = y || sigma.utils.getY(e);
+    return {
+        x: x - sigma.utils.getCenter(e).x,
+        y: y - sigma.utils.getCenter(e).y,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        shiftKey: e.shiftKey
     };
   };
 
