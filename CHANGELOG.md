@@ -1,5 +1,38 @@
 ## linkurious.js - changelog:
 
+#### 1.1.0 (August 7, 2015)
+
+This release provides BREAKING CHANGES from the core of Sigma.js (see #201) and focuses on performance.
+
+Core:
+  - #235 Add plugins.js and plugins.min.js and clean grunt/package.json things
+  - #224 Fix Edges not rendered when extremities are far from the viewport
+  - #223 Remove width hack and clear canvas via clearRect
+  - #222 Improve pan/zoom smoothiness on canvas
+  - #221 Aggressively simplify hovering system (replace `overNode(s)`, `outNode(s)`, `overEdge(s)`, `outEdge(s)` by `hovers`)
+  - #213 Fix `onMove` render twice during a panning event
+  - #210 Publish on npm
+  - #208 Add dist/ folder with latest release
+  - #204 Improve node labels renderers
+  - #203 New rendering system and faster edge labels renderer
+  - #169 Add possibility to have `pre` and `post` hooks to canvas renderers
+  - #25 Fix retina display
+
+Plugins:
+  - #233 Fix plugins.select throws "Uncaught TypeError" on Spacebar+Del 
+  - #226 Fix layout.dagre only runs the first time that is called
+  - #209 Fix plugins.tooltip: wrong position on sigma container with margins
+  - #198 plugins.tooltip: Add option to delay hide execution on outNode and outEdge
+  - #196 renderers.halo: Merge circles via two-pass rendering
+  - #194 Include renderers.customEdgeShapes into renderers.linkurious
+  - #181 Fix plugins.image crashes on batchEdgesDrawing: true
+  - #177 Fix layout.fruchtermanReingold only runs the first time it is called
+  - #168 renderers.linkurious: Cache `context.font` value when rendering
+  - #104 Add plugins.generators
+
+Docs:
+  - #238 Add AUTHORS file
+
 #### 1.0.10 (July 18, 2015)
 
 Core:
