@@ -24,6 +24,9 @@
     if (!(options.container instanceof HTMLElement))
       throw 'Container not found.';
 
+    if (!(sigma.utils.isWebGLSupported()))
+      alert('WebGL is not supported by your browser');
+
     var k,
         i,
         l,

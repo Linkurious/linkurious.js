@@ -812,6 +812,27 @@
    * WEBGL UTILS:
    * ************
    */
+
+  /**
+   * Return true if the browser support webgl
+   *
+   * @return {boolean}
+   */
+  sigma.utils.isWebGLSupported = function() {
+    var canvas,
+        webgl = !!window.WebGLRenderingContext;
+    if (webgl) {
+      canvas = document.createElement('canvas');
+      try {
+        return !!(
+          canvas.getContext('webgl') ||
+          canvas.getContext('experimental-webgl')
+        );
+      } catch (e) {}
+    }
+    return false;
+  };
+
   /**
    * Loads a WebGL shader and returns it.
    *
