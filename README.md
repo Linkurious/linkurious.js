@@ -49,6 +49,8 @@ To use it, clone the repository:
 git clone git@github.com:Linkurious/linkurious.js.git
 ```
 
+You can try the examples in the `examples/` directory to see how to use sigma.
+
 To build the code:
 
  - Install [Node.js](http://nodejs.org/).
@@ -57,6 +59,14 @@ To build the code:
  - Use `npm run build` to minify the code with [Uglify](https://github.com/mishoo/UglifyJS). The minified files `sigma.min.js` and sigma plugins will then be accessible in the `build/` folder.
 
 You can also customize the build by adding or removing files from the `coreJsFiles` array in `Gruntfile.js` before applying the grunt task.
+
+You can also get the code directly from the `dist/` without having to build it yourself.
+
+You can also use `rawgit` for testing:
+
+```html
+<script src="https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js"></script>
+```
 
 ### Why linkurious.js?
 
