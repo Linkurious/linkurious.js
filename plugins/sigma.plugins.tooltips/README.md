@@ -114,6 +114,10 @@ The `node`, `edge` or `stage` keys are mandatory to enable the related tooltips.
    * The delay in miliseconds before displaying the tooltip after the `show` event is triggered.
    * type: *number*
    * default value: `0`
+ * **hideDelay**
+   * The delay in miliseconds before hiding the tooltip after the `hide` event is triggered.
+   * type: *number*
+   * default value: `0`
  * **autoadjust**
    * [EXPERIMENTAL] If true, tries to adjust the tooltip position to be fully included in the body area. Doesn't work on Firefox 30. Better work on elements with fixed width and height.
    * type: *boolean*

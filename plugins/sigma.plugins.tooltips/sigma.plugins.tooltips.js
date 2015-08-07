@@ -29,6 +29,7 @@
       position: '',       // top | bottom | left | right
       autoadjust: false,
       delay: 0,
+      hideDelay: 0,
       template: '',       // HTML string
       renderer: null      // function
     },
@@ -39,6 +40,7 @@
       position: '',       // top | bottom | left | right
       autoadjust: false,
       delay: 0,
+      hideDelay: 0,
       template: '',       // HTML string
       renderer: null      // function
     },
@@ -49,6 +51,7 @@
       position: '',       // top | bottom | left | right
       autoadjust: false,
       delay: 0,
+      hideDelay: 0,
       template: '',       // HTML string
       renderer: null      // function
     },
@@ -120,6 +123,8 @@
         eo = sigma.utils.extend(options.edge, settings.edge),
         _tooltip,
         _timeoutHandle,
+        _timeoutHideHandle,
+        _mouseOverTooltip = false,
         _doubleClick = false;
 
     sigma.classes.dispatcher.extend(this);
@@ -195,6 +200,14 @@
         _tooltip.style.left = x + 'px';
         _tooltip.style.top = y + 'px';
       }
+
+      _tooltip.addEventListener('mouseenter', function() {
+        _mouseOverTooltip = true;
+      }, false);
+
+      _tooltip.addEventListener('mouseleave', function() {
+        _mouseOverTooltip = false;
+      }, false);
 
       // Execute after rendering:
       setTimeout(function() {
@@ -293,13 +306,29 @@
     };
 
     /**
-     * This function clears a potential timeout function related to the tooltip
+     * This function clears all timeouts related to the tooltip
      * and removes the tooltip.
      */
     function cancel() {
       clearTimeout(_timeoutHandle);
+      clearTimeout(_timeoutHideHandle);
       _timeoutHandle = false;
+      _timeoutHideHandle = false;
       remove();
+    };
+
+    /**
+     * Similar to cancel() but can be delayed.
+     *
+     * @param {number} delay. The delay in miliseconds.
+     */
+    function delayedCancel(delay) {
+      clearTimeout(_timeoutHandle);
+      clearTimeout(_timeoutHideHandle);
+      _timeoutHandle = false;
+      _timeoutHideHandle = setTimeout(function() {
+        if (!_mouseOverTooltip) remove();
+      }, delay);
     };
 
     // INTERFACE:
@@ -311,8 +340,11 @@
 
     this.kill = function() {
       this.unbindEvents();
+      clearTimeout(_timeoutHandle);
+      clearTimeout(_timeoutHideHandle);
       _tooltip = null;
       _timeoutHandle = null;
+      _timeoutHideHandle = null;
       _doubleClick = false;
     }
 
@@ -385,7 +417,7 @@
 
       s.bind(so.hide, function(event) {
         var p = _tooltip;
-        cancel();
+        delayedCancel(settings.stage.hideDelay);
         if (p)
           self.dispatchEvent('hidden', event.data);
       });
@@ -448,7 +480,7 @@
         if (event.data.leave && event.data.leave.nodes.length == 0)
           return
         var p = _tooltip;
-        cancel();
+        delayedCancel(settings.node.hideDelay);
         if (p)
           self.dispatchEvent('hidden', event.data);
       });
@@ -511,7 +543,7 @@
         if (event.data.leave && event.data.leave.edges.length == 0)
           return
         var p = _tooltip;
-        cancel();
+        delayedCancel(settings.edge.hideDelay);
         if (p)
           self.dispatchEvent('hidden', event.data);
       });
