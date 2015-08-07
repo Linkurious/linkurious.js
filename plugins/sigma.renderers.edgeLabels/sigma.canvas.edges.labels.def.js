@@ -82,12 +82,8 @@
     // force horizontal alignment if not enough space to draw the text,
     // otherwise draw text along the edge line:
     if ('auto' === settings('edgeLabelAlignment')) {
-      var labelWidth;
-      if (settings('approximateLabelWidth')) {
-        labelWidth = 0.5 * edge.label.length * fontSize;
-      }else {
-        labelWidth = context.measureText(edge.label).width;
-      }
+      var labelWidth = sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, edge.label)
       var edgeLength = sigma.utils.getDistance(
           source[prefix + 'x'],
           source[prefix + 'y'],
@@ -153,7 +149,9 @@
 
   function drawBackground(angle, context, fontSize, size, label, x, y) {
     var w = Math.round(
-          context.measureText(label).width + size + 1.5 + fontSize / 3
+          sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, label) +
+          size + 1.5 + fontSize / 3
         ),
         h = fontSize + 4;
 
