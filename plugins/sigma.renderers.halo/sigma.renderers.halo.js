@@ -175,11 +175,14 @@
   // Main function
   function halo(params) {
     params = params || {};
+    var pixelRatio = sigma.utils.getPixelRatio();
 
     if (!this.domElements['background']) {
       this.initDOM('canvas', 'background');
-      this.domElements['background'].width = this.container.offsetWidth;
-      this.domElements['background'].height = this.container.offsetHeight;
+      this.domElements['background'].width =
+        this.container.offsetWidth * pixelRatio;
+      this.domElements['background'].height =
+        this.container.offsetHeight * pixelRatio;
       this.container.insertBefore(this.domElements['background'], this.container.firstChild);
     }
 
@@ -221,7 +224,7 @@
     edges = webgl ? edges : intersection(params.edges, self.edgesOnScreen);
 
     // clear canvas
-    context.canvas.width = context.canvas.width;
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
     context.save();
 
