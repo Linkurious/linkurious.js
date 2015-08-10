@@ -227,7 +227,7 @@ module.exports = function(grunt) {
 
   // By default, will check lint, hint, test and minify:
   grunt.registerTask('default', ['closureLint', 'jshint', 'qunit', 'sed', 'clean', 'uglify', 'concat']);
-  grunt.registerTask('release', ['sed', 'clean', 'uglify', 'concat', 'zip']);
+  grunt.registerTask('release', ['closureLint', 'jshint', 'qunit', 'sed', 'clean', 'uglify', 'concat', 'zip']);
   grunt.registerTask('build', ['clean', 'uglify', 'concat']);
   grunt.registerTask('test', ['qunit']);
 
