@@ -9,7 +9,7 @@
     "url": "http://github.com/Linkurious/linkurious.js.git"
   },
   "license": "GPL-3.0+",
-  "main": "build/sigma.require.js",
+  "main": "dist/sigma.require.js",
   "dependencies": {
     "xlsx": "~0.7.12",
     "dagre": "~0.7.4"
