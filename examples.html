@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Linkurious.js</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="https://bootswatch.com/simplex/bootstrap.min.css" media="screen">
+    <script type="text/javascript"></script>
+  </head>
+<body>
+  <div class="container">
+    <h1><small>linkurious.js</small></h1>
+    <hr/>
+  </div>
+  <div class="container">
+    <div class="col-md-2">
+      <a href=''><h3>Overview</h3></a>
+      <a href=''><h3>> Examples</h3></a>
+      <a href=''><h3>Tutorials</h3></a>
+      <a href=''><h3>API</h3></a>
+      <a href=''><h3>Plugins</h3></a>
+      <a href=''><h3>Download</h3></a>
+      <a href=''><h3>Getting Help</h3></a>
+    </div>
+    <div class="col-md-2">
+      <a href=''><h5>> Hello world</h5></a>
+      <a href=''><h5>Force layout</h5></a>
+      <a href=''><h5>Import GEXF</h5></a>
+      <a href=''><h5>Lasso</h5></a>
+      <a href=''><h5>Renderers</h5></a>
+    </div>
+    <div class="col-md-8">
+      <h1>Hello world</h1>
+      <script type="text/javascript" src="https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js"></script>
+
+<div id="container">
+  <style>
+    #graph-container {
+      height: 400px;
+    }
+  </style>
+  <div id="graph-container" class="well" style="padding: 0"></div>
+</div>
+<script>
+/**
+ * This is a basic example on how to instantiate sigma. A random graph is
+ * generated and stored in the "graph" variable, and then sigma is instantiated
+ * directly with the graph.
+ *
+ * The simple instance of sigma is enough to make it render the graph on the on
+ * the screen, since the graph is given directly to the constructor.
+ */
+var i,
+    s,
+    N = 100,
+    E = 500,
+    g = {
+      nodes: [],
+      edges: []
+    };
+
+// Generate a random graph:
+for (i = 0; i < N; i++)
+  g.nodes.push({
+    id: 'n' + i,
+    label: 'Node ' + i,
+    x: Math.random(),
+    y: Math.random(),
+    size: Math.random(),
+    color: '#666'
+  });
+
+for (i = 0; i < E; i++)
+  g.edges.push({
+    id: 'e' + i,
+    source: 'n' + (Math.random() * N | 0),
+    target: 'n' + (Math.random() * N | 0),
+    size: Math.random(),
+    color: '#ccc'
+  });
+
+// Instantiate sigma:
+s = new sigma({
+  graph: g,
+  container: 'graph-container'
+});
+</script>
+<pre>
+var i,
+    s,
+    N = 100,
+    E = 500,
+    g = {
+      nodes: [],
+      edges: []
+    };
+
+// Generate a random graph:
+for (i = 0; i < N; i++)
+  g.nodes.push({
+    id: 'n' + i,
+    label: 'Node ' + i,
+    x: Math.random(),
+    y: Math.random(),
+    size: Math.random(),
+    color: '#666'
+  });
+
+for (i = 0; i < E; i++)
+  g.edges.push({
+    id: 'e' + i,
+    source: 'n' + (Math.random() * N | 0),
+    target: 'n' + (Math.random() * N | 0),
+    size: Math.random(),
+    color: '#ccc'
+  });
+
+// Instantiate sigma:
+s = new sigma({
+  graph: g,
+  container: 'graph-container'
+});
+</pre>
+    </div>
+  </div>
+</body>
+</html>
