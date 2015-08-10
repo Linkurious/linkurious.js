@@ -17,30 +17,29 @@ How to upgrade:
   - replace `overNode(s)`, `outNode(s)`, `overEdge(s)`, `outEdge(s)` events by the `hovers` event
 
 Core:
-  - #235 Add plugins.js and plugins.min.js and clean grunt/package.json things
-  - #229 Alert the user if webgl is not supported but trying to render with the WebGL renderer 
-  - #224 Fix Edges not rendered when extremities are far from the viewport
-  - #223 Remove width hack and clear canvas via clearRect
-  - #222 Improve pan/zoom smoothiness on canvas
-  - #221 Aggressively simplify hovering system (replace `overNode(s)`, `outNode(s)`, `overEdge(s)`, `outEdge(s)` by `hovers`)
-  - #213 Fix `onMove` render twice during a panning event
-  - #210 Publish on npm
-  - #208 Add dist/ folder with latest release
-  - #204 Improve node labels renderers
-  - #203 New rendering system and faster edge labels renderer
-  - #169 Add possibility to have `pre` and `post` hooks to canvas renderers
-  - #25 Fix retina display
+  - #235 Add plugins.js and plugins.min.js and clean grunt/package.json things (thanks to [@mdamien](https://github.com/mdamien))
+  - #229 Alert the user if webgl is not supported but trying to render with the WebGL renderer (thanks to [@mdamien](https://github.com/mdamien))
+  - #224 Fix Edges not rendered when extremities are far from the view (thanks to [@mdamien](https://github.com/mdamien))
+  - #223 Remove width hack and clear canvas via clearRect (thanks to [@mdamien](https://github.com/mdamien))
+  - #222 Improve pan/zoom smoothiness on canvas (thanks to [@mdamien](https://github.com/mdamien))
+  - #221 Aggressively simplify hovering system (replace `overNode(s)`, `outNode(s)`, `overEdge(s)`, `outEdge(s)` by `hovers`) (thanks to [@mdamien](https://github.com/mdamien))
+  - #213 Fix `onMove` render twice during a panning event (thanks to [@mdamien](https://github.com/mdamien))
+  - #210 Publish on npm (thanks to [@mdamien](https://github.com/mdamien))
+  - #208 Add dist/ folder with latest release (thanks to [@mdamien](https://github.com/mdamien))
+  - #204 Improve node labels renderers (thanks to [@mdamien](https://github.com/mdamien))
+  - #203 New rendering system and faster edge labels renderer (thanks to [@mdamien](https://github.com/mdamien))
+  - #25 Fix retina display (thanks to [@mdamien](https://github.com/mdamien))
 
 Plugins:
   - #233 Fix plugins.select throws "Uncaught TypeError" on Spacebar+Del 
   - #226 Fix layout.dagre only runs the first time that is called
   - #209 Fix plugins.tooltip: wrong position on sigma container with margins
   - #198 plugins.tooltip: Add option to delay hide execution on outNode and outEdge
-  - #196 renderers.halo: Merge circles via two-pass rendering
-  - #194 Include renderers.customEdgeShapes into renderers.linkurious
+  - #196 renderers.halo: Merge circles via two-pass rendering (thanks to [@mdamien](https://github.com/mdamien))
+  - #194 Include renderers.customEdgeShapes into renderers.linkurious (thanks to [@mdamien](https://github.com/mdamien))
   - #181 Fix plugins.image crashes on batchEdgesDrawing: true
   - #177 Fix layout.fruchtermanReingold only runs the first time it is called
-  - #168 renderers.linkurious: Cache `context.font` value when rendering  (~20% rendering overall speedup)
+  - #168 renderers.linkurious: Cache `context.font` value when rendering  (~20% rendering overall speedup) (thanks to [@mdamien](https://github.com/mdamien))
   - #104 Add plugins.generators
 
 Docs:
