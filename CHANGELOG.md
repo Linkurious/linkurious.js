@@ -1,17 +1,17 @@
 ## linkurious.js - changelog:
 
-#### 1.1.0 (August 7, 2015)
+#### 1.1.0 (August 10, 2015)
 
 This release provides A BREAKING CHANGE from the core of Sigma.js and focuses on performance.
 
 Hightlights:
- - linkurious is now available on npm: `npm install linkurious`
+ - linkurious.js is now available on npm: `npm install linkurious`
  - Latest release files directly in `dist/` and a plugins.(.min).js containing all the plugins
  - Crisp render on retina displays
  - Added plugin.generators to generate graphs
- - Panning, zooming and hovering is a lot smoother
- - New setting: `edgesClippingWithNodes` to hide or not the edges when zooming
- - Contributors, we have a new workflow: #201 (in short: all plugins are merged into one branch)
+ - Panning, zooming and hovering is a lot smoother on Canvas
+ - New setting: `edgesClippingWithNodes` to hide the edges having both extremities outside of the view if `true`
+ - Contributors, we have a new workflow: #201 (in short: all plugins are merged into the *develop* branch)
 
 How to upgrade:
   - replace `overNode(s)`, `outNode(s)`, `overEdge(s)`, `outEdge(s)` events by the `hovers` event
