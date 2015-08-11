@@ -1,11 +1,10 @@
 [ ![Codeship Status for Linkurious/linkurious.js](https://www.codeship.io/projects/b0710040-7f11-0132-f563-62fa786c5210/status)](https://www.codeship.io/projects/57170)
 [![Issue Stats](http://issuestats.com/github/Linkurious/linkurious.js/badge/pr?style=flat)](http://issuestats.com/github/Linkurious/linkurious.js)
 [![Issue Stats](http://issuestats.com/github/Linkurious/linkurious.js/badge/issue?style=flat)](http://issuestats.com/github/Linkurious/linkurious.js)
+[![Join the chat at https://gitter.im/Linkurious/linkurious.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Linkurious/linkurious.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 linkurious.js
 =================
-
-[![Join the chat at https://gitter.im/Linkurious/linkurious.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Linkurious/linkurious.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 The linkurious.js toolkit speeds up the development of modern Web applications that leverage the power of **graph visualization and interaction**.
 
