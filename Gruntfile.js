@@ -17,7 +17,6 @@ module.exports = function(grunt) {
     'src/classes/sigma.classes.graph.js',
     'src/classes/sigma.classes.camera.js',
     'src/classes/sigma.classes.quad.js',
-    'src/classes/sigma.classes.edgequad.js',
 
     // Captors:
     'src/captors/sigma.captors.mouse.js',

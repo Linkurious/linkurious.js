@@ -5,8 +5,7 @@
    * Sigma Quadtree Module
    * =====================
    *
-   * Author: Guillaume Plique (Yomguithereal)
-   * Version: 0.2
+   * Author: Guillaume Plique (Yomguithereal), Sébastien Heymann, Damien Marié
    */
 
 
@@ -34,6 +33,121 @@
         x2: n.x + n.size,
         y2: n.y - n.size,
         height: n.size * 2
+      };
+    },
+
+
+    /**
+     * Transforms a graph edge with x1, y1, x2, y2 and size into an
+     * axis-aligned square.
+     *
+     * @param  {object} A graph edge with at least two points
+     *                  (x1, y1), (x2, y2) and a size.
+     * @return {object} A square: two points (x1, y1), (x2, y2) and height.
+     */
+    lineToSquare: function(e) {
+      if (e.y1 < e.y2) {
+        // (e.x1, e.y1) on top
+        if (e.x1 < e.x2) {
+          // (e.x1, e.y1) on left
+          return {
+            x1: e.x1 - e.size,
+            y1: e.y1 - e.size,
+            x2: e.x2 + e.size,
+            y2: e.y1 - e.size,
+            height: e.y2 - e.y1 + e.size * 2
+          };
+        }
+        // (e.x1, e.y1) on right
+        return {
+          x1: e.x2 - e.size,
+          y1: e.y1 - e.size,
+          x2: e.x1 + e.size,
+          y2: e.y1 - e.size,
+          height: e.y2 - e.y1 + e.size * 2
+        };
+      }
+
+      // (e.x2, e.y2) on top
+      if (e.x1 < e.x2) {
+        // (e.x1, e.y1) on left
+        return {
+          x1: e.x1 - e.size,
+          y1: e.y2 - e.size,
+          x2: e.x2 + e.size,
+          y2: e.y2 - e.size,
+          height: e.y1 - e.y2 + e.size * 2
+        };
+      }
+      // (e.x2, e.y2) on right
+      return {
+        x1: e.x2 - e.size,
+        y1: e.y2 - e.size,
+        x2: e.x1 + e.size,
+        y2: e.y2 - e.size,
+        height: e.y1 - e.y2 + e.size * 2
+      };
+    },
+
+    /**
+     * Transforms a graph edge of type 'curve' with x1, y1, x2, y2,
+     * control point and size into an axis-aligned square.
+     *
+     * @param  {object} e  A graph edge with at least two points
+     *                     (x1, y1), (x2, y2) and a size.
+     * @param  {object} cp A control point (x,y).
+     * @return {object}    A square: two points (x1, y1), (x2, y2) and height.
+     */
+    quadraticCurveToSquare: function(e, cp) {
+      var pt = sigma.utils.getPointOnQuadraticCurve(
+        0.5,
+        e.x1,
+        e.y1,
+        e.x2,
+        e.y2,
+        cp.x,
+        cp.y
+      );
+
+      // Bounding box of the two points and the point at the middle of the
+      // curve:
+      var minX = Math.min(e.x1, e.x2, pt.x),
+          maxX = Math.max(e.x1, e.x2, pt.x),
+          minY = Math.min(e.y1, e.y2, pt.y),
+          maxY = Math.max(e.y1, e.y2, pt.y);
+
+      return {
+        x1: minX - e.size,
+        y1: minY - e.size,
+        x2: maxX + e.size,
+        y2: minY - e.size,
+        height: maxY - minY + e.size * 2
+      };
+    },
+
+    /**
+     * Transforms a graph self loop into an axis-aligned square.
+     *
+     * @param  {object} n A graph node with a point (x, y) and a size.
+     * @return {object}   A square: two points (x1, y1), (x2, y2) and height.
+     */
+    selfLoopToSquare: function(n) {
+      // Fitting to the curve is too costly, we compute a larger bounding box
+      // using the control points:
+      var cp = sigma.utils.getSelfLoopControlPoints(n.x, n.y, n.size);
+
+      // Bounding box of the point and the two control points:
+      var minX = Math.min(n.x, cp.x1, cp.x2),
+          maxX = Math.max(n.x, cp.x1, cp.x2),
+          minY = Math.min(n.y, cp.y1, cp.y2),
+          maxY = Math.max(n.y, cp.y1, cp.y2);
+
+      return {
+        x1: minX - n.size,
+        y1: minY - n.size,
+        x2: maxX + n.size,
+        y2: minY - n.size,
+        height: maxY - minY + n.size * 2
       };
     },
 
@@ -523,26 +637,30 @@
   /**
    * The quad core that will become the sigma interface with the quadtree.
    *
-   * property {object} _tree  Property holding the quadtree object.
-   * property {object} _geom  Exposition of the _geom namespace for testing.
-   * property {object} _cache Cache for the area method.
+   * @param  {boolean?} indexEdges Tell to index edges or nodes
+   *
+   * property {object} _tree       Property holding the quadtree object
+   * property {object} _geom       Exposition of the _geom namespace for testing
+   * property {object} _cache      Cache for the area method
    */
-  var quad = function() {
+  var quad = function(indexEdges) {
     this._geom = _geom;
     this._tree = null;
     this._cache = {
       query: false,
       result: false
     };
+    this._enabled = true;
+    this._indexEdges = indexEdges || false;
   };
 
   /**
-   * Index a graph by inserting its nodes into the quadtree.
+   * Index a graph by inserting its elements into the quadtree.
    *
-   * @param  {array}  nodes   An array of nodes to index.
-   * @param  {object} params  An object of parameters with at least the quad
-   *                          bounds.
-   * @return {object}         The quadtree object.
+   * @param  {array}  graph      The graph to index
+   * @param  {object} params     An object of parameters with at least the quad
+   *                             bounds.
+   * @return {object}            The quadtree object.
    *
    * Parameters:
    * ----------
@@ -552,14 +670,24 @@
    * maxElements: {integer?} the max number of elements in a leaf node.
    * maxLevel:    {integer?} the max recursion level of the tree.
    */
-  quad.prototype.index = function(nodes, params) {
+  quad.prototype.index = function(graph, params) {
+    if (!this._enabled) {
+      return this._tree;
+    }
 
     // Enforcing presence of boundaries
     if (!params.bounds)
       throw 'sigma.classes.quad.index: bounds information not given.';
 
     // Prefix
-    var prefix = params.prefix || '';
+    var prefix = params.prefix || '',
+        cp,
+        source,
+        target,
+        i,
+        l,
+        n,
+        e;
 
     // Building the tree
     this._tree = _quadTree(
@@ -569,19 +697,64 @@
       params.maxLevel
     );
 
-    // Inserting graph nodes into the tree
-    for (var i = 0, l = nodes.length; i < l; i++) {
+    if (!this._indexEdges) {
+      var nodes = graph.nodes();
+      // Inserting graph nodes into the tree
+      for (i = 0, l = nodes.length; i < l; i++) {
 
-      // Inserting node
-      _quadInsert(
-        nodes[i],
-        _geom.pointToSquare({
-          x: nodes[i][prefix + 'x'],
-          y: nodes[i][prefix + 'y'],
-          size: nodes[i][prefix + 'size']
-        }),
-        this._tree
-      );
+        // Inserting node
+        _quadInsert(
+          nodes[i],
+          _geom.pointToSquare({
+            x: nodes[i][prefix + 'x'],
+            y: nodes[i][prefix + 'y'],
+            size: nodes[i][prefix + 'size']
+          }),
+          this._tree
+        );
+      }
+    } else {
+      var edges = graph.edges();
+      // Inserting graph edges into the tree
+      for (i = 0, l = edges.length; i < l; i++) {
+        source = graph.nodes(edges[i].source);
+        target = graph.nodes(edges[i].target);
+        e = {
+          x1: source[prefix + 'x'],
+          y1: source[prefix + 'y'],
+          x2: target[prefix + 'x'],
+          y2: target[prefix + 'y'],
+          size: edges[i][prefix + 'size'] || 0
+        };
+
+        // Inserting edge
+        if (edges[i].type === 'curve' || edges[i].type === 'curvedArrow') {
+          if (source.id === target.id) {
+            n = {
+              x: source[prefix + 'x'],
+              y: source[prefix + 'y'],
+              size: source[prefix + 'size'] || 0
+            };
+            _quadInsert(
+              edges[i],
+              _geom.selfLoopToSquare(n),
+              this._tree);
+          }
+          else {
+            cp = sigma.utils.getQuadraticControlPoint(e.x1, e.y1, e.x2, e.y2);
+            _quadInsert(
+              edges[i],
+              _geom.quadraticCurveToSquare(e, cp),
+              this._tree);
+          }
+        }
+        else {
+          _quadInsert(
+            edges[i],
+            _geom.lineToSquare(e),
+            this._tree);
+        }
+      }
     }
 
     // Reset cache:
@@ -603,6 +776,9 @@
    * @return {array}  An array of nodes retrieved.
    */
   quad.prototype.point = function(x, y) {
+    if (!this._enabled)
+      return [];
+
     return this._tree ?
       _quadRetrievePoint({x: x, y: y}, this._tree) || [] :
       [];
@@ -618,6 +794,9 @@
    * @return {array}  An array of nodes retrieved.
    */
   quad.prototype.area = function(rect) {
+    if (!this._enabled)
+      return [];
+
     var serialized = JSON.stringify(rect),
         collisionFunc,
         rectData;
@@ -637,7 +816,7 @@
     }
 
     // Retrieving nodes
-    var nodes = this._tree ?
+    var elements = this._tree ?
       _quadRetrieveArea(
         rectData,
         this._tree,
@@ -646,15 +825,15 @@
       [];
 
     // Object to array
-    var nodesArray = [];
-    for (var i in nodes)
-      nodesArray.push(nodes[i]);
+    var elementsArr = [];
+    for (var i in elements)
+      elementsArr.push(elements[i]);
 
     // Caching
     this._cache.query = serialized;
-    this._cache.result = nodesArray;
+    this._cache.result = elementsArr;
 
-    return nodesArray;
+    return elementsArr;
   };
 
 
@@ -665,10 +844,12 @@
   if (typeof this.sigma !== 'undefined') {
     this.sigma.classes = this.sigma.classes || {};
     this.sigma.classes.quad = quad;
+    this.sigma.classes.edgequad = quad.bind(this, true);
   } else if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports)
       exports = module.exports = quad;
     exports.quad = quad;
   } else
     this.quad = quad;
+
 }).call(this);

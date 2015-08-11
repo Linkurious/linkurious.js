@@ -519,7 +519,7 @@
         );
 
         // Refresh quadtree:
-        c.quadtree.index(this.graph.nodes(), {
+        c.quadtree.index(this.graph, {
           prefix: c.readPrefix,
           maxLevel: c.settings('nodeQuadtreeMaxLevel'),
           bounds: {
