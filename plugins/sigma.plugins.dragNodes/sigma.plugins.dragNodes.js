@@ -63,7 +63,7 @@
       _isMouseDown = false,
       _isMouseOverCanvas = false,
       _drag = false,
-      _stickiness = s.settings('dragNodeStickiness');
+      _sticky = true;
 
     if (renderer instanceof sigma.renderers.svg) {
         _mouse = renderer.container.firstChild;
@@ -164,6 +164,7 @@
 
       _isMouseDown = true;
       if (_node && _s.graph.nodes().length > 0) {
+        _sticky = true;
         _mouse.removeEventListener('mousedown', nodeMouseDown);
         _body.addEventListener('mousemove', nodeMouseMove);
         _body.addEventListener('mouseup', nodeMouseUp);
@@ -241,6 +242,11 @@
 
         if (nodes.length < 2) return;
 
+        dist = sigma.utils.getDistance(x, y, _node[_prefix + 'x'],_node[_prefix + 'y']);
+
+        if (_sticky && dist < _node[_prefix + 'size']) return;
+        _sticky = false;
+
         // Getting and derotating the reference coordinates.
         for (var i = 0; i < 2; i++) {
           n = nodes[i];
@@ -263,11 +269,6 @@
 
         x2 = x * cos - y * sin;
         y2 = y * cos + x * sin;
-
-        if (_stickiness > 0) {
-          dist = sigma.utils.getDistance(x2, y2, _node.x, _node.y);
-          if (dist < _stickiness) return;
-        }
 
         // Drag multiple nodes, Keep distance
         if(_a) {

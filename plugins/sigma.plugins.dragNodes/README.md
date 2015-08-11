@@ -5,7 +5,7 @@ Plugin developed by [José M. Camacho](https://github.com/josemazo), events by [
 
 ---
 
-This plugin provides a method to drag & drop nodes. At the moment, this plugin is not compatible with the WebGL renderer.
+This plugin provides a method to drag & drop nodes. The mouse pointer must move outside of the node during drag to enable the node to move freely on screen ("sticky" effect). At the moment, this plugin is not compatible with the WebGL renderer.
 
 Combined with a lasso selection like in the following example, it provides an intuitive experience to the users:
 
@@ -27,25 +27,6 @@ Kill the plugin as follows:
 ````javascript
 sigma.plugins.killDragNodes(sigmaInstance);
 ````
-
-## Configuration
-
-This plugin adds new settings to sigma. Initialize sigma as follows:
-
-````javascript
-s = new sigma({
-  graph: g,
-  container: 'graph-container',
-  settings: {
-    dragNodeStickiness: 0.01
-  }
-});
-````
-
- * **dragNodeStickiness**
-   * Apply the new node position if the distance between the start position and end position is greater than this threshold.
-   * type: *number*
-   * default value: `0`
 
 ## Events
 
