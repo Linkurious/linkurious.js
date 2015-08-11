@@ -1,0 +1,36 @@
+---
+layout: sidebar
+---
+
+<h1>Force layout</h1>
+
+<style>
+#graph-container {
+  height: 400px;
+}
+</style>
+<div id="graph-container" class="well" style="padding: 0"></div>
+<script>
+g = sigma.plugins.generators.grid(12,12);
+
+s = new sigma({
+  graph: g,
+  renderer: {
+    container: 'graph-container'
+  },
+});
+
+sigma.layouts.startForceLink(s);
+</script>
+<pre>
+g = sigma.plugins.generators.grid(12,12);
+
+s = new sigma({
+  graph: g,
+  renderer: {
+    container: 'graph-container'
+  },
+});
+
+sigma.layouts.startForceLink(s);
+</pre>
