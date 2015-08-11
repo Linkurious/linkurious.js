@@ -1,0 +1,58 @@
+---
+layout: base
+root: ../
+title: Examples
+---
+
+<div class="col-md-2">
+  <a href='{{site.baseurl}}examples/basic.html'>
+  	<h5>
+		{% if page.example == 'Hello World' %}> {% endif %}
+		Hello world
+  	</h5>
+  </a>
+  <a href='{{site.baseurl}}examples/force.html'>
+  	<h5>
+  		{% if page.example == 'Force Layout' %}> {% endif %}
+  		Force Layout
+  	</h5>
+  </a>
+  <a href='{{site.baseurl}}examples/drag.html'>
+  	<h5>
+  		{% if page.example == 'Drag Nodes' %}> {% endif %}
+  		Drag Nodes
+  	</h5>
+  </a>
+  <a href='{{site.baseurl}}examples/gexf.html'>
+  	<h5>
+  		{% if page.example == 'GEXF Import' %}> {% endif %}
+  		GEXF import
+  	</h5>
+  </a>
+  <a href='{{site.baseurl}}examples/renderers.html'>
+  	<h5>
+  		{% if page.example == 'Multiple renderers' %}> {% endif %}
+  		Multiple renderers
+  	</h5>
+  </a>
+</div>
+
+<div class="col-md-8">
+	
+<h1> {{ page.example }} </h1>
+
+<div class="row">
+	<div class="col-md-6">
+		<style>
+		#graph-container {
+		  height: 400px;
+		}
+		</style>
+		<div id="graph-container" class="well" style="padding: 0"></div>
+	</div>
+	<div class="col-md-6">
+		{{ content }}
+	</div>
+</div>
+
+</div>

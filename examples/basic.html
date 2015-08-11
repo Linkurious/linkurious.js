@@ -1,62 +1,14 @@
 ---
-layout: sidebar
+layout: example
+example: Hello World
 ---
 
-<h1>Hello world</h1>
-
-<style>
-#graph-container {
-  height: 400px;
-}
-</style>
-<div id="graph-container" class="well" style="padding: 0"></div>
 <script>
-var i,
-    s,
-    N = 100,
-    E = 500,
-    g = {
-      nodes: [],
-      edges: []
-    };
-
-// Generate a random graph:
-for (i = 0; i < N; i++)
-  g.nodes.push({
-    id: 'n' + i,
-    label: 'Node ' + i,
-    x: Math.random(),
-    y: Math.random(),
-    size: Math.random(),
-    color: '#666'
-  });
-
-for (i = 0; i < E; i++)
-  g.edges.push({
-    id: 'e' + i,
-    source: 'n' + (Math.random() * N | 0),
-    target: 'n' + (Math.random() * N | 0),
-    size: Math.random(),
-    color: '#ccc'
-  });
-
-// Instantiate sigma:
-s = new sigma({
-  graph: g,
-  container: 'graph-container'
-});
-</script>
-<pre>
-var N = 100,
-    E = 500,
-    g = {
-      nodes: [],
-      edges: []
-    };
+var N = 100, E = 500, nodes = [], edges = [];
 
 // Generate a random graph:
 for (var i = 0; i < N; i++)
-  g.nodes.push({
+  nodes.push({
     id: 'n' + i,
     label: 'Node ' + i,
     x: Math.random(),
@@ -66,7 +18,7 @@ for (var i = 0; i < N; i++)
   });
 
 for (var i = 0; i < E; i++)
-  g.edges.push({
+  edges.push({
     id: 'e' + i,
     source: 'n' + (Math.random() * N | 0),
     target: 'n' + (Math.random() * N | 0),
@@ -76,7 +28,36 @@ for (var i = 0; i < E; i++)
 
 // Instantiate sigma:
 var s = new sigma({
-  graph: g,
+  graph: {nodes:nodes, edges:edges},
+  container: 'graph-container'
+});
+</script>
+<pre>
+var N = 100, E = 500, nodes = [], edges = [];
+
+// Generate a random graph:
+for (var i = 0; i < N; i++)
+  nodes.push({
+    id: 'n' + i,
+    label: 'Node ' + i,
+    x: Math.random(),
+    y: Math.random(),
+    size: Math.random(),
+    color: '#666'
+  });
+
+for (var i = 0; i < E; i++)
+  edges.push({
+    id: 'e' + i,
+    source: 'n' + (Math.random() * N | 0),
+    target: 'n' + (Math.random() * N | 0),
+    size: Math.random(),
+    color: '#ccc'
+  });
+
+// Instantiate sigma:
+var s = new sigma({
+  graph: {nodes:nodes, edges:edges},
   container: 'graph-container'
 });
 </pre>

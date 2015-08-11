@@ -1,5 +1,6 @@
 ---
 layout: full_page
+title: ''
 ---
 
 The linkurious.js toolkit speeds up the development of modern Web applications that leverage the power of **graph visualization and interaction**.
@@ -7,28 +8,6 @@ The linkurious.js toolkit speeds up the development of modern Web applications t
 Graphs are also called networks: they are made of nodes linked by edges. Graphs are a powerful way to represent any relationships in data like social networks (i.e. who likes who), infrastructure (i.e. how devices are connected), flows (i.e. where does the money go), and much more.
 
 Linkurious.js provides a collection of **HTML5** features based on [Sigma.js](http://sigmajs.org/), the fastest open source Javascript graph drawing engine on the market. Linkurious.js is published in dual licenses, **available under both commercial and GNU GPLv3 licenses** (see below).
-
----
-
-[
-![glyphs-icons](https://github.com/Linkurious/linkurious.js/wiki/media/glyphs-icons-230.gif)
-![edge-shapes](https://github.com/Linkurious/linkurious.js/wiki/media/edge-shapes-230.gif)
-![filters](https://github.com/Linkurious/linkurious.js/wiki/media/filters-230.gif)
-![forceatlas](https://github.com/Linkurious/linkurious.js/wiki/media/forceatlas-230.gif)
-![glyphs](https://github.com/Linkurious/linkurious.js/wiki/media/glyphs-230.gif)
-![halo](https://github.com/Linkurious/linkurious.js/wiki/media/halo-230.gif)
-![hover-edge](https://github.com/Linkurious/linkurious.js/wiki/media/hover-edge-230.gif)
-![designer](https://github.com/Linkurious/linkurious.js/wiki/media/designer-230.gif)
-![drag](https://github.com/Linkurious/linkurious.js/wiki/media/drag-multiple-nodes-230.gif)
-![layout-arctic](https://github.com/Linkurious/linkurious.js/wiki/media/layout-arctic-230.gif)
-![level-of-details-edges-labels](https://github.com/Linkurious/linkurious.js/wiki/media/level-of-details-edges-labels-230.gif)
-![node-icons](https://github.com/Linkurious/linkurious.js/wiki/media/node-icons-230.gif)
-![pie-charts](https://github.com/Linkurious/linkurious.js/wiki/media/pie-charts-230.gif)
-![self-loop](https://github.com/Linkurious/linkurious.js/wiki/media/self-loop-230.gif)
-![tooltips](https://github.com/Linkurious/linkurious.js/wiki/media/tooltips-230.gif)
-](https://github.com/Linkurious/linkurious.js/wiki)
-
----
 
 ### Introduction
 

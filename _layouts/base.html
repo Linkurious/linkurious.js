@@ -2,10 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Linkurious.js</title>
+    <title>
+      {% if page.example %}{{page.example}} - {% endif %}
+      {% if page.title != '' %}{{page.title}} - {% endif %}
+      Linkurious.js
+    </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="stylesheet" href="https://bootswatch.com/simplex/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="{{site.baseurl}}dist/site.css" media="screen">
     <script type="text/javascript" src="https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js"></script>
     <script type="text/javascript" src="https://rawgit.com/Linkurious/linkurious.js/develop/dist/plugins.min.js"></script>
   </head>
@@ -16,8 +21,14 @@
   </div>
   <div class="container">
     <div class="col-md-2">
-      <a href='{{site.baseurl}}'><h3>Overview</h3></a>
-      <a href='{{site.baseurl}}examples/basic.html'><h3>Examples</h3></a>
+      <a href='{{site.baseurl}}'><h3>
+        {% if page.title == '' %}> {% endif %}
+        Overview
+      </h3></a>
+      <a href='{{site.baseurl}}examples/basic.html'><h3>
+        {% if page.title == 'Examples' %}> {% endif %}
+        Examples
+      </h3></a>
       <a href=''><h3>API</h3></a>
       <a href='{{site.baseurl}}download.html'><h3>Download</h3></a>
       <a href=''><h3>Getting Help</h3></a>

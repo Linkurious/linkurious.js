@@ -1,37 +1,31 @@
 ---
-layout: sidebar
+layout: example
+example: Drag Nodes
 ---
 
-<h1>Drag nodes</h1>
-
-<style>
-#graph-container {
-  height: 400px;
-}
-</style>
-<div id="graph-container" class="well" style="padding: 0"></div>
 <script>
 g = sigma.plugins.generators.grid(2,2);
 
 s = new sigma({
   graph: g,
   renderer: {
-    container: 'graph-container'
+    container: 'graph-container',
+    type: 'canvas'
   },
 });
 
-var activeState = sigma.plugins.activeState(s);
-sigma.plugins.dragNodes(s, s.renderers[0], activeState);
+sigma.plugins.dragNodes(s, s.renderers[0]);
 </script>
 <pre>
-g = sigma.plugins.generators.grid(12,12);
+g = sigma.plugins.generators.grid(2,2);
 
 s = new sigma({
   graph: g,
   renderer: {
-    container: 'graph-container'
+    container: 'graph-container',
+    type: 'svg'
   },
 });
 
-sigma.layouts.startForceLink(s);
+sigma.plugins.dragNodes(s, s.renderers[0]);
 </pre>
