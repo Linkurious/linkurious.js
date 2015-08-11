@@ -1,5 +1,5 @@
 ---
-layout: base
+layout: full_page
 ---
 
 The linkurious.js toolkit speeds up the development of modern Web applications that leverage the power of **graph visualization and interaction**.

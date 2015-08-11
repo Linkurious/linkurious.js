@@ -1,5 +1,5 @@
 ---
-layout: base
+layout: full_page
 ---
 
 ## Download Linkurious

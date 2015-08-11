@@ -1,5 +1,5 @@
 ---
-layout: base
+layout: sidebar
 ---
 
 <h1>Hello world</h1>
@@ -56,9 +56,7 @@ s = new sigma({
 });
 </script>
 <pre>
-var i,
-    s,
-    N = 100,
+var N = 100,
     E = 500,
     g = {
       nodes: [],
@@ -66,7 +64,7 @@ var i,
     };
 
 // Generate a random graph:
-for (i = 0; i < N; i++)
+for (var i = 0; i < N; i++)
   g.nodes.push({
     id: 'n' + i,
     label: 'Node ' + i,
@@ -76,7 +74,7 @@ for (i = 0; i < N; i++)
     color: '#666'
   });
 
-for (i = 0; i < E; i++)
+for (var i = 0; i < E; i++)
   g.edges.push({
     id: 'e' + i,
     source: 'n' + (Math.random() * N | 0),
@@ -86,7 +84,7 @@ for (i = 0; i < E; i++)
   });
 
 // Instantiate sigma:
-s = new sigma({
+var s = new sigma({
   graph: g,
   container: 'graph-container'
 });
