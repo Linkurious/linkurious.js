@@ -70,6 +70,7 @@ module.exports = function(grunt) {
   var plugins = [
     'helpers.graph',
     'exporters.gexf',
+    'exporters.json',
     'exporters.spreadsheet',
     'exporters.svg',
     'exporters.xlsx',
