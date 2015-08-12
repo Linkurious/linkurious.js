@@ -21,17 +21,36 @@
   </div>
   <div class="container">
     <div class="col-md-2">
-      <a href='{{site.baseurl}}'><h3>
-        {% if page.title == '' %}> {% endif %}
-        Overview
-      </h3></a>
-      <a href='{{site.baseurl}}examples/basic.html'><h3>
+      <a href='{{site.baseurl}}'>
+        <h3>
+          {% if page.title == '' %}> {% endif %}
+          Overview
+        </h3>
+      </a>
+      <a href='{{site.baseurl}}examples/basic.html'>
+        <h3>
         {% if page.title == 'Examples' %}> {% endif %}
         Examples
-      </h3></a>
-      <a href=''><h3>API</h3></a>
-      <a href='{{site.baseurl}}download.html'><h3>Download</h3></a>
-      <a href=''><h3>Getting Help</h3></a>
+        </h3>
+      </a>
+      <a href='{{site.baseurl}}api.html'>
+        <h3>
+        {% if page.title == 'API' %}> {% endif %}
+        API
+        </h3>
+      </a>
+      <a href='{{site.baseurl}}download.html'>
+        <h3>
+        {% if page.title == 'Download' %}> {% endif %}
+        Download
+        </h3>
+      </a>
+      <a href='{{site.baseurl}}help.html'>
+        <h3>
+        {% if page.title == 'Getting Help' %}> {% endif %}
+        Getting Help
+        </h3>
+      </a>
     </div>
 
 {{ content }}
