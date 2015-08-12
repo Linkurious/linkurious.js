@@ -261,11 +261,17 @@
           }
         }
 
+        var a = ref[0], b = ref[1];
+
         // Applying linear interpolation.
-        x = ((x - ref[0].renX) / (ref[1].renX - ref[0].renX)) *
-          (ref[1].x - ref[0].x) + ref[0].x;
-        y = ((y - ref[0].renY) / (ref[1].renY - ref[0].renY)) *
-          (ref[1].y - ref[0].y) + ref[0].y;
+        var divx = (b.renX - a.renX);
+        if (divx === 0) divx = 1; //fix edge case where axis are aligned
+
+        var divy = (b.renY - a.renY);
+        if (divy === 0) divy = 1; //fix edge case where axis are aligned
+
+        x = ((x - a.renX) / divx) * (b.x - a.x) + a.x;
+        y = ((y - a.renY) / divy) * (b.y - a.y) + a.y;
 
         x2 = x * cos - y * sin;
         y2 = y * cos + x * sin;
