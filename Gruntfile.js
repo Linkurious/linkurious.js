@@ -110,17 +110,23 @@ module.exports = function(grunt) {
     'statistics.louvain'
   ];
 
-  var pluginFiles = [];
+  var pluginFiles = [], subGrunts = {};
 
   plugins.forEach(function(p) {
     var dir = './plugins/sigma.' + p + '/';
-    pluginFiles.push(dir + '**/*.js');
+    if (fs.existsSync(dir + 'Gruntfile.js'))
+      subGrunts[p] = {
+        gruntfile: dir + 'Gruntfile.js'
+      };
+    else
+      pluginFiles.push(dir + '**/*.js');
   });
 
   // Project configuration:
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     clean: ['build/'],
+    grunt: subGrunts,
     closureLint: {
       app: {
         closureLinterPath: '/usr/local/bin',
@@ -226,8 +232,8 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   // By default, will check lint, hint, test and minify:
-  grunt.registerTask('default', ['closureLint', 'jshint', 'qunit', 'sed', 'clean', 'uglify', 'concat']);
-  grunt.registerTask('release', ['closureLint', 'jshint', 'qunit', 'sed', 'clean', 'uglify', 'concat', 'zip']);
+  grunt.registerTask('default', ['closureLint', 'jshint', 'qunit', 'sed', 'clean', 'uglify', 'concat', 'grunt']);
+  grunt.registerTask('release', ['closureLint', 'jshint', 'qunit', 'sed', 'clean', 'uglify', 'concat', 'grunt', 'zip']);
   grunt.registerTask('build', ['clean', 'uglify', 'concat']);
   grunt.registerTask('test', ['qunit']);
 
