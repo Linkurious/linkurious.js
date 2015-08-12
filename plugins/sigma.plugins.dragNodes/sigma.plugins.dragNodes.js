@@ -247,17 +247,29 @@
         if (_sticky && dist < _node[_prefix + 'size']) return;
         _sticky = false;
 
-        // Getting and derotating the reference coordinates.
-        for (var i = 0; i < 2; i++) {
+        // Find two reference points and derotate them
+        // We take the first node as a first reference point and then try to find
+        // another node not aligned with it
+        for (var i = 0;;i++) {
           n = nodes[i];
           if (n) {
             aux = {
               x: n.x * cos + n.y * sin,
               y: n.y * cos - n.x * sin,
-              renX: n[_prefix + 'x'],
-              renY: n[_prefix + 'y'],
+              renX: n[_prefix + 'x'], //renderer X
+              renY: n[_prefix + 'y'], //renderer Y
             };
             ref.push(aux);
+          }
+          if(i == nodes.length - 1) { //we tried all nodes
+            break
+          }
+          if (i > 0) {
+            if (ref[0].x == ref[1].x || ref[0].y == ref[1].y) {
+              ref.pop() // drop last nodes and try to find another one
+            } else { // ww managed to find two nodes not aligned
+              break
+            }
           }
         }
 
