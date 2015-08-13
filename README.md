@@ -12,6 +12,8 @@ Graphs are also called networks: they are made of nodes linked by edges. Graphs 
 
 Linkurious.js provides a collection of **HTML5** features based on a fork of [Sigma.js](http://sigmajs.org/), one of the fastest open source Javascript graph drawing engine on the market. Linkurious.js is published in dual licenses, **available under both commercial and GNU GPLv3 licenses** (see below).
 
+Linkurious.js is free for non-profit projects and [costs 30k€/year](https://linkurio.us/toolkit/#pricing) for commercial projects. Contact us at contact@linkurio.us if you are developing a project for your company.
+
 ---
 
 [
