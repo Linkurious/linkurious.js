@@ -36,7 +36,7 @@ Linkurious.js provides a collection of **HTML5** features based on a fork of [Si
 
 ### Introduction
 
-Linkurious.js is developed in pure Javascript. It uses Sigma.js for its graph data structure and visualization engine, which provides both **Canvas**, **WebGL** and **SVG** renderers for nodes and edges. Sigma.js is highly flexible thanks to its modular architecture, and is extensible by plugins. The linkurious.js toolkit is made of **more than 30 Sigma.js plugins**, combined to work together and tested for integration into modern Web applications.
+Linkurious.js is developed in pure Javascript. It uses Sigma.js for its graph data structure and visualization engine, which provides both **Canvas**, **WebGL** and **SVG** renderers for nodes and edges. Sigma.js is highly flexible thanks to its modular architecture, and is extensible by plugins. The linkurious.js toolkit contains **more than 30 plugins**, combined to work together and tested for integration into modern Web applications.
 
 ### Resources
 
