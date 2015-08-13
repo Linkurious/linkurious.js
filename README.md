@@ -10,7 +10,7 @@ The linkurious.js toolkit speeds up the development of modern Web applications t
 
 Graphs are also called networks: they are made of nodes linked by edges. Graphs are a powerful way to represent any relationships in data like social networks (i.e. who likes who), infrastructure (i.e. how devices are connected), flows (i.e. where does the money go), and much more.
 
-Linkurious.js provides a collection of **HTML5** features based on [Sigma.js](http://sigmajs.org/), the fastest open source Javascript graph drawing engine on the market. Linkurious.js is published in dual licenses, **available under both commercial and GNU GPLv3 licenses** (see below).
+Linkurious.js provides a collection of **HTML5** features based on a fork of [Sigma.js](http://sigmajs.org/), one of the fastest open source Javascript graph drawing engine on the market. Linkurious.js is published in dual licenses, **available under both commercial and GNU GPLv3 licenses** (see below).
 
 ---
 
