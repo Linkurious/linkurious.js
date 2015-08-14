@@ -141,12 +141,13 @@
      * This function removes the existing tooltip and creates a new tooltip for a
      * specified node or edge.
      *
-     * @param {object} o       The node or the edge.
-     * @param {object} options The options related to the object.
-     * @param {number} x       The X coordinate of the mouse.
-     * @param {number} y       The Y coordinate of the mouse.
+     * @param {object}    o          The node or the edge.
+     * @param {object}    options    The options related to the object.
+     * @param {number}    x          The X coordinate of the mouse.
+     * @param {number}    y          The Y coordinate of the mouse.
+     * @param {function?} onComplete Optional function called when open finish
      */
-    this.open = function(o, options, x, y) {
+    this.open = function(o, options, x, y, onComplete) {
       remove();
 
       // Create the DOM element:
@@ -291,6 +292,7 @@
             _tooltip.style.left = x + 'px';
           }
         }
+        if (onComplete) onComplete();
       }, 0);
     };
 
@@ -409,9 +411,8 @@
             null,
             so,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, so.delay);
       });
 
@@ -470,9 +471,8 @@
             n,
             no,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, no.delay);
       });
 
@@ -533,9 +533,8 @@
             e,
             eo,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, eo.delay);
       });
 
