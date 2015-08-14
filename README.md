@@ -55,7 +55,7 @@ And look at the [examples](https://github.com/Linkurious/linkurious.js/tree/deve
 
 ### Getting help
 
-You can ask on [StackOverflow](http://stackoverflow.com/search?q=linkurious.js), on [gitter](https://gitter.im/Linkurious/linkurious.js) for general help. You can also [file an issue](https://github.com/Linkurious/linkurious.js/issues/) if this doesn't works.
+The easiest way is to [file an issue](https://github.com/Linkurious/linkurious.js/issues/). You can also ask on [StackOverflow](http://stackoverflow.com/search?q=linkurious.js) if you want more general help with JavaScript and [gitter](https://gitter.im/Linkurious/linkurious.js) if you want to chat with us.
 
 ### Building the library
 
