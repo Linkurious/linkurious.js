@@ -53,9 +53,11 @@ For prototyping, you can direclty use `rawgit`:
 
 And look at the [examples](https://github.com/Linkurious/linkurious.js/tree/develop/examples).
 
+### Getting help
+
+You can ask on [StackOverflow](http://stackoverflow.com/search?q=linkurious.js), on [gitter](https://gitter.im/Linkurious/linkurious.js) for general help. You can also [file an issue](https://github.com/Linkurious/linkurious.js/issues/) if this doesn't works.
+
 ### Building the library
-
-
 
 ```
 git clone git@github.com:Linkurious/linkurious.js.git
