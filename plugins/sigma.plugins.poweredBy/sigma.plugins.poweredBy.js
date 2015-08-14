@@ -12,7 +12,8 @@
 
   function poweredBy(options) {
     options = options || {};
-    var content,
+    var self = this,
+        content,
         html = options.html || this.settings('poweredByHTML'),
         url = options.url || this.settings('poweredByURL'),
         pingURL = options.pingURL || this.settings('poweredByPingURL');
@@ -44,6 +45,18 @@
       this.domElements['poweredby'].style.background = 'rgba(255, 255, 255, 0.8)';
 
       this.container.appendChild(this.domElements['poweredby']);
+
+      // fix the browser setting new width/height to absolute elements
+      function resizePoweredByHandler() {
+        if (!self || !self.domElements['poweredby']) {
+          window.removeEventListener('resize', resizePoweredByHandler);
+          return;
+        }
+        self.domElements['poweredby'].style.width = 'auto';
+        self.domElements['poweredby'].style.height = 'auto';
+      };
+      window.removeEventListener('resize', resizePoweredByHandler);
+      window.addEventListener('resize', resizePoweredByHandler);
     }
   }
 
