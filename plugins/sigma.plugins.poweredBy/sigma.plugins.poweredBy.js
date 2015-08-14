@@ -18,9 +18,7 @@
         url = options.url || this.settings('poweredByURL'),
         pingURL = options.pingURL || this.settings('poweredByPingURL');
 
-    if (!this.domElements['poweredby']) {
-      this.initDOM('div', 'poweredby');
-
+    if (!document.getElementsByClassName('sigma-poweredby').length) {
       if (url) {
         content = [
           '<a href="' +
@@ -39,24 +37,16 @@
         img.src = pingURL;
       }
 
-      this.domElements['poweredby'].innerHTML = content.join('');
-      this.domElements['poweredby'].style.bottom = '2px';
-      this.domElements['poweredby'].style.right = '1px';
-      this.domElements['poweredby'].style.background = 'rgba(255, 255, 255, 0.8)';
+      var dom = document.createElement('div');
+      dom.setAttribute('class', 'sigma-poweredby');
+      dom.innerHTML = content.join('');
+      dom.style.position = 'absolute';
+      dom.style.bottom = '2px';
+      dom.style.right = '1px';
+      dom.style.zIndex = '1000';
+      dom.style.background = 'rgba(255, 255, 255, 0.8)';
 
-      this.container.appendChild(this.domElements['poweredby']);
-
-      // fix the browser setting new width/height to absolute elements
-      function resizePoweredByHandler() {
-        if (!self || !self.domElements['poweredby']) {
-          window.removeEventListener('resize', resizePoweredByHandler);
-          return;
-        }
-        self.domElements['poweredby'].style.width = 'auto';
-        self.domElements['poweredby'].style.height = 'auto';
-      };
-      window.removeEventListener('resize', resizePoweredByHandler);
-      window.addEventListener('resize', resizePoweredByHandler);
+      this.container.appendChild(dom);
     }
   }
 
