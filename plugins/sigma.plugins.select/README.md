@@ -15,7 +15,7 @@ To use, include all .js files under this folder. Then initialize it as follows:
 
 ````javascript
 var activeState = sigma.plugins.activeState(sigmaInstance);
-var select = sigma.plugins.select(sigmaInstance, activeState, s.renderers[0]);
+var select = sigma.plugins.select(sigmaInstance, activeState, sigmaInstance.renderers[0]);
 ````
 
 If a node is active before any mouse event you should call `init` as follows:
