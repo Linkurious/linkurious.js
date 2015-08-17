@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+  <script src="//fb.me/react-0.13.1.js"></script>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://bootswatch.com/simplex/bootstrap.min.css" media="screen">
+  <title>Linkurious.js - Examples</title>
+</head>
+<body>
+  <div class="container">
+    <h1><small>linkurious.js - Examples</small></h1><hr/>
+  </div>
+  <div class="container" id='list'></div>
+<script>
+var list = [
+'basic.html',
+'active-state.html',
+'add-node-on-click.html',
+'animate.html',
+'api-candy.html',
+'custom-edge-renderer.html',
+'custom-node-renderer.html',
+'dagre.html',
+'design.html',
+'drag-nodes.html',
+'edge-renderers.html',
+'edge-siblings.html',
+'events-and-force.html',
+'events.html',
+'filters.html',
+'force-background.html',
+'force-graph-arctic.html',
+'force-graph-community.html',
+'force.html',
+'force-node-siblings.html',
+'glyphs-renderer.html',
+'glyphs-renderer-icons.html',
+'lasso.html',
+'load-external-gexf.html',
+'load-external-json.html',
+'load-neo4j-cypher-query.html',
+'locate.html',
+'neighborhoods-plugin.html',
+'parallel-edges.html',
+'plugin-exporters-gexf.html',
+'plugin-exporters-json.html',
+'plugin-exporters-spreadsheet.html',
+'plugin-exporters-xlsx.html',
+'plugin-fullscreen.html',
+'plugin-generators.html',
+'plugin-halo.html',
+'plugin-hits.html',
+'plugin-image.html',
+'plugin-keyboard.html',
+'plugin-layouts-fruchtermanReingold.html',
+'plugin-louvain.html',
+'plugin-pathfinding-astar.html',
+'plugin-poweredby.html',
+'plugin-select.html',
+'plugin-tooltips.html',
+'plugin-tooltips-multiples.html',
+'renderers-linkurious-edges-shapes.html',
+'renderers-linkurious.html',
+'renderers-linkurious-icons.html',
+'renderers-linkurious-images.html',
+'renderers-linkurious-pie-charts.html',
+'scrollable-page.html',
+'select-and-drag-nodes.html',
+'share-camera.html',
+'svg-export.html',
+'svg-freestyle-renderer.html',
+'svg-renderer.html',
+'use-minified-sigma.html',
+];
+
+function split(a, n) {
+  var arrays = [];
+  while (a.length > 0)
+      arrays.push(a.splice(0, n));
+  return arrays;
+}
+
+var prefix = document.location.href;
+
+var Thumbs = React.createClass({displayName: 'Thumbs',
+  render: function(){
+    var rows = split(this.props.els, 4).map(function(els,row_i){
+      var row_els = els.map(function(x,col_i){
+        return (React.createElement("div", {key: col_i, className: "col-sm-3 col-md-3 col-xs-6"}, 
+          React.createElement("div", {className: "thumbnail"}, 
+            React.createElement("a", {href: prefix+x}, 
+              React.createElement("img", {
+                src: prefix+"screens/"+x.replace('.html','.png')}
+                ), 
+              React.createElement("div", {className: "caption"}, 
+                React.createElement("b", null, x.replace('.html','').replace(/-/g,' ').replace('plugin ',''))
+              )
+            )
+          )
+        ))
+      })
+      return React.createElement("div", {key: row_i, className: "row"}, row_els);
+    })
+    return React.createElement("div", null, rows);
+  }
+})
+
+React.render(
+  React.createElement(Thumbs, {els: list}),
+  document.getElementById('list'));
+</script>
+</body>
+</html>
