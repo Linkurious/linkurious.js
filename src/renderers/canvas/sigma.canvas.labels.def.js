@@ -26,7 +26,7 @@
         labelOffsetY,
         alignment = settings('labelAlignment');
 
-    if (size < settings('labelThreshold'))
+    if (size <= settings('labelThreshold'))
       return;
 
     if (!node.label || typeof node.label !== 'string')
