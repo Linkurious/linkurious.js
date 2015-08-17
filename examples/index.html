@@ -82,7 +82,7 @@ function split(a, n) {
   return arrays;
 }
 
-var prefix = document.location.href;
+var prefix = document.location.href.replace('index.html','');
 
 var Thumbs = React.createClass({displayName: 'Thumbs',
   render: function(){
