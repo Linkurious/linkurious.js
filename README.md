@@ -7,7 +7,7 @@ linkurious.js
 =================
 **A JavaScript library to visualize and interact with graphs.**
 
-Linkurious.js is an active fork of [Sigma.js](http://sigmajs.org/). It's dual-licensed under both GPLv3 and a [commercial license for proprietary projects](https://linkurio.us/toolkit/#pricing).
+Linkurious.js is an active fork of [Sigma.js](https://github.com/jacomyal/sigma.js). It's dual-licensed under both GPLv3 and a [commercial license for proprietary projects](https://linkurio.us/toolkit/#pricing).
 
 
 * [Live demo on JSFiddle](https://jsfiddle.net/6voan7k9/)
