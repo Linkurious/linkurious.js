@@ -7,10 +7,10 @@ linkurious.js
 =================
 **A JavaScript library to visualize and interact with graphs.**
 
-Linkurious.js is an active fork of [Sigma.js](http://sigmajs.org/). It's dual-licensed under both GPLv3 and a commercial license for proprietary projects [costs 30k€/year](https://linkurio.us/toolkit/#pricing).
+Linkurious.js is an active fork of [Sigma.js](http://sigmajs.org/). It's dual-licensed under both GPLv3 and a [commercial license for proprietary projects](https://linkurio.us/toolkit/#pricing).
 
 
-* [Live demo](https://rawgit.com/Linkurious/linkurious.js/develop/examples/force-graph-community.html)
+* [Live demo on JSFiddle](https://jsfiddle.net/6voan7k9/)
 * [Examples](https://github.com/Linkurious/linkurious.js/tree/develop/examples)
 * [Plugins](https://github.com/Linkurious/linkurious.js/tree/develop/plugins)
 * [Download](https://github.com/Linkurious/linkurious.js/releases/latest)
