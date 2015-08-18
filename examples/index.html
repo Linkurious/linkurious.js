@@ -6,6 +6,23 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
   <link rel="stylesheet" href="https://bootswatch.com/paper/bootstrap.min.css" media="screen">
   <title>Linkurious.js - Examples</title>
+  <style>
+.title {
+  font-size: 17px;
+  font-weight: bold;
+  margin-left: -10px;
+  border-top: 1px solid #F1F1F1;
+  border-right: 1px solid #DEDEDE;
+  border-bottom: 2px solid rgb(177, 177, 177);
+  border-left: 1px solid #E5E5E5;
+  margin-top: 6px;
+  margin-bottom: 9px;
+  position: absolute;
+  background-color: white;
+  padding: 7px 10px;
+  max-width: 230px;
+}
+  </style>
 </head>
 <body>
 
@@ -15,7 +32,7 @@
     <textarea name='js'>=>js</textarea>
     <textarea name='css'>=>css</textarea>
     <textarea name='resources'>=>resources</textarea>
-    <input type='text' name='wrap' value='b'/>
+    <input type='text' name='wrap' value='=>wrap'/>
     <input type='text' name='title' value='=>title'/>
     <input type='submit'>
 </form>
@@ -28,7 +45,7 @@
 <script id="item-template" type="text/x-handlebars-template">
   <div class="col-sm-3 col-md-3 col-xs-6">
     <div class="thumbnail">
-      <h4>{{title}}</h4>
+      <h4 class='title'>{{title}}</h4>
       <a href='{{url}}'>
         <img src="{{src}}" />
       </a>
@@ -109,6 +126,7 @@ function new_jsfiddle(infos) {
   $('form *[name=js]').val(infos.js);
   $('form *[name=html]').val(infos.html);
   $('form *[name=title]').val(infos.title);
+  $('form *[name=wrap]').val('d');
   $('form *[name=resources]').val(
         'https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js,'
         +'https://rawgit.com/Linkurious/linkurious.js/develop/dist/plugins.min.js');
