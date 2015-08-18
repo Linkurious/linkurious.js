@@ -1,79 +1,138 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
-  <script src="//fb.me/react-0.13.1.js"></script>
   <meta charset="utf-8">
-  <link rel="stylesheet" href="https://bootswatch.com/simplex/bootstrap.min.css" media="screen">
+  <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
+  <link rel="stylesheet" href="https://bootswatch.com/paper/bootstrap.min.css" media="screen">
   <title>Linkurious.js - Examples</title>
 </head>
 <body>
-  <div class="container">
-    <h1><small>linkurious.js - Examples</small></h1><hr/>
+
+<!-- form to open the example in jsfiddle -->
+<form method='post' style='display:none' action='http://jsfiddle.net/api/post/library/pure/'>
+    <textarea name='html'><p class="red">=>html</textarea>
+    <textarea name='js'>=>js</textarea>
+    <textarea name='css'>=>css</textarea>
+    <textarea name='resources'>=>resources</textarea>
+    <input type='text' name='wrap' value='b'/>
+    <input type='text' name='title' value='=>title'/>
+    <input type='submit'>
+</form>
+
+<div class="container">
+  <h1><small>linkurious.js - Examples - [Work in progress]</small></h1><hr/>
+</div>
+<div class="container" id='list'></div>
+
+<script id="item-template" type="text/x-handlebars-template">
+  <div class="col-sm-3 col-md-3 col-xs-6">
+    <div class="thumbnail">
+      <h4>{{title}}</h4>
+      <a href='{{url}}'>
+        <img src="{{src}}" />
+      </a>
+      <div class='caption text-center'>
+        <a class='btn btn-default' href="{{url}}">View</a>&nbsp;&nbsp;&nbsp;
+        <button
+          class='btn btn-primary'
+          onclick="file_infos('{{url}}',new_jsfiddle)">Edit</button>
+      </div>
+    </div>
   </div>
-  <div class="container" id='list'></div>
+</script>
+
 <script>
 var list = [
-'basic.html',
-'active-state.html',
-'add-node-on-click.html',
-'animate.html',
-'api-candy.html',
-'custom-edge-renderer.html',
-'custom-node-renderer.html',
-'dagre.html',
-'design.html',
-'drag-nodes.html',
-'edge-renderers.html',
-'edge-siblings.html',
-'events-and-force.html',
-'events.html',
-'filters.html',
-'force-background.html',
-'force-graph-arctic.html',
-'force-graph-community.html',
-'force.html',
-'force-node-siblings.html',
-'glyphs-renderer.html',
-'glyphs-renderer-icons.html',
-'lasso.html',
-'load-external-gexf.html',
-'load-external-json.html',
-'load-neo4j-cypher-query.html',
-'locate.html',
-'neighborhoods-plugin.html',
-'parallel-edges.html',
-'plugin-exporters-gexf.html',
-'plugin-exporters-json.html',
-'plugin-exporters-spreadsheet.html',
-'plugin-exporters-xlsx.html',
-'plugin-fullscreen.html',
-'plugin-generators.html',
-'plugin-halo.html',
-'plugin-hits.html',
-'plugin-image.html',
-'plugin-keyboard.html',
-'plugin-layouts-fruchtermanReingold.html',
-'plugin-louvain.html',
-'plugin-pathfinding-astar.html',
-'plugin-poweredby.html',
-'plugin-select.html',
-'plugin-tooltips.html',
-'plugin-tooltips-multiples.html',
-'renderers-linkurious-edges-shapes.html',
-'renderers-linkurious.html',
-'renderers-linkurious-icons.html',
-'renderers-linkurious-images.html',
-'renderers-linkurious-pie-charts.html',
-'scrollable-page.html',
-'select-and-drag-nodes.html',
-'share-camera.html',
-'svg-export.html',
-'svg-freestyle-renderer.html',
-'svg-renderer.html',
-'use-minified-sigma.html',
+  'basic.html',
+  'active-state.html',
+  'add-node-on-click.html',
+  'animate.html',
+  'api-candy.html',
+  'custom-edge-renderer.html',
+  'custom-node-renderer.html',
+  'dagre.html',
+  'design.html',
+  'drag-nodes.html',
+  'edge-renderers.html',
+  'edge-siblings.html',
+  'events-and-force.html',
+  'events.html',
+  'filters.html',
+  'force-background.html',
+  'force-graph-arctic.html',
+  'force-graph-community.html',
+  'force.html',
+  'force-node-siblings.html',
+  'glyphs-renderer.html',
+  'glyphs-renderer-icons.html',
+  'lasso.html',
+  'load-external-gexf.html',
+  'load-external-json.html',
+  'load-neo4j-cypher-query.html',
+  'locate.html',
+  'neighborhoods-plugin.html',
+  'parallel-edges.html',
+  'plugin-exporters-gexf.html',
+  'plugin-exporters-json.html',
+  'plugin-exporters-spreadsheet.html',
+  'plugin-exporters-xlsx.html',
+  'plugin-fullscreen.html',
+  'plugin-generators.html',
+  'plugin-halo.html',
+  'plugin-hits.html',
+  'plugin-image.html',
+  'plugin-keyboard.html',
+  'plugin-layouts-fruchtermanReingold.html',
+  'plugin-louvain.html',
+  'plugin-pathfinding-astar.html',
+  'plugin-poweredby.html',
+  'plugin-select.html',
+  'plugin-tooltips.html',
+  'plugin-tooltips-multiples.html',
+  'renderers-linkurious-edges-shapes.html',
+  'renderers-linkurious.html',
+  'renderers-linkurious-icons.html',
+  'renderers-linkurious-images.html',
+  'renderers-linkurious-pie-charts.html',
+  'scrollable-page.html',
+  'select-and-drag-nodes.html',
+  'share-camera.html',
+  'svg-export.html',
+  'svg-freestyle-renderer.html',
+  'svg-renderer.html',
+  'use-minified-sigma.html',
 ];
+
+function new_jsfiddle(infos) {
+  $('form *[name=css]').val(infos.css);
+  $('form *[name=js]').val(infos.js);
+  $('form *[name=html]').val(infos.html);
+  $('form *[name=title]').val(infos.title);
+  $('form *[name=resources]').val(
+        'https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js,'
+        +'https://rawgit.com/Linkurious/linkurious.js/develop/dist/plugins.min.js');
+  $('form').submit()
+}
+
+function file_infos(url, callback) {
+  $.get(url).then(function(file){
+    var match = file.match(/<scri([\s\S]*?)ipt>/g);
+    var js = match.slice(-1)[0]
+      .replace('<script>','')
+      .replace('<\/script>','');
+    var html = file.match(/<div id="container([\s\S]*?)<scrip/)[0]
+      .replace('<scrip','');
+    var css = html.match(/<style>([\s\S]*?)<\/style>/)[1]
+    html = html.replace(/<style>[\s\S]*?<\/style>\n/,'')
+    callback({
+      js:js,
+      html:html,
+      css:css,
+      title:url,
+    })
+  });
+}
 
 function split(a, n) {
   var arrays = [];
@@ -82,34 +141,29 @@ function split(a, n) {
   return arrays;
 }
 
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+
 var prefix = document.location.href.replace('index.html','');
 
-var Thumbs = React.createClass({displayName: 'Thumbs',
-  render: function(){
-    var rows = split(this.props.els, 4).map(function(els,row_i){
-      var row_els = els.map(function(x,col_i){
-        return (React.createElement("div", {key: col_i, className: "col-sm-3 col-md-3 col-xs-6"}, 
-          React.createElement("div", {className: "thumbnail"}, 
-            React.createElement("a", {href: prefix+x}, 
-              React.createElement("img", {
-                src: prefix+"screens/"+x.replace('.html','.png')}
-                ), 
-              React.createElement("div", {className: "caption"}, 
-                React.createElement("b", null, x.replace('.html','').replace(/-/g,' ').replace('plugin ',''))
-              )
-            )
-          )
-        ))
-      })
-      return React.createElement("div", {key: row_i, className: "row"}, row_els);
-    })
-    return React.createElement("div", null, rows);
-  }
+var source = $("#item-template").html();
+var template = Handlebars.compile(source);
+
+var rows = split(list, 4).map(function(els,row_i){
+  var row_els = els.map(function(x,col_i){
+    var context = {
+      url:x,
+      src: prefix+"screens/"+x.replace('.html','.png'),
+      title: capitalize(x.replace('.html','').replace(/-/g,' ').replace('plugin ',''))
+    }
+    return template(context);
+  })
+  return "<div class='row'>"+row_els.join('')+'</div>';
 })
 
-React.render(
-  React.createElement(Thumbs, {els: list}),
-  document.getElementById('list'));
+document.getElementById('list').innerHTML = rows.join('');
 </script>
 </body>
 </html>
