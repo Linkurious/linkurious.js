@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.js"></script>
-  <link rel="stylesheet" href="https://bootswatch.com/paper/bootstrap.min.css" media="screen">
+  <link rel="stylesheet" href="https://bootswatch.com/flatly/bootstrap.min.css" media="screen">
   <title>Linkurious.js - Plugins</title>
   <style>
 .list-group-item {
@@ -15,15 +15,14 @@
 <body>
 
 <div class="container">
-  <h1><small>linkurious.js - Plugins</small></h1><hr/>
-</div>
-<div class="container">
   <div class="row">
     <div class='col-sm-3'>
+      <h1><small><span id='N-plugins'></span> plugins</small></h1>
       <div class="list-group" id='list'>
       </div>
     </div>
-    <div class='col-sm-9' id='content'>
+    <div class='col-sm-9'>
+      <div id='content'></div>
     </div>
   </div>
 </div>
@@ -72,22 +71,33 @@ var list = [
 "sigma.statistics.louvain",
 ];
 
-function display(url){
-  $.get(url+'/README.md').then(function(data){
-    console.log(data,url)
-    $('#content').html(marked(data, {gfm:true}))
-  })
-}
-
-var prefix = document.location.href.replace('index.html','');
+$('#N-plugins').html(list.length);
 
 var els = list.map(function(x,col_i){
-  return '<a href="#" class="list-group-item" onclick="display(\'{url}\')">{title}</a>'
+  var title = x.replace('sigma.','');
+  var parts = title.split('.');
+  var last = parts.pop();
+  title = parts.join('.')+'.<b>'+last+'</b>';
+  return '<a href="#" class="list-group-item" data-url="{url}">{title}</a>'
       .replace('{url}',x)
-      .replace('{title}',x.replace('sigma.','').replace('plugins.',''));
+      .replace('{title}',title);
 })
 
 document.getElementById('list').innerHTML = els.join('');
+
+$('#list a').click(function(){
+  var url = $(this).attr('data-url');
+  $('#content').html('<br/><h4>..loading</h4>');
+  $.get(url+'/README.md').then(function(data){
+    $('#content').html(marked(data))
+  }).fail(function(){
+    $('#content').html('<br><div class="alert alert-dismissible alert-info">'
+      +'No README available for '+url+'</div>')
+  })
+  $('#list a').removeClass('active');
+  $(this).addClass('active');
+})
+
 </script>
 </body>
 </html>

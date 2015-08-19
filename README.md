@@ -12,7 +12,7 @@ Linkurious.js is an active fork of [Sigma.js](https://github.com/jacomyal/sigma.
 
 * [Live demo on JSFiddle](https://jsfiddle.net/6voan7k9/)
 * [Examples](https://rawgit.com/Linkurious/linkurious.js/develop/examples/)
-* [Plugins](https://github.com/Linkurious/linkurious.js/tree/develop/plugins)
+* [Plugins](https://rawgit.com/Linkurious/linkurious.js/develop/plugins/list.html)
 * [Download](https://github.com/Linkurious/linkurious.js/releases/latest)
 * [Documentation](https://github.com/Linkurious/linkurious.js/wiki)
 	 - [Vizualisation API](https://github.com/Linkurious/linkurious.js/wiki/Public-API)
