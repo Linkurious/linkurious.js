@@ -26,16 +26,11 @@
 </head>
 <body>
 
-<!-- form to open the example in jsfiddle -->
-<form method='post' style='display:none' action='http://jsfiddle.net/api/post/library/pure/'>
-    <textarea name='html'><p class="red">=>html</textarea>
-    <textarea name='js'>=>js</textarea>
-    <textarea name='css'>=>css</textarea>
-    <textarea name='resources'>=>resources</textarea>
-    <input type='text' name='wrap' value='=>wrap'/>
-    <input type='text' name='title' value='=>title'/>
-    <input type='submit'>
+<!-- form to open the example in codepen -->
+<form action="http://codepen.io/pen/define" method="POST">
+  <input type="hidden" name="data" value='{}'>
 </form>
+
 
 <div class="container">
   <h1><small>linkurious.js - Examples - [Work in progress]</small></h1><hr/>
@@ -53,7 +48,7 @@
         <a class='btn btn-default' href="{{url}}">View</a>&nbsp;&nbsp;&nbsp;
         <button
           class='btn btn-primary'
-          onclick="file_infos('{{url}}',new_jsfiddle)">Edit</button>
+          onclick="file_infos('{{url}}',edit_it)">Edit</button>
       </div>
     </div>
   </div>
@@ -121,15 +116,9 @@ var list = [
   'use-minified-sigma.html',
 ];
 
-function new_jsfiddle(infos) {
-  $('form *[name=css]').val(infos.css);
-  $('form *[name=js]').val(infos.js);
-  $('form *[name=html]').val(infos.html);
-  $('form *[name=title]').val(infos.title);
-  $('form *[name=wrap]').val('d');
-  $('form *[name=resources]').val(
-        'https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js,'
-        +'https://rawgit.com/Linkurious/linkurious.js/develop/dist/plugins.min.js');
+function edit_it(infos) {
+  infos['editors'] = "001";
+  $('form *[name=data]').val(JSON.stringify(infos));
   $('form').submit()
 }
 
@@ -138,16 +127,38 @@ function file_infos(url, callback) {
     var match = file.match(/<scri([\s\S]*?)ipt>/g);
     var js = match.slice(-1)[0]
       .replace('<script>','')
-      .replace('<\/script>','');
+      .replace('<\/script>','')
+      .replace(/^\s+|\s+$/g, '');//trim
     var html = file.match(/<div id="container([\s\S]*?)<scrip/)[0]
       .replace('<scrip','');
     var css = html.match(/<style>([\s\S]*?)<\/style>/)[1]
+          .replace(/^\s+|\s+$/g, '');//trim
     html = html.replace(/<style>[\s\S]*?<\/style>\n/,'')
+          .replace(/^\s+|\s+$/g, '');//trim
+    var external = {css:[],js:[]}
+    var l = document.createElement("a");
+    var regexes = [{
+      regex:/<script src="(.*)"></g,
+      obj: external.js,
+    },{
+      regex:/<link .*? href="(.*)"></g,
+      obj: external.css,
+    }];
+    regexes.forEach(function(step){
+      match = step.regex.exec(file);
+      while (match != null) {
+          l.href = match[1];
+          step.obj.push(l.protocol + "//" + l.host + l.pathname);
+          match = step.regex.exec(file);
+      }
+    })
     callback({
       js:js,
       html:html,
       css:css,
       title:url,
+      css_external: external.css.join(';'),
+      js_external: external.js.join(';'),
     })
   });
 }
@@ -162,7 +173,6 @@ function split(a, n) {
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
-
 
 var prefix = document.location.href.replace('index.html','');
 
