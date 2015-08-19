@@ -5,10 +5,22 @@
   <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.js"></script>
   <link rel="stylesheet" href="https://bootswatch.com/flatly/bootstrap.min.css" media="screen">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/solarized_dark.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/languages/javascript.min.js"></script>  
   <title>Linkurious.js - Plugins</title>
   <style>
 .list-group-item {
     padding: 2px 11px;
+}
+pre {
+  font-size: inherit;
+  line-height: inherit;
+  background-color: inherit;
+  color: inherit;
+  font-family: inherit;
+  border: inherit;
+  background-color: #EFEFEF;
 }
 </style>
 </head>
@@ -73,6 +85,12 @@ var list = [
 
 $('#N-plugins').html(list.length);
 
+marked.setOptions({
+  highlight: function (code) {
+    return hljs.highlight('js',code).value;
+  }
+});
+
 var els = list.map(function(x,col_i){
   var title = x.replace('sigma.','');
   var parts = title.split('.');
@@ -85,18 +103,31 @@ var els = list.map(function(x,col_i){
 
 document.getElementById('list').innerHTML = els.join('');
 
+function replace_rawgit(url){
+  var l = document.createElement("a");
+  l.href = url;
+  if (l.host.indexOf('rawgit') == -1) {
+    return url;
+  }
+  return url;
+}
+
 $('#list a').click(function(){
   var url = $(this).attr('data-url');
-  $('#content').html('<br/><h4>..loading</h4>');
-  $.get(url+'/README.md').then(function(data){
-    $('#content').html(marked(data))
+  var title = '<h1>'+url+'</h1>'
+  var link = ('<h4 class="pull-right">'
+      +'<a href="https://github.com/Linkurious/linkurious.js/tree/develop/plugins/{url}">'
+      +'view on github</a></h4>').replace('{url}',url);
+  $('#content').html('<br/>'+title+'<h4>Loading README.md</h4>');
+  $.get(replace_rawgit(url)+'/README.md').then(function(data){
+    $('#content').html(link+marked(data, {gfm:true}))
   }).fail(function(){
-    $('#content').html('<br><div class="alert alert-dismissible alert-info">'
+    $('#content').html(link+title+'<br><br><br><div class="alert alert-dismissible alert-info">'
       +'No README available for '+url+'</div>')
   })
   $('#list a').removeClass('active');
   $(this).addClass('active');
-})
+}).first().click();
 
 </script>
 </body>
