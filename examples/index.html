@@ -126,15 +126,12 @@ function file_infos(url, callback) {
   $.get(url).then(function(file){
     var match = file.match(/<scri([\s\S]*?)ipt>/g);
     var js = match.slice(-1)[0]
-      .replace('<script>','')
-      .replace('<\/script>','')
-      .replace(/^\s+|\s+$/g, '');//trim
+      .replace(/<script.*?>/,'')
+      .replace('<\/script>','').trim();
     var html = file.match(/<div id="container([\s\S]*?)<scrip/)[0]
       .replace('<scrip','');
-    var css = html.match(/<style>([\s\S]*?)<\/style>/)[1]
-          .replace(/^\s+|\s+$/g, '');//trim
-    html = html.replace(/<style>[\s\S]*?<\/style>\n/,'')
-          .replace(/^\s+|\s+$/g, '');//trim
+    var css = html.match(/<style>([\s\S]*?)<\/style>/)[1].trim();
+    html = html.replace(/<style>[\s\S]*?<\/style>\n/,'').trim();
     var external = {css:[],js:[]}
     var l = document.createElement("a");
     var regexes = [{
