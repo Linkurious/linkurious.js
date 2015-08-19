@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.js"></script>
+  <link rel="stylesheet" href="https://bootswatch.com/paper/bootstrap.min.css" media="screen">
+  <title>Linkurious.js - Plugins</title>
+  <style>
+.list-group-item {
+    padding: 2px 11px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1><small>linkurious.js - Plugins</small></h1><hr/>
+</div>
+<div class="container">
+  <div class="row">
+    <div class='col-sm-3'>
+      <div class="list-group" id='list'>
+      </div>
+    </div>
+    <div class='col-sm-9' id='content'>
+    </div>
+  </div>
+</div>
+
+<script>
+var list = [
+"sigma.exporters.gexf",
+"sigma.exporters.json",
+"sigma.exporters.spreadsheet",
+"sigma.exporters.svg",
+"sigma.exporters.xlsx",
+"sigma.helpers.graph",
+"sigma.layout.dagre",
+"sigma.layout.forceAtlas2",
+"sigma.layout.forceLink",
+"sigma.layout.fruchtermanReingold",
+"sigma.parsers.cypher",
+"sigma.parsers.gexf",
+"sigma.parsers.json",
+"sigma.pathfinding.astar",
+"sigma.plugins.activeState",
+"sigma.plugins.animate",
+"sigma.plugins.colorbrewer",
+"sigma.plugins.design",
+"sigma.plugins.dragNodes",
+"sigma.plugins.edgeSiblings",
+"sigma.plugins.filter",
+"sigma.plugins.fullScreen",
+"sigma.plugins.generators",
+"sigma.plugins.image",
+"sigma.plugins.keyboard",
+"sigma.plugins.lasso",
+"sigma.plugins.locate",
+"sigma.plugins.neighborhoods",
+"sigma.plugins.poweredBy",
+"sigma.plugins.relativeSize",
+"sigma.plugins.select",
+"sigma.plugins.tooltips",
+"sigma.renderers.customEdgeShapes",
+"sigma.renderers.edgeLabels",
+"sigma.renderers.glyphs",
+"sigma.renderers.halo",
+"sigma.renderers.linkurious",
+"sigma.renderers.parallelEdges",
+"sigma.statistics.HITS",
+"sigma.statistics.louvain",
+];
+
+function display(url){
+  $.get(url+'/README.md').then(function(data){
+    console.log(data,url)
+    $('#content').html(marked(data, {gfm:true}))
+  })
+}
+
+var prefix = document.location.href.replace('index.html','');
+
+var els = list.map(function(x,col_i){
+  return '<a href="#" class="list-group-item" onclick="display(\'{url}\')">{title}</a>'
+      .replace('{url}',x)
+      .replace('{title}',x.replace('sigma.','').replace('plugins.',''));
+})
+
+document.getElementById('list').innerHTML = els.join('');
+</script>
+</body>
+</html>
