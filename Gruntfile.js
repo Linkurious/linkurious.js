@@ -118,8 +118,7 @@ module.exports = function(grunt) {
       subGrunts[p] = {
         gruntfile: dir + 'Gruntfile.js'
       };
-    else
-      pluginFiles.push(dir + '**/*.js');
+    pluginFiles.push(dir + '**/*.js');
   });
 
   // Project configuration:
