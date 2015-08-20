@@ -175,14 +175,13 @@
   // Main function
   function halo(params) {
     params = params || {};
-    var pixelRatio = sigma.utils.getPixelRatio();
 
     if (!this.domElements['background']) {
       this.initDOM('canvas', 'background');
       this.domElements['background'].width =
-        this.container.offsetWidth * pixelRatio;
+        this.container.offsetWidth;
       this.domElements['background'].height =
-        this.container.offsetHeight * pixelRatio;
+        this.container.offsetHeight;
       this.container.insertBefore(this.domElements['background'], this.container.firstChild);
     }
 
