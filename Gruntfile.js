@@ -114,12 +114,15 @@ module.exports = function(grunt) {
 
   plugins.forEach(function(p) {
     var dir = './plugins/sigma.' + p + '/';
-    if (fs.existsSync(dir + 'Gruntfile.js'))
+    if (fs.existsSync(dir + 'Gruntfile.js')) {
       subGrunts[p] = {
         gruntfile: dir + 'Gruntfile.js'
       };
-    else
+      pluginFiles.push(dir + 'worker.js');
+      pluginFiles.push(dir + 'supervisor.js');
+    } else {
       pluginFiles.push(dir + '**/*.js');
+    }
   });
 
   // Project configuration:
