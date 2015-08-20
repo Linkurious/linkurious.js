@@ -15,7 +15,7 @@ To use, include all .js files under this folder. Then call the exporter method a
 
 ````javascript
 // Retreive the JSON string
-var gexfString = s.toJSON();
+var jsonString = s.toJSON();
 
 // Download the JSON file
 s.toJSON({

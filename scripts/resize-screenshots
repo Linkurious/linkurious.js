@@ -1,0 +1,4 @@
+#!/bin/bash
+#dependency: imagemagick
+
+mogrify -resize '320x320^' -gravity center -crop '320x320+0+0' ../examples/screens/*

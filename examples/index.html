@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
+  <link rel="stylesheet" href="https://bootswatch.com/paper/bootstrap.min.css" media="screen">
+  <title>Linkurious.js - Examples</title>
+  <style>
+.title {
+  font-size: 17px;
+  font-weight: bold;
+  margin-left: -10px;
+  border-top: 1px solid #F1F1F1;
+  border-right: 1px solid #DEDEDE;
+  border-bottom: 2px solid rgb(177, 177, 177);
+  border-left: 1px solid #E5E5E5;
+  margin-top: 6px;
+  margin-bottom: 9px;
+  position: absolute;
+  background-color: white;
+  padding: 7px 10px;
+  max-width: 230px;
+}
+  </style>
+</head>
+<body>
+
+<!-- form to open the example in codepen -->
+<form action="http://codepen.io/pen/define" method="POST">
+  <input type="hidden" name="data" value='{}'>
+</form>
+
+
+<div class="container">
+  <h1><small>linkurious.js - Examples</small></h1><hr/>
+</div>
+<div class="container" id='list'></div>
+
+<script id="item-template" type="text/x-handlebars-template">
+  <div class="col-sm-3 col-md-3 col-xs-6">
+    <div class="thumbnail">
+      <h4 class='title'>{{title}}</h4>
+      <a href='{{url}}'>
+        <img src="{{src}}" />
+      </a>
+      <div class='caption text-center'>
+        <a class='btn btn-default' href="{{url}}">View</a>&nbsp;&nbsp;&nbsp;
+        <button
+          class='btn btn-primary'
+          onclick="file_infos('{{url}}',edit_it)">Edit</button>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script>
+var list = [
+  'basic.html',
+  'active-state.html',
+  'add-node-on-click.html',
+  'animate.html',
+  'api-candy.html',
+  'custom-edge-renderer.html',
+  'custom-node-renderer.html',
+  'dagre.html',
+  'design.html',
+  'drag-nodes.html',
+  'edge-renderers.html',
+  'edge-siblings.html',
+  'events-and-force.html',
+  'events.html',
+  'filters.html',
+  'force-background.html',
+  'force-graph-arctic.html',
+  'force-graph-community.html',
+  'force.html',
+  'force-node-siblings.html',
+  'glyphs-renderer.html',
+  'glyphs-renderer-icons.html',
+  'lasso.html',
+  'load-external-gexf.html',
+  'load-external-json.html',
+  'load-neo4j-cypher-query.html',
+  'locate.html',
+  'neighborhoods-plugin.html',
+  'parallel-edges.html',
+  'plugin-exporters-gexf.html',
+  'plugin-exporters-json.html',
+  'plugin-exporters-spreadsheet.html',
+  'plugin-exporters-xlsx.html',
+  'plugin-fullscreen.html',
+  'plugin-generators.html',
+  'plugin-halo.html',
+  'plugin-hits.html',
+  'plugin-image.html',
+  'plugin-keyboard.html',
+  'plugin-layouts-fruchtermanReingold.html',
+  'plugin-louvain.html',
+  'plugin-pathfinding-astar.html',
+  'plugin-poweredby.html',
+  'plugin-select.html',
+  'plugin-tooltips.html',
+  'plugin-tooltips-multiples.html',
+  'renderers-linkurious-edges-shapes.html',
+  'renderers-linkurious.html',
+  'renderers-linkurious-icons.html',
+  'renderers-linkurious-images.html',
+  'renderers-linkurious-pie-charts.html',
+  'scrollable-page.html',
+  'select-and-drag-nodes.html',
+  'share-camera.html',
+  'svg-export.html',
+  'svg-freestyle-renderer.html',
+  'svg-renderer.html',
+  'use-minified-sigma.html',
+];
+
+function edit_it(infos) {
+  infos['editors'] = "001";
+  $('form *[name=data]').val(JSON.stringify(infos));
+  $('form').submit()
+}
+
+function file_infos(url, callback) {
+  $.get(url).then(function(file){
+    var match = file.match(/<scri([\s\S]*?)ipt>/g);
+    var js = match.slice(-1)[0]
+      .replace(/<script.*?>/,'')
+      .replace('<\/script>','').trim();
+    var html = file.match(/<div id="container([\s\S]*?)<scrip/)[0]
+      .replace('<scrip','');
+    var css = html.match(/<style>([\s\S]*?)<\/style>/)[1].trim();
+    html = html.replace(/<style>[\s\S]*?<\/style>\n/,'').trim();
+    var external = {css:[],js:[]}
+    var l = document.createElement("a");
+    var regexes = [{
+      regex:/<script src="(.*)"></g,
+      obj: external.js,
+    },{
+      regex:/<link .*? href="(.*)"></g,
+      obj: external.css,
+    }];
+    regexes.forEach(function(step){
+      match = step.regex.exec(file);
+      while (match != null) {
+          l.href = match[1];
+          step.obj.push(l.protocol + "//" + l.host + l.pathname);
+          match = step.regex.exec(file);
+      }
+    })
+    callback({
+      js:js,
+      html:html,
+      css:css,
+      title:url,
+      css_external: external.css.join(';'),
+      js_external: external.js.join(';'),
+    })
+  });
+}
+
+function split(a, n) {
+  var arrays = [];
+  while (a.length > 0)
+      arrays.push(a.splice(0, n));
+  return arrays;
+}
+
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+var prefix = document.location.href.replace('index.html','');
+
+var source = $("#item-template").html();
+var template = Handlebars.compile(source);
+
+var rows = split(list, 4).map(function(els,row_i){
+  var row_els = els.map(function(x,col_i){
+    var context = {
+      url:x,
+      src: prefix+"screens/"+x.replace('.html','.png'),
+      title: capitalize(x.replace('.html','').replace(/-/g,' ').replace('plugin ',''))
+    }
+    return template(context);
+  })
+  return "<div class='row'>"+row_els.join('')+'</div>';
+})
+
+document.getElementById('list').innerHTML = rows.join('');
+</script>
+</body>
+</html>
