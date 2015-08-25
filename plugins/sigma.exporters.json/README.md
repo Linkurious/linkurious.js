@@ -20,6 +20,7 @@ var jsonString = s.toJSON();
 // Download the JSON file
 s.toJSON({
   download: true,
+  pretty: true,
   filename: 'myGraph.json'
 });
 ````
@@ -28,6 +29,10 @@ s.toJSON({
 
  * **download**
    * Whether you want the graph image to be downloaded by the browser.
+   * type: *boolean*
+   * default value: `false`
+ * **pretty**
+   * Whether you want a pretty output for easy read.
    * type: *boolean*
    * default value: `false`
  * **filename**

@@ -119,10 +119,17 @@
   sigma.prototype.toJSON = function(params) {
       params = params || {};
 
-      var jsonString = JSON.stringify({
+      var graph = {
         nodes: this.graph.nodes().map(deepCopy).map(cleanup),
         edges: this.graph.edges().map(deepCopy).map(cleanup)
-      });
+      };
+
+      if (params.pretty) {
+        var jsonString = JSON.stringify(graph, null, ' ');
+      }
+      else {
+        var jsonString = JSON.stringify(graph);
+      }
 
       if (params.download) {
         download(jsonString, 'json', params.filename);
