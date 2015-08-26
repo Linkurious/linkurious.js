@@ -68,7 +68,7 @@
             edgesMap = {},
             key;
 
-		if (typeof result === 'object') result = result.results[0].data;
+        if (typeof result === 'object') result = result.results[0].data;
         // Iteration on all result data
         result.forEach(function (data) {
 
@@ -157,8 +157,8 @@
         cypherCallback = function (callback) {
 
             return function (response) {
-				if (response.errors.length > 0)
-					return callback(null, response.errors);
+                if (response.errors.length > 0)
+                    return callback(null, response.errors);
 
                 var graph = { nodes: [], edges: [] };
 
