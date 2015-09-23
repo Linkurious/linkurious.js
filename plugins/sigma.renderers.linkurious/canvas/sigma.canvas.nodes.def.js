@@ -81,6 +81,15 @@
     context.restore();
   };
 
+  var drawBorder = function(context, x, y, radius, color, line_width) {
+    context.beginPath();
+    context.strokeStyle = color;
+	context.lineWidth = line_width;
+    context.arc(x, y, radius, 0, Math.PI * 2, true);
+    context.closePath();
+    context.stroke();
+  };
+
   /**
    * The default node renderer. It renders the node as a simple disc.
    *
@@ -97,9 +106,12 @@
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
+		borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
 
     // Level:
@@ -157,9 +169,9 @@
       // Border:
       if (borderSize > 0) {
         context.beginPath();
-        context.fillStyle = settings('nodeBorderColor') === 'node' ?
-          (color || defaultNodeColor) :
-          settings('defaultNodeBorderColor');
+        context.fillStyle = settings('nodeBorderColor') === 'node'
+          ? borderColor
+          : settings('defaultNodeBorderColor');
         context.arc(x, y, size + borderSize, 0, Math.PI * 2, true);
         context.closePath();
         context.fill();
@@ -194,6 +206,10 @@
       context.arc(x, y, size, 0, Math.PI * 2, true);
       context.closePath();
       context.fill();
+
+      if (!node.active && borderSize > 0) {
+		drawBorder(context, x, y, size, borderColor, borderSize);
+      }
     }
 
     // reset shadow
