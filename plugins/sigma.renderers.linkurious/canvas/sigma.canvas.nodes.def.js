@@ -208,7 +208,7 @@
       context.fill();
 
       if (!node.active && borderSize > 0) {
-		drawBorder(context, x, y, size, borderColor, borderSize);
+		    drawBorder(context, x, y, size, borderColor, borderSize);
       }
     }
 
