@@ -117,6 +117,7 @@
           source,
           target,
           cp,
+          cc = self.settings('curvatureCoefficients'),
           nodeIndex = {},
           inserted,
           selected = [],
@@ -218,7 +219,8 @@
                   source[prefix + 'x'],
                   source[prefix + 'y'],
                   target[prefix + 'x'],
-                  target[prefix + 'y']);
+                  target[prefix + 'y'],
+                  edge.cc || cc);
                 if (
                   sigma.utils.isPointOnQuadraticCurve(
                   modifiedX,

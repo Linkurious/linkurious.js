@@ -30,7 +30,7 @@
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, sSize, count) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, count);
+      sigma.utils.getQuadraticControlPoint2(sX, sY, tX, tY, count);
 
     if (!color)
       switch (edgeColor) {

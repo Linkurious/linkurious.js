@@ -20,6 +20,7 @@
         defaultNodeColor = settings('defaultNodeColor'),
         defaultEdgeColor = settings('defaultEdgeColor'),
         cp = {},
+        cc = settings('curvatureCoefficients'),
         size = settings('edgeHoverSizeRatio') * (edge[prefix + 'size'] || 1),
         tSize = target[prefix + 'size'],
         sX = source[prefix + 'x'],
@@ -35,7 +36,7 @@
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, tSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc || cc);
 
     if (source.id === target.id) {
       d = Math.sqrt((tX - cp.x1) * (tX - cp.x1) + (tY - cp.y1) * (tY - cp.y1));

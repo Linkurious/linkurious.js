@@ -19,12 +19,9 @@
    * @param  {number} a   Modifier for the amplitude of the curve.
    * @return {x,y}        The control point coordinates.
    */
-  sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2, a) {
+  sigma.utils.getQuadraticControlPoint2 = function(x1, y1, x2, y2, a) {
     a = a || 0;
-    return {
-      x: (x1 + x2) / 2 + (y2 - y1) / (60 / (15 + a)),
-      y: (y1 + y2) / 2 + (x1 - x2) / (60 / (15 + a))
-    };
+	return sigma.utils.getQuadraticControlPoint(x1, y1, x2, y2, {x: 2, y: 60 / (15+a)});
   };
 
   /**

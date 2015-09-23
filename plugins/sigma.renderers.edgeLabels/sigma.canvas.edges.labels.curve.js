@@ -42,6 +42,7 @@
         dY = tY - sY,
         sign = (sX < tX) ? 1 : -1,
         cp = {},
+        cc = settings('curvatureCoefficients'),
         c,
         angle = 0,
         t = 0.5,  //length of the curve
@@ -55,7 +56,7 @@
         t, sX, sY, tX, tY, cp.x1, cp.y1, cp.x2, cp.y2
       );
     } else {
-      cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc || cc);
       c = sigma.utils.getPointOnQuadraticCurve(t, sX, sY, tX, tY, cp.x, cp.y);
     }
 

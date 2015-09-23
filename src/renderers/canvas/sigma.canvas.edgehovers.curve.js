@@ -21,6 +21,7 @@
         defaultNodeColor = settings('defaultNodeColor'),
         defaultEdgeColor = settings('defaultEdgeColor'),
         cp = {},
+        cc = settings('curvatureCoefficients'),
         sSize = source[prefix + 'size'],
         sX = source[prefix + 'x'],
         sY = source[prefix + 'y'],
@@ -29,7 +30,7 @@
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, sSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc || cc);
 
     if (!color)
       switch (edgeColor) {

@@ -229,12 +229,16 @@
    * @param  {number} y1  The Y coordinate of the start point.
    * @param  {number} x2  The X coordinate of the end point.
    * @param  {number} y2  The Y coordinate of the end point.
+   * @param  {number} cc  The curvature coefficients.
    * @return {x,y}        The control point coordinates.
    */
-  sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2) {
+  sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2, cc) {
+	cc = $.extend({ x: 2, y: 4 }, cc);
+	if (cc.x) { if (!cc.xx) cc.xx = cc.x; if (!cc.yx) cc.yx = cc.x; }
+	if (cc.y) { if (!cc.xy) cc.xy = cc.y; if (!cc.yy) cc.yy = cc.y; }
     return {
-      x: (x1 + x2) / 2 + (y2 - y1) / 4,
-      y: (y1 + y2) / 2 + (x1 - x2) / 4
+      x: (x1 + x2) / cc.xx + (y2 - y1) / cc.xy,
+      y: (y1 + y2) / cc.yx + (x1 - x2) / cc.yy
     };
   };
 

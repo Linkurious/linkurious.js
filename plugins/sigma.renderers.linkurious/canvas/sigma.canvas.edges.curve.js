@@ -13,6 +13,9 @@
    * @param  {configurable}             settings     The settings function.
    */
   sigma.canvas.edges.curve = function(edge, source, target, context, settings) {
+    if (edge instanceof sigma) {
+		return this.autoCurve(edge, source);
+	}
     var color = edge.active ?
           edge.active_color || settings('defaultEdgeActiveColor') :
           edge.color,
@@ -23,6 +26,7 @@
         defaultEdgeColor = settings('defaultEdgeColor'),
         level = edge.active ? settings('edgeActiveLevel') : edge.level,
         cp = {},
+        cc = settings('curvatureCoefficients'),
         sSize = source[prefix + 'size'],
         sX = source[prefix + 'x'],
         sY = source[prefix + 'y'],
@@ -31,7 +35,7 @@
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, sSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc || cc);
 
     // Level:
     if (level) {
@@ -105,4 +109,45 @@
       context.shadowColor = '#000000'
     }
   };
+
+  /**
+   * This curves edges between two nodes when there are more than one
+   *
+   * @param  {object}     s      An instance of the sigma object
+   * @param  {object}     cc     The curvature coefficients to use
+   */
+
+  sigma.canvas.edges.autoCurve = function(s, cc) {
+	var count = {
+		key: function(o) {
+			var key = o.source + o.target;
+			if (this[key]) return key;
+			key = o.target + o.source;
+			if (this[key]) return key;
+			this[key] = { i: 0, n: 0 };
+			return key;
+		},
+		inc: function(o) {
+			this[this.key(o)].n++;
+		}
+	};
+	$(s.graph.edges()).each(function() { count.inc(this); });
+
+	if (!cc) cc = { length: 0 };
+	if (typeof cc == 'number') cc = { length: cc };
+	if (!cc.length) cc.length = 0.125;
+	if (!cc.step) cc.step = function(len, n) { return len / (n/2); };
+	if (!cc.calc) cc.calc = function(len, step, i) { return { y: 1/(len - step * i) }; };
+	if (!cc.type) cc.type = 'curve';
+	$(s.graph.edges()).each(function() {
+		var key = count.key(this);
+		var n = count[key].n; if (n % 2 > 0) n--;
+		var step = cc.step(cc.length, n);
+		if (count[key].n > 1) {
+			this.type = cc.type;
+			this.cc = $.extend({}, cc, cc.calc(cc.length, step, count[key].i++));
+		}
+    });
+  };
+
 })();

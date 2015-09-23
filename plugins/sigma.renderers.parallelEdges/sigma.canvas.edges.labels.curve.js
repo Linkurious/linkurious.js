@@ -51,7 +51,7 @@
       );
       angle = Math.atan2(1, 1); // 45°
     } else {
-      cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, count);
+      cp = sigma.utils.getQuadraticControlPoint2(sX, sY, tX, tY, count);
       c = sigma.utils.getPointOnQuadraticCurve(t, sX, sY, tX, tY, cp.x, cp.y);
       angle = Math.atan2(dY * sign, dX * sign);
     }
