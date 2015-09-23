@@ -3,4 +3,4 @@ build/*
 *.tgz
 *.log
 *.swp
-.idea
+.idea/*
