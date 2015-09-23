@@ -24,7 +24,7 @@
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'] || 1,
         defaultNodeColor = settings('defaultNodeColor'),
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         alignment = settings('labelAlignment'),
         fontSize = (settings('labelSize') === 'fixed') ?
           settings('defaultLabelSize') :
@@ -32,6 +32,9 @@
         color = settings('nodeHoverColor') === 'node' ?
           (node.color || defaultNodeColor) :
           settings('defaultNodeHoverColor'),
+        borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (node.border_color || defaultNodeColor),
         level = settings('nodeHoverLevel');
 
     if (alignment !== 'center') {
@@ -76,9 +79,9 @@
     // Node border:
     if (borderSize > 0) {
       context.beginPath();
-      context.fillStyle = settings('nodeBorderColor') === 'node' ?
-        (node.color || defaultNodeColor) :
-        settings('defaultNodeBorderColor');
+      context.fillStyle = settings('nodeBorderColor') === 'node'
+        ? borderColor
+        : settings('defaultNodeBorderColor');
       context.arc(
         node[prefix + 'x'],
         node[prefix + 'y'],

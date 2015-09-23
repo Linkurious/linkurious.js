@@ -43,7 +43,7 @@
     // {string} Indicates how to choose the nodes border color.
     //          Available values: "node", "default"
     nodeBorderColor: 'node,',
-    // defaultNodeBorderColor is already available in sigma.settings.
+    // defaultNodeBorderColor is set in sigma.settings.
     // {string} Indicates how to choose the nodes outer border color.
     //          Available values: "node", "default"
     nodeOuterBorderColor: '',
