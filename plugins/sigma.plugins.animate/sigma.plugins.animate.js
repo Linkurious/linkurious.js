@@ -140,7 +140,7 @@
       if (p >= 1) {
         nodes.forEach(function(node) {
           for (var k in animate)
-            if (k in animate)
+            if (k in animate && animate[k] in node)
               node[k] = node[animate[k]];
         });
 
@@ -151,7 +151,7 @@
         p = easing(p);
         nodes.forEach(function(node) {
           for (var k in animate)
-            if (k in animate) {
+            if (k in animate && animate[k] in node) {
               if (k.match(/color$/))
                 node[k] = interpolateColors(
                   startPositions[node.id][k],

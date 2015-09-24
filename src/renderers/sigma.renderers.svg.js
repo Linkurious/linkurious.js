@@ -348,8 +348,8 @@
         self = this,
         hoveredNode;
 
-    function overNode(e) {
-      var node = e.data.node,
+    function updateHovers(e) {
+      var node,
           embedSettings = self.settings.embedObjects({
             prefix: prefix
           });
@@ -357,40 +357,35 @@
       if (!embedSettings('enableHovering'))
         return;
 
-      var hover = (renderers[node.type] || renderers.def).create(
-        node,
-        self.domElements.nodes[node.id],
-        self.measurementCanvas,
-        embedSettings
-      );
+      if (e.data.enter.nodes.length > 0) { // over
+        node = e.data.enter.nodes[0];
+        var hover = (renderers[node.type] || renderers.def).create(
+          node,
+          self.domElements.nodes[node.id],
+          self.measurementCanvas,
+          embedSettings
+        );
 
-      self.domElements.hovers[node.id] = hover;
+        self.domElements.hovers[node.id] = hover;
 
-      // Inserting the hover in the dom
-      self.domElements.groups.hovers.appendChild(hover);
-      hoveredNode = node;
-    }
+        // Inserting the hover in the dom
+        self.domElements.groups.hovers.appendChild(hover);
+        hoveredNode = node;
+      } else if (e.data.leave.nodes.length > 0) { // out
+        node = e.data.leave.nodes[0];
 
-    function outNode(e) {
-      var node = e.data.node,
-          embedSettings = self.settings.embedObjects({
-            prefix: prefix
-          });
+        // Deleting element
+        self.domElements.groups.hovers.removeChild(
+          self.domElements.hovers[node.id]
+        );
+        hoveredNode = null;
+        delete self.domElements.hovers[node.id];
 
-      if (!embedSettings('enableHovering'))
-        return;
-
-      // Deleting element
-      self.domElements.groups.hovers.removeChild(
-        self.domElements.hovers[node.id]
-      );
-      hoveredNode = null;
-      delete self.domElements.hovers[node.id];
-
-      // Reinstate
-      self.domElements.groups.nodes.appendChild(
-        self.domElements.nodes[node.id]
-      );
+        // Reinstate
+        self.domElements.groups.nodes.appendChild(
+          self.domElements.nodes[node.id]
+        );
+      }
     }
 
     // OPTIMIZE: perform a real update rather than a deletion
@@ -422,8 +417,7 @@
     }
 
     // Binding events
-    this.bind('overNode', overNode);
-    this.bind('outNode', outNode);
+    this.bind('hovers', updateHovers);
 
     // Update on render
     this.bind('render', update);
@@ -437,35 +431,20 @@
    * @param  {?number}                height The new height of the container.
    * @return {sigma.renderers.svg}           Returns the instance itself.
    */
-  sigma.renderers.svg.prototype.resize = function(w, h) {
+  sigma.renderers.svg.prototype.resize = function() {
     var oldWidth = this.width,
-        oldHeight = this.height,
-        pixelRatio = 1;
+        oldHeight = this.height;
 
-    if (w !== undefined && h !== undefined) {
-      this.width = w;
-      this.height = h;
-    } else {
-      this.width = this.container.offsetWidth;
-      this.height = this.container.offsetHeight;
-
-      w = this.width;
-      h = this.height;
-    }
+    this.width = this.container.offsetWidth;
+    this.height = this.container.offsetHeight;
 
     if (oldWidth !== this.width || oldHeight !== this.height) {
-      this.domElements.graph.style.width = w + 'px';
-      this.domElements.graph.style.height = h + 'px';
-
-      if (this.domElements.graph.tagName.toLowerCase() === 'svg') {
-        this.domElements.graph.setAttribute('width', (w * pixelRatio));
-        this.domElements.graph.setAttribute('height', (h * pixelRatio));
-      }
+      this.domElements.graph.style.width = this.width + 'px';
+      this.domElements.graph.style.height = this.height + 'px';
     }
 
     return this;
   };
-
 
   /**
    * The labels, nodes and edges renderers are stored in the three following

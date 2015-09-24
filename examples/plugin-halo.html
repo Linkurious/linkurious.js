@@ -9,7 +9,6 @@
 <script src="../src/classes/sigma.classes.graph.js"></script>
 <script src="../src/classes/sigma.classes.camera.js"></script>
 <script src="../src/classes/sigma.classes.quad.js"></script>
-<script src="../src/classes/sigma.classes.edgequad.js"></script>
 <script src="../src/captors/sigma.captors.mouse.js"></script>
 <script src="../src/captors/sigma.captors.touch.js"></script>
 <script src="../src/renderers/sigma.renderers.canvas.js"></script>
@@ -144,20 +143,22 @@ s.bind('clickStage', function(e) {
   renderHalo();
 });
 
-s.bind('overNodes', function(e) {
+s.bind('hovers', function(e) {
   var adjacentNodes = [],
       adjacentEdges = [];
 
+  if (!e.data.enter.nodes.length) return;
+
   // Get adjacent nodes:
-  e.data.nodes.forEach(function(node) {
+  e.data.enter.nodes.forEach(function(node) {
     adjacentNodes = adjacentNodes.concat(s.graph.adjacentNodes(node.id));
   });
 
   // Add hovered nodes to the array and remove duplicates:
-  adjacentNodes = arrayUnique(adjacentNodes.concat(e.data.nodes));
+  adjacentNodes = arrayUnique(adjacentNodes.concat(e.data.enter.nodes));
 
   // Get adjacent edges:
-  e.data.nodes.forEach(function(node) {
+  e.data.enter.nodes.forEach(function(node) {
     adjacentEdges = adjacentEdges.concat(s.graph.adjacentEdges(node.id));
   });
 

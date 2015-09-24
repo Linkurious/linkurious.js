@@ -1,0 +1,43 @@
+<!--
+Simple example using the minified files
+To be able to use it, you have to run `grunt` before
+-->
+<script src="../build/sigma.min.js" ></script>
+<script src="../build/plugins.min.js" ></script>
+<div>
+  <style>
+    #graph-container {
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      position: absolute;
+      background: #111;
+    }
+  </style>
+  <div id="graph-container"></div>
+</div>
+<script>
+g = sigma.plugins.generators.grid(10,10);
+
+s = new sigma({
+  graph: g,
+  renderer: {
+    container: 'graph-container'
+  },
+  settings: {
+    hideEdgesOnMove: true,
+    defaultLabelColor: '#fff',
+    defaultNodeColor: '#999',
+    defaultEdgeColor: '#333',
+    edgeColor: 'default'
+  }
+});
+
+sigma.layouts.startForceLink(s, {
+  worker: true,
+  autoStop: true,
+  background: true,
+  easing: 'cubicInOut'
+});
+</script>

@@ -29,6 +29,7 @@
       position: '',       // top | bottom | left | right
       autoadjust: false,
       delay: 0,
+      hideDelay: 0,
       template: '',       // HTML string
       renderer: null      // function
     },
@@ -39,6 +40,7 @@
       position: '',       // top | bottom | left | right
       autoadjust: false,
       delay: 0,
+      hideDelay: 0,
       template: '',       // HTML string
       renderer: null      // function
     },
@@ -49,6 +51,7 @@
       position: '',       // top | bottom | left | right
       autoadjust: false,
       delay: 0,
+      hideDelay: 0,
       template: '',       // HTML string
       renderer: null      // function
     },
@@ -72,12 +75,11 @@
    *   {?string}   show       The event that triggers the tooltip. Default
    *                          values: "clickNode", "clickEdge". Other suggested
    *                          values: "overNode", "doubleClickNode",
-   *                          "rightClickNode", "overEdge", "doubleClickEdge",
+   *                          "rightClickNode", "hovers", "doubleClickEdge",
    *                          "rightClickEdge", "doubleClickNode",
    *                          "rightClickNode".
    *   {?string}   hide       The event that hides the tooltip. Default value:
-   *                          "clickStage". Other suggested values: "outNode",
-   *                          "outEdge".
+   *                          "clickStage". Other suggested values: "hovers"
    *   {?string}   template   The HTML template. It is directly inserted inside
    *                          a div element unless a renderer is specified.
    *   {?function} renderer   This function may process the template or be used
@@ -121,6 +123,8 @@
         eo = sigma.utils.extend(options.edge, settings.edge),
         _tooltip,
         _timeoutHandle,
+        _timeoutHideHandle,
+        _mouseOverTooltip = false,
         _doubleClick = false;
 
     sigma.classes.dispatcher.extend(this);
@@ -137,12 +141,13 @@
      * This function removes the existing tooltip and creates a new tooltip for a
      * specified node or edge.
      *
-     * @param {object} o       The node or the edge.
-     * @param {object} options The options related to the object.
-     * @param {number} x       The X coordinate of the mouse.
-     * @param {number} y       The Y coordinate of the mouse.
+     * @param {object}    o          The node or the edge.
+     * @param {object}    options    The options related to the object.
+     * @param {number}    x          The X coordinate of the mouse.
+     * @param {number}    y          The Y coordinate of the mouse.
+     * @param {function?} onComplete Optional function called when open finish
      */
-    this.open = function(o, options, x, y) {
+    this.open = function(o, options, x, y, onComplete) {
       remove();
 
       // Create the DOM element:
@@ -174,21 +179,36 @@
         _tooltip.innerHTML = options.template;
       }
 
-      // container position:
-      var containerRect = renderer.container.getBoundingClientRect();
-      x = ~~(x - containerRect.left);
-      y = ~~(y - containerRect.top);
+      var containerPosition = window.getComputedStyle(renderer.container).position;
+
+      if(containerPosition !== 'static') {
+        _tooltip.style.position = 'absolute';
+        var containerRect = renderer.container.getBoundingClientRect();
+        x = ~~(x - containerRect.left);
+        y = ~~(y - containerRect.top);
+      }
+
 
       // Style it:
       _tooltip.className = options.cssClass;
 
       if (options.position !== 'css') {
-        _tooltip.style.position = 'relative';
+        if(containerPosition === 'static') {
+          _tooltip.style.position = 'absolute';
+        }
 
         // Default position is mouse position:
         _tooltip.style.left = x + 'px';
         _tooltip.style.top = y + 'px';
       }
+
+      _tooltip.addEventListener('mouseenter', function() {
+        _mouseOverTooltip = true;
+      }, false);
+
+      _tooltip.addEventListener('mouseleave', function() {
+        _mouseOverTooltip = false;
+      }, false);
 
       // Execute after rendering:
       setTimeout(function() {
@@ -272,6 +292,7 @@
             _tooltip.style.left = x + 'px';
           }
         }
+        if (onComplete) onComplete();
       }, 0);
     };
 
@@ -287,13 +308,29 @@
     };
 
     /**
-     * This function clears a potential timeout function related to the tooltip
+     * This function clears all timeouts related to the tooltip
      * and removes the tooltip.
      */
     function cancel() {
       clearTimeout(_timeoutHandle);
+      clearTimeout(_timeoutHideHandle);
       _timeoutHandle = false;
+      _timeoutHideHandle = false;
       remove();
+    };
+
+    /**
+     * Similar to cancel() but can be delayed.
+     *
+     * @param {number} delay. The delay in miliseconds.
+     */
+    function delayedCancel(delay) {
+      clearTimeout(_timeoutHandle);
+      clearTimeout(_timeoutHideHandle);
+      _timeoutHandle = false;
+      _timeoutHideHandle = setTimeout(function() {
+        if (!_mouseOverTooltip) remove();
+      }, delay);
     };
 
     // INTERFACE:
@@ -305,8 +342,11 @@
 
     this.kill = function() {
       this.unbindEvents();
+      clearTimeout(_timeoutHandle);
+      clearTimeout(_timeoutHideHandle);
       _tooltip = null;
       _timeoutHandle = null;
+      _timeoutHideHandle = null;
       _doubleClick = false;
     }
 
@@ -371,15 +411,14 @@
             null,
             so,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, so.delay);
       });
 
       s.bind(so.hide, function(event) {
         var p = _tooltip;
-        cancel();
+        delayedCancel(settings.stage.hideDelay);
         if (p)
           self.dispatchEvent('hidden', event.data);
       });
@@ -417,8 +456,13 @@
           return;
         }
 
-        var n = event.data.node || event.data.nodes[0],
-            clientX = event.data.captor.clientX,
+        var n = event.data.node;
+        if (!n && event.data.enter) {
+          n = event.data.enter.nodes[0];
+        }
+        if (n == undefined) return;
+
+        var clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
 
         clearTimeout(_timeoutHandle);
@@ -427,15 +471,16 @@
             n,
             no,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, no.delay);
       });
 
       s.bind(no.hide, function(event) {
+        if (event.data.leave && event.data.leave.nodes.length == 0)
+          return
         var p = _tooltip;
-        cancel();
+        delayedCancel(settings.node.hideDelay);
         if (p)
           self.dispatchEvent('hidden', event.data);
       });
@@ -473,8 +518,13 @@
           return;
         }
 
-        var e = event.data.edge || event.data.edges[0],
-            clientX = event.data.captor.clientX,
+        var e = event.data.edge;
+        if (!e && event.data.enter) {
+          e = event.data.enter.edges[0];
+        }
+        if (e == undefined) return;
+
+        var clientX = event.data.captor.clientX,
             clientY = event.data.captor.clientY;
 
         clearTimeout(_timeoutHandle);
@@ -483,15 +533,16 @@
             e,
             eo,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, eo.delay);
       });
 
       s.bind(eo.hide, function(event) {
+        if (event.data.leave && event.data.leave.edges.length == 0)
+          return
         var p = _tooltip;
-        cancel();
+        delayedCancel(settings.edge.hideDelay);
         if (p)
           self.dispatchEvent('hidden', event.data);
       });

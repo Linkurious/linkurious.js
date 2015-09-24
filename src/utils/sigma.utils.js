@@ -406,14 +406,50 @@
     *                          segment, false otherwise.
   */
   sigma.utils.isPointOnSegment = function(x, y, x1, y1, x2, y2, epsilon) {
-    // http://stackoverflow.com/a/328122
-    var crossProduct = Math.abs((y - y1) * (x2 - x1) - (x - x1) * (y2 - y1)),
-        d = sigma.utils.getDistance(x1, y1, x2, y2),
-        nCrossProduct = crossProduct / d; // normalized cross product
+    return sigma.utils.distancePointToSegment(x, y, x1, y1, x2, y2) < epsilon;
+  };
 
-    return (nCrossProduct < epsilon &&
-     Math.min(x1, x2) <= x && x <= Math.max(x1, x2) &&
-     Math.min(y1, y2) <= y && y <= Math.max(y1, y2));
+  /**
+    * Compute the distance of a point to a line segment.
+    *
+    * @param  {number} x       The X coordinate of the point to check.
+    * @param  {number} y       The Y coordinate of the point to check.
+    * @param  {number} x1      The X coordinate of the line start point.
+    * @param  {number} y1      The Y coordinate of the line start point.
+    * @param  {number} x2      The X coordinate of the line end point.
+    * @param  {number} y2      The Y coordinate of the line end point.
+    * @return {number}         Distance to the segment
+  */
+  sigma.utils.distancePointToSegment = function(x, y, x1, y1, x2, y2) {
+    // http://stackoverflow.com/a/6853926/1075195
+    var A = x - x1,
+        B = y - y1,
+        C = x2 - x1,
+        D = y2 - y1,
+        dot = A * C + B * D,
+        len_sq = C * C + D * D,
+        param = -1,
+        xx, yy;
+
+    if (len_sq !== 0) //in case of 0 length line
+        param = dot / len_sq;
+
+    if (param < 0) {
+      xx = x1;
+      yy = y1;
+    }
+    else if (param > 1) {
+      xx = x2;
+      yy = y2;
+    }
+    else {
+      xx = x1 + param * C;
+      yy = y1 + param * D;
+    }
+
+    var dx = x - xx;
+    var dy = y - yy;
+    return Math.sqrt(dx * dx + dy * dy);
   };
 
   /**
@@ -595,6 +631,24 @@
   };
 
   /**
+   * The pixel ratio of the screen. Taking zoom into account
+   *
+   * @return {number}        Pixel ratio of the screen
+   */
+  sigma.utils.getPixelRatio = function() {
+    var ratio = 1;
+    if (window.screen.deviceXDPI !== undefined &&
+         window.screen.logicalXDPI !== undefined &&
+         window.screen.deviceXDPI > window.screen.logicalXDPI) {
+        ratio = window.screen.systemXDPI / window.screen.logicalXDPI;
+    }
+    else if (window.devicePixelRatio !== undefined) {
+        ratio = window.devicePixelRatio;
+    }
+    return ratio;
+  };
+
+  /**
    * Extract the width from a mouse or touch event.
    *
    * @param  {event}  e A mouse or touch event.
@@ -609,6 +663,45 @@
       (typeof w === 'number' && w) ||
       (w !== undefined && w.baseVal !== undefined && w.baseVal.value)
     );
+  };
+
+  /**
+   * Extract the center from a mouse or touch event.
+   *
+   * @param  {event}  e A mouse or touch event.
+   * @return {object}   The center of the event's target.
+   */
+  sigma.utils.getCenter = function(e) {
+    var ratio = e.target.namespaceURI.indexOf('svg') !== -1 ? 1 :
+        sigma.utils.getPixelRatio();
+    return {
+      x: sigma.utils.getWidth(e) / (2 * ratio),
+      y: sigma.utils.getHeight(e) / (2 * ratio),
+    };
+  };
+
+  /**
+   * Convert mouse coords to sigma coords
+   *
+   * @param  {event}   e A mouse or touch event.
+   * @param  {number?} x The x coord to convert
+   * @param  {number?} x The y coord to convert
+   *
+   * @return {object}    The standardized event
+   */
+  sigma.utils.mouseCoords = function(e, x, y) {
+    x = x || sigma.utils.getX(e);
+    y = y || sigma.utils.getY(e);
+    return {
+        x: x - sigma.utils.getCenter(e).x,
+        y: y - sigma.utils.getCenter(e).y,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        shiftKey: e.shiftKey
+    };
   };
 
   /**
@@ -759,6 +852,27 @@
    * WEBGL UTILS:
    * ************
    */
+
+  /**
+   * Return true if the browser support webgl
+   *
+   * @return {boolean}
+   */
+  sigma.utils.isWebGLSupported = function() {
+    var canvas,
+        webgl = !!window.WebGLRenderingContext;
+    if (webgl) {
+      canvas = document.createElement('canvas');
+      try {
+        return !!(
+          canvas.getContext('webgl') ||
+          canvas.getContext('experimental-webgl')
+        );
+      } catch (e) {}
+    }
+    return false;
+  };
+
   /**
    * Loads a WebGL shader and returns it.
    *
@@ -837,9 +951,6 @@
 
     return program;
   };
-
-
-
 
   /**
    * *********
@@ -950,5 +1061,30 @@
       a20 * b01 + a21 * b11 + a22 * b21,
       a20 * b02 + a21 * b12 + a22 * b22
     ];
+  };
+
+
+  /**
+   * ************
+   * CANVAS UTILS:
+   * ************
+   */
+  /**
+   * Calculate the width of the text either approximated via the font size or
+   * via the more expensive but accurate context.measureText.
+   *
+   * @param  {context2D}   ctx           The canvas context.
+   * @param  {boolean}     approximate   Approximate or not.
+   * @param  {integer}     fontSize      Font size of the text.
+   * @param  {string}      text          The text to use.
+   *
+   * @return {float}       Returns the width.
+   */
+   sigma.utils.canvas = {};
+   sigma.utils.canvas.getTextWidth =
+        function(ctx, approximate, fontSize, text) {
+    if (!text) return 0;
+    return approximate ? 0.6 * text.length * fontSize :
+      ctx.measureText(text).width;
   };
 }).call(this);

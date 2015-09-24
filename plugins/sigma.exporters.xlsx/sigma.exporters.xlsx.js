@@ -15,8 +15,9 @@
   if (typeof sigma === 'undefined')
     throw new Error('sigma is not declared');
 
-  if (typeof XLSX === 'undefined')
-    throw new Error('XLSX is not declared');
+  if (typeof dagre === 'undefined' || typeof dagre.graphlib === 'undefined')
+    console.warn('to use the xlx plugin, you have to include the XLSX library');
+
 
   function downloadBlob(blob, extension, filename) {
     var objectUrl = window.URL.createObjectURL(blob);
@@ -220,6 +221,9 @@
    * @return {string}        The Spreadsheet string.
    */
   sigma.prototype.toXLSX = function(params) {
+      if (typeof XLSX === 'undefined')
+        throw new Error('XLSX is not declared');
+
       params = params || {};
 
       var wb = new Workbook(),

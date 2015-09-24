@@ -9,7 +9,6 @@
 <script src="../src/classes/sigma.classes.graph.js"></script>
 <script src="../src/classes/sigma.classes.camera.js"></script>
 <script src="../src/classes/sigma.classes.quad.js"></script>
-<script src="../src/classes/sigma.classes.edgequad.js"></script>
 <script src="../src/captors/sigma.captors.mouse.js"></script>
 <script src="../src/captors/sigma.captors.touch.js"></script>
 <script src="../src/renderers/sigma.renderers.canvas.js"></script>
@@ -190,17 +189,18 @@ s = new sigma({
   container: 'graph-container'
 });
 
-// Minimal example of the tooltip plugin instanciation:
-/*sigma.plugins.tooltip(s, {
+/* Minimal example of the tooltip plugin instantiation:
+sigma.plugins.tooltips(s, s.renderers[0], {
   node: {
     template: 'Hello node!'
   }
-});*/
+});
+*/
 
 var config = {
   node: {
-    show: 'overNode',
-    hide: 'outNode',
+    show: 'hovers',
+    hide: 'hovers',
     cssClass: 'sigma-tooltip',
     position: 'top',
     //autoadjust: true,

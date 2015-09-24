@@ -100,7 +100,8 @@
         angle = Math.atan2(1, 1); // 45°
       } else {
         var
-          labelWidth = context.measureText(edge.label).width,
+          labelWidth = sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, edge.label),
           edgeLength = sigma.utils.getDistance(
             source[prefix + 'x'],
             source[prefix + 'y'],
@@ -162,7 +163,9 @@
 
     function drawBackground(angle, context, fontSize, size, label, x, y) {
       var w = Math.round(
-            context.measureText(label).width + size + 1.5 + fontSize / 3
+            sigma.utils.canvas.getTextWidth(context,
+                settings('approximateLabelWidth'), fontSize, label) +
+            size + 1.5 + fontSize / 3
           ),
           h = fontSize + 4;
 

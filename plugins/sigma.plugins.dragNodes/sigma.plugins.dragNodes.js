@@ -63,14 +63,14 @@
       _isMouseDown = false,
       _isMouseOverCanvas = false,
       _drag = false,
-      _stickiness = s.settings('dragNodeStickiness');
+      _sticky = true;
 
     if (renderer instanceof sigma.renderers.svg) {
         _mouse = renderer.container.firstChild;
     }
 
-    renderer.bind('overNode', nodeMouseOver);
-    renderer.bind('outNode', treatOutNode);
+    renderer.bind('hovers', nodeMouseOver);
+    renderer.bind('hovers', treatOutNode);
     renderer.bind('click', click);
 
     _s.bind('kill', function() {
@@ -84,8 +84,8 @@
       _mouse.removeEventListener('mousedown', nodeMouseDown);
       _body.removeEventListener('mousemove', nodeMouseMove);
       _body.removeEventListener('mouseup', nodeMouseUp);
-      _renderer.unbind('overNode', nodeMouseOver);
-      _renderer.unbind('outNode', treatOutNode);
+      _renderer.unbind('hovers', nodeMouseOver);
+      _renderer.unbind('hovers', treatOutNode);
     }
 
     // Calculates the global offset of the given element more accurately than
@@ -121,14 +121,18 @@
     };
 
     function nodeMouseOver(event) {
+      if (event.data.enter.nodes.length == 0) {
+        return;
+      }
+      var n = event.data.enter.nodes[0];
       // Don't treat the node if it is already registered
-      if (_hoverIndex[event.data.node.id]) {
+      if (_hoverIndex[n.id]) {
         return;
       }
 
       // Add node to array of current nodes over
-      _hoverStack.push(event.data.node);
-      _hoverIndex[event.data.node.id] = true;
+      _hoverStack.push(n);
+      _hoverIndex[n.id] = true;
 
       if(!_isMouseDown) {
         // Set the current node to be the last one in the array
@@ -138,10 +142,14 @@
     };
 
     function treatOutNode(event) {
+      if (event.data.leave.nodes.length == 0) {
+        return;
+      }
+      var n = event.data.leave.nodes[0];
       // Remove the node from the array
-      var indexCheck = _hoverStack.map(function(e) { return e; }).indexOf(event.data.node);
+      var indexCheck = _hoverStack.map(function(e) { return e; }).indexOf(n);
       _hoverStack.splice(indexCheck, 1);
-      delete _hoverIndex[event.data.node.id];
+      delete _hoverIndex[n.id];
 
       if(_hoverStack.length && ! _isMouseDown) {
         // On out, set the current node to be the next stated in array
@@ -156,6 +164,7 @@
 
       _isMouseDown = true;
       if (_node && _s.graph.nodes().length > 0) {
+        _sticky = true;
         _mouse.removeEventListener('mousedown', nodeMouseDown);
         _body.addEventListener('mousemove', nodeMouseMove);
         _body.addEventListener('mouseup', nodeMouseUp);
@@ -233,33 +242,51 @@
 
         if (nodes.length < 2) return;
 
-        // Getting and derotating the reference coordinates.
-        for (var i = 0; i < 2; i++) {
+        dist = sigma.utils.getDistance(x, y, _node[_prefix + 'x'],_node[_prefix + 'y']);
+
+        if (_sticky && dist < _node[_prefix + 'size']) return;
+        _sticky = false;
+
+        // Find two reference points and derotate them
+        // We take the first node as a first reference point and then try to find
+        // another node not aligned with it
+        for (var i = 0;;i++) {
           n = nodes[i];
           if (n) {
             aux = {
               x: n.x * cos + n.y * sin,
               y: n.y * cos - n.x * sin,
-              renX: n[_prefix + 'x'],
-              renY: n[_prefix + 'y'],
+              renX: n[_prefix + 'x'], //renderer X
+              renY: n[_prefix + 'y'], //renderer Y
             };
             ref.push(aux);
           }
+          if(i == nodes.length - 1) { //we tried all nodes
+            break
+          }
+          if (i > 0) {
+            if (ref[0].x == ref[1].x || ref[0].y == ref[1].y) {
+              ref.pop() // drop last nodes and try to find another one
+            } else { // ww managed to find two nodes not aligned
+              break
+            }
+          }
         }
 
+        var a = ref[0], b = ref[1];
+
         // Applying linear interpolation.
-        x = ((x - ref[0].renX) / (ref[1].renX - ref[0].renX)) *
-          (ref[1].x - ref[0].x) + ref[0].x;
-        y = ((y - ref[0].renY) / (ref[1].renY - ref[0].renY)) *
-          (ref[1].y - ref[0].y) + ref[0].y;
+        var divx = (b.renX - a.renX);
+        if (divx === 0) divx = 1; //fix edge case where axis are aligned
+
+        var divy = (b.renY - a.renY);
+        if (divy === 0) divy = 1; //fix edge case where axis are aligned
+
+        x = ((x - a.renX) / divx) * (b.x - a.x) + a.x;
+        y = ((y - a.renY) / divy) * (b.y - a.y) + a.y;
 
         x2 = x * cos - y * sin;
         y2 = y * cos + x * sin;
-
-        if (_stickiness > 0) {
-          dist = sigma.utils.getDistance(x2, y2, _node.x, _node.y);
-          if (dist < _stickiness) return;
-        }
 
         // Drag multiple nodes, Keep distance
         if(_a) {

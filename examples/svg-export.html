@@ -9,7 +9,6 @@
 <script src="../src/classes/sigma.classes.graph.js"></script>
 <script src="../src/classes/sigma.classes.camera.js"></script>
 <script src="../src/classes/sigma.classes.quad.js"></script>
-<script src="../src/classes/sigma.classes.edgequad.js"></script>
 <script src="../src/captors/sigma.captors.mouse.js"></script>
 <script src="../src/captors/sigma.captors.touch.js"></script>
 <script src="../src/renderers/sigma.renderers.canvas.js"></script>
@@ -128,9 +127,9 @@ s.refresh();
 var force = false;
 document.getElementById('layout').onclick = function() {
   if (!force)
-    sigma.layouts.startForceAtlas2(s, {worker: true, slowDown: 10});
+    s.startForceAtlas2({worker: true, slowDown: 10});
   else
-    sigma.layouts.stopForceAtlas2(s);
+    s.stopForceAtlas2();
   force = !force;
 };
 

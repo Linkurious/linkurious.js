@@ -9,7 +9,6 @@
 <script src="../src/classes/sigma.classes.graph.js"></script>
 <script src="../src/classes/sigma.classes.camera.js"></script>
 <script src="../src/classes/sigma.classes.quad.js"></script>
-<script src="../src/classes/sigma.classes.edgequad.js"></script>
 <script src="../src/captors/sigma.captors.mouse.js"></script>
 <script src="../src/captors/sigma.captors.touch.js"></script>
 <script src="../src/renderers/sigma.renderers.canvas.js"></script>
@@ -133,6 +132,7 @@ for (i = 0; i < N; i++)
     y: Math.random(),
     size: Math.random(),
     color: '#666',
+    border_color: '#fff'
   });
 
 for (i = 0; i < E; i++)
@@ -158,7 +158,7 @@ s = new sigma({
     defaultNodeBorderColor: '#fff',
     defaultNodeOuterBorderColor: 'rgb(236, 81, 72)',
     enableEdgeHovering: true,
-    edgeHoverHighlightNodes: 'circle',
+    edgeHoverExtremities: true,
   }
 });
 

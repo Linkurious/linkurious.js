@@ -118,18 +118,20 @@ myRenderer.halo({
 Render the halo behind hovered nodes and their adjacent nodes as follows:
 
 ````javascript
-s.bind('overNodes', function(e) {
+s.bind('hovers', function(e) {
   var adjacentNodes = [];
+  
+  if (!e.data.enter.nodes.length) return;
 
   // Get adjacent nodes:
-  e.data.nodes.forEach(function(node) {
+  e.data.enter.nodes.forEach(function(node) {
     s.graph.adjacentNodes(node.id).forEach(function(n) {
       adjacentNodes.push(n);
     })
   });
 
   // Add hovered nodes to the array and remove duplicates:
-  adjacentNodes = arrayUnique(adjacentNodes.concat(e.data.nodes));
+  adjacentNodes = arrayUnique(adjacentNodes.concat(e.data.enter.nodes));
 
   // Render halo:
   myRenderer.halo({

@@ -8,13 +8,14 @@
   sigma.utils.pkg('sigma.canvas.labels');
 
   /**
-   * This label renderer will just display the label on the right of the node.
+   * This label renderer will display the label of the node
    *
    * @param  {object}                   node     The node object.
    * @param  {CanvasRenderingContext2D} context  The canvas context.
    * @param  {configurable}             settings The settings function.
+   * @param  {object?}                  infos    The batch infos.
    */
-  sigma.canvas.labels.def = function(node, context, settings) {
+  sigma.canvas.labels.def = function(node, context, settings, infos) {
     var fontSize,
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'] || 1,
@@ -27,21 +28,28 @@
         labelOffsetY,
         alignment = settings('labelAlignment');
 
-    if (size < settings('labelThreshold'))
+    if (size <= settings('labelThreshold'))
       return;
 
-    if (typeof node.label !== 'string')
+    if (!node.label || typeof node.label !== 'string')
       return;
 
     fontSize = (settings('labelSize') === 'fixed') ?
       settings('defaultLabelSize') :
       settings('labelSizeRatio') * size;
 
-    context.font = (fontStyle ? fontStyle + ' ' : '') +
+    var new_font = (fontStyle ? fontStyle + ' ' : '') +
       fontSize + 'px ' +
       (node.active ?
         settings('activeFont') || settings('font') :
         settings('font'));
+
+    if (infos && infos.ctx.font != new_font) { //use font value caching
+      context.font = new_font;
+      infos.ctx.font = new_font;
+    } else {
+      context.font = new_font;
+    }
 
     if (node.active)
       context.fillStyle =
@@ -54,13 +62,9 @@
         node.color || settings('defaultNodeColor') :
         settings('defaultLabelColor');
 
-    if (settings('approximateLabelWidth')) {
-      labelWidth = 0.5 * node.label.length * fontSize;
-    } else {
-      labelWidth = context.measureText(node.label).width;
-    }
-    labelOffsetX = - labelWidth / 2;
+    labelOffsetX = 0;
     labelOffsetY = fontSize / 3;
+    context.textAlign = "center";
 
     switch (alignment) {
       case 'bottom':
@@ -69,12 +73,15 @@
       case 'center':
         break;
       case 'left':
-        labelOffsetX = - size - borderSize - 3 - labelWidth;
+        context.textAlign = "right";
+        labelOffsetX = - size - borderSize - 3 ;
         break;
       case 'top':
         labelOffsetY = - size - 2 * fontSize / 3;
         break;
       case 'inside':
+        labelWidth = sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, node.label);
         if (labelWidth <= (size + fontSize / 3) * 2) {
           break;
         }
@@ -83,6 +90,7 @@
       /* falls through*/
       default:
         labelOffsetX = size + borderSize + 3;
+        context.textAlign = "left";
         break;
     }
 

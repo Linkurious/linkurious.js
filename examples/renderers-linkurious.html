@@ -9,7 +9,6 @@
 <script src="../src/classes/sigma.classes.graph.js"></script>
 <script src="../src/classes/sigma.classes.camera.js"></script>
 <script src="../src/classes/sigma.classes.quad.js"></script>
-<script src="../src/classes/sigma.classes.edgequad.js"></script>
 <script src="../src/captors/sigma.captors.mouse.js"></script>
 <script src="../src/captors/sigma.captors.touch.js"></script>
 <script src="../src/renderers/sigma.renderers.canvas.js"></script>
@@ -161,16 +160,16 @@ s = new sigma({
 // Initialize camera:
 s.addCamera('cam1'),
 
+s.addRenderer({
+  container: document.getElementById('graph-canvas-left'),
+  type: 'canvas',
+  camera: 'cam1'
+});
+
 // Initialize the two renderers:
 s.addRenderer({
   container: document.getElementById('graph-webgl-right'),
   type: 'webgl',
-  camera: 'cam1'
-});
-
-s.addRenderer({
-  container: document.getElementById('graph-canvas-left'),
-  type: 'canvas',
   camera: 'cam1'
 });
 

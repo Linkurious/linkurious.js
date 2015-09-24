@@ -9,7 +9,6 @@
 <script src="../src/classes/sigma.classes.graph.js"></script>
 <script src="../src/classes/sigma.classes.camera.js"></script>
 <script src="../src/classes/sigma.classes.quad.js"></script>
-<script src="../src/classes/sigma.classes.edgequad.js"></script>
 <script src="../src/captors/sigma.captors.mouse.js"></script>
 <script src="../src/captors/sigma.captors.touch.js"></script>
 <script src="../src/renderers/sigma.renderers.canvas.js"></script>
@@ -117,17 +116,17 @@ s = new sigma({
 });
 
 // Bind the events:
-s.bind('overNode outNode clickNode doubleClickNode rightClickNode', function(e) {
+s.bind('clickNode doubleClickNode rightClickNode', function(e) {
   console.log(e.type, e.data.node.label, e.data.captor);
 });
-s.bind('overEdge outEdge clickEdge doubleClickEdge rightClickEdge', function(e) {
+s.bind('clickEdge doubleClickEdge rightClickEdge', function(e) {
   console.log(e.type, e.data.edge, e.data.captor);
 });
-s.bind('clickStage', function(e) {
+s.bind('clickStage doubleClickStage rightClickStage', function(e) {
   console.log(e.type, e.data.captor);
 });
-s.bind('doubleClickStage rightClickStage', function(e) {
-  console.log(e.type, e.data.captor);
+s.bind('hovers', function(e) {
+  console.log(e.type, e.data.captor, e.data);
 });
 
 // Configure the ForceLink algorithm:

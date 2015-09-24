@@ -94,7 +94,7 @@ The `node`, `edge` or `stage` keys are mandatory to enable the related tooltips.
    * node default value: `clickNode`
    * edge default value: `clickEdge`
    * stage default value: `rightClickStage`
-   * suggested values: `overNode`, `doubleClickNode`, `rightClickNode`,`overEdge`, `doubleClickEdge`, `rightClickEdge`
+   * suggested values: `doubleClickNode`, `rightClickNode`,`hovers`, `doubleClickEdge`, `rightClickEdge`
  * **hide**
    * The Sigma event that hides the tooltip.
    * type: *string*
@@ -112,6 +112,10 @@ The `node`, `edge` or `stage` keys are mandatory to enable the related tooltips.
    * available values: `top` | `bottom` | `left` | `right` | `css`
  * **delay**
    * The delay in miliseconds before displaying the tooltip after the `show` event is triggered.
+   * type: *number*
+   * default value: `0`
+ * **hideDelay**
+   * The delay in miliseconds before hiding the tooltip after the `hide` event is triggered.
    * type: *number*
    * default value: `0`
  * **autoadjust**

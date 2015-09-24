@@ -1,5 +1,51 @@
 ## linkurious.js - changelog:
 
+#### 1.1.0 (August 10, 2015)
+
+This release provides A BREAKING CHANGE from the core of Sigma.js and focuses on performance.
+
+Hightlights:
+ - linkurious.js is now available on npm: `npm install linkurious`
+ - Latest release files directly in `dist/` and a plugins.(.min).js containing all the plugins
+ - Crisp render on retina displays
+ - Added plugin.generators to generate graphs
+ - Panning, zooming and hovering is a lot smoother on Canvas
+ - New setting: `edgesClippingWithNodes` to hide the edges having both extremities outside of the view if `true`
+ - Contributors, we have a new workflow: #201 (in short: all plugins are merged into the *develop* branch)
+
+How to upgrade:
+  - replace `overNode(s)`, `outNode(s)`, `overEdge(s)`, `outEdge(s)` events by the `hovers` event
+
+Core:
+  - #235 Add plugins.js and plugins.min.js and clean grunt/package.json things (thanks to [@mdamien](https://github.com/mdamien))
+  - #229 Alert the user if webgl is not supported but trying to render with the WebGL renderer (thanks to [@mdamien](https://github.com/mdamien))
+  - #224 Fix Edges not rendered when extremities are far from the view (thanks to [@mdamien](https://github.com/mdamien))
+  - #223 Remove width hack and clear canvas via clearRect (thanks to [@mdamien](https://github.com/mdamien))
+  - #222 Improve pan/zoom smoothiness on canvas (thanks to [@mdamien](https://github.com/mdamien))
+  - #221 Aggressively simplify hovering system (replace `overNode(s)`, `outNode(s)`, `overEdge(s)`, `outEdge(s)` by `hovers`) (thanks to [@mdamien](https://github.com/mdamien))
+  - #213 Fix `onMove` render twice during a panning event (thanks to [@mdamien](https://github.com/mdamien))
+  - #210 Publish on npm (thanks to [@mdamien](https://github.com/mdamien))
+  - #208 Add dist/ folder with latest release (thanks to [@mdamien](https://github.com/mdamien))
+  - #204 Improve node labels renderers (thanks to [@mdamien](https://github.com/mdamien))
+  - #203 New rendering system and faster edge labels renderer (thanks to [@mdamien](https://github.com/mdamien))
+  - #25 Fix retina display (thanks to [@mdamien](https://github.com/mdamien))
+
+Plugins:
+  - #233 Fix plugins.select throws "Uncaught TypeError" on Spacebar+Del 
+  - #226 Fix layout.dagre only runs the first time that is called
+  - #209 Fix plugins.tooltip: wrong position on sigma container with margins
+  - #198 plugins.tooltip: Add option to delay hide execution on outNode and outEdge
+  - #196 renderers.halo: Merge circles via two-pass rendering (thanks to [@mdamien](https://github.com/mdamien))
+  - #194 Include renderers.customEdgeShapes into renderers.linkurious (thanks to [@mdamien](https://github.com/mdamien))
+  - #181 Fix plugins.image crashes on batchEdgesDrawing: true
+  - #177 Fix layout.fruchtermanReingold only runs the first time it is called
+  - #168 renderers.linkurious: Cache `context.font` value when rendering  (~20% rendering overall speedup) (thanks to [@mdamien](https://github.com/mdamien))
+  - #104 Add plugins.generators
+
+Docs:
+  - #201 [NEWS] Changes on the dev workflow
+  - #238 Add AUTHORS file
+
 #### 1.0.10 (July 18, 2015)
 
 Core:

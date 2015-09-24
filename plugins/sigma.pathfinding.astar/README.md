@@ -1,4 +1,4 @@
-sigma.pathfinding.astar.js — v1.0.0
+sigma.pathfinding.astar.js — v1.0.1
 ===================================
 
 Plugin developed by [A----](https://github.com/A----) and published under the licence [Public Domain](LICENSE).

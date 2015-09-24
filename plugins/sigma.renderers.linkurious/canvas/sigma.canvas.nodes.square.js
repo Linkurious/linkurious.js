@@ -115,9 +115,12 @@
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
+        borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
 
     // Level:
@@ -162,7 +165,7 @@
         color = settings('defaultNodeActiveColor') || color;
       }
 
-      // Border:
+      // Outer border:
       if (outerBorderSize > 0) {
         context.beginPath();
         context.fillStyle = settings('nodeOuterBorderColor') === 'node' ?
@@ -172,17 +175,20 @@
         context.closePath();
         context.fill();
       }
-      if (borderSize > 0) {
-        context.beginPath();
-        context.fillStyle = settings('nodeBorderColor') === 'node' ?
-          (color || defaultNodeColor) :
-          settings('defaultNodeBorderColor');
-        drawSquare(node, x, y, size + borderSize, context);
-        context.closePath();
-        context.fill();
-      }
     }
 
+    // Border:
+    if (borderSize > 0) {
+      context.beginPath();
+      context.fillStyle = settings('nodeBorderColor') === 'node'
+        ? borderColor
+        : settings('defaultNodeBorderColor');
+      drawSquare(node, x, y, size + borderSize, context);
+      context.closePath();
+      context.fill();
+    }
+
+    // Shape:
     context.fillStyle = color;
     context.beginPath();
     drawSquare(node, x, y, size, context);

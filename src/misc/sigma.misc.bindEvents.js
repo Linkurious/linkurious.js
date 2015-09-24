@@ -359,40 +359,26 @@
           return;
 
         var k,
-            i,
-            l,
-            le,
-            outNodes = [],
-            outEdges = [];
+            event = {
+              current: { nodes: [], edges: [], },
+              enter: { nodes: [], edges: [], },
+              leave: { nodes: [], edges: [], },
+              captor: e.data
+            },
+            leave = event.leave;
 
         for (k in overNodes)
-          outNodes.push(overNodes[k]);
+          leave.nodes.push(overNodes[k]);
+
+        for (k in overEdges)
+          leave.edges.push(overEdges[k]);
 
         overNodes = {};
-        // Dispatch both single and multi events:
-        for (i = 0, l = outNodes.length; i < l; i++)
-          self.dispatchEvent('outNode', {
-            node: outNodes[i],
-            captor: e.data
-          });
-        if (outNodes.length)
-          self.dispatchEvent('outNodes', {
-            nodes: outNodes,
-            captor: e.data
-          });
-
         overEdges = {};
-        // Dispatch both single and multi events:
-        for (i = 0, le = outEdges.length; i < le; i++)
-          self.dispatchEvent('outEdge', {
-            edge: outEdges[i],
-            captor: e.data
-          });
-        if (outEdges.length)
-          self.dispatchEvent('outEdges', {
-            edges: outEdges,
-            captor: e.data
-          });
+
+        if (leave.nodes.length || leave.edges.length) {
+          self.dispatchEvent('hovers', event);
+        }
       }
 
       function onMove(e) {
@@ -409,14 +395,12 @@
             newOutNodes = [],
             newOverNodes = [],
             currentOverNodes = {},
-            l = nodes.length,
             newOutEdges = [],
             newOverEdges = [],
-            currentOverEdges = {},
-            le = edges.length;
+            currentOverEdges = {};
 
         // Check newly overred nodes:
-        for (i = 0; i < l; i++) {
+        for (i = 0; i < nodes.length; i++) {
           node = nodes[i];
           currentOverNodes[node.id] = node;
           if (!overNodes[node.id]) {
@@ -432,30 +416,8 @@
             delete overNodes[k];
           }
 
-        // Dispatch both single and multi events:
-        for (i = 0, l = newOverNodes.length; i < l; i++)
-          self.dispatchEvent('overNode', {
-            node: newOverNodes[i],
-            captor: e.data
-          });
-        for (i = 0, l = newOutNodes.length; i < l; i++)
-          self.dispatchEvent('outNode', {
-            node: newOutNodes[i],
-            captor: e.data
-          });
-        if (newOverNodes.length)
-          self.dispatchEvent('overNodes', {
-            nodes: newOverNodes,
-            captor: e.data
-          });
-        if (newOutNodes.length)
-          self.dispatchEvent('outNodes', {
-            nodes: newOutNodes,
-            captor: e.data
-          });
-
         // Check newly overred edges:
-        for (i = 0; i < le; i++) {
+        for (i = 0; i < edges.length; i++) {
           edge = edges[i];
           currentOverEdges[edge.id] = edge;
           if (!overEdges[edge.id]) {
@@ -471,27 +433,24 @@
             delete overEdges[k];
           }
 
-        // Dispatch both single and multi events:
-        for (i = 0, le = newOverEdges.length; i < le; i++)
-          self.dispatchEvent('overEdge', {
-            edge: newOverEdges[i],
+        if (newOutEdges.length || newOverEdges.length ||
+             newOutNodes.length || newOverNodes.length) {
+          self.dispatchEvent('hovers', {
+            current: {
+              nodes: nodes,
+              edges: edges,
+            },
+            enter: {
+              nodes: newOverNodes,
+              edges: newOverEdges,
+            },
+            leave: {
+              nodes: newOutNodes,
+              edges: newOutEdges,
+            },
             captor: e.data
           });
-        for (i = 0, le = newOutEdges.length; i < le; i++)
-          self.dispatchEvent('outEdge', {
-            edge: newOutEdges[i],
-            captor: e.data
-          });
-        if (newOverEdges.length)
-          self.dispatchEvent('overEdges', {
-            edges: newOverEdges,
-            captor: e.data
-          });
-        if (newOutEdges.length)
-          self.dispatchEvent('outEdges', {
-            edges: newOutEdges,
-            captor: e.data
-          });
+        }
       }
 
       // Bind events:
@@ -502,7 +461,6 @@
       captor.bind('mouseout', onOut);
       captor.bind('doubleclick', onDoubleClick);
       captor.bind('rightclick', onRightClick);
-      self.bind('render', onMove);
     }
 
     for (i = 0, l = this.captors.length; i < l; i++)

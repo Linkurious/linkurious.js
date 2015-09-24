@@ -23,16 +23,12 @@
     (
       sigma.canvas.hovers[source.type] ||
       sigma.canvas.hovers.def
-    ) (
-      source, context, settings
-    );
+    )(source, context, settings);
 
     // Target Node:
     (
       sigma.canvas.hovers[target.type] ||
       sigma.canvas.hovers.def
-    ) (
-      target, context, settings
-    );
+    )(target, context, settings);
   };
 }).call(this);

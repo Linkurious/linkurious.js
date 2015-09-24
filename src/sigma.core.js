@@ -176,10 +176,7 @@
         'doubleClickNodes',
         'rightClickNode',
         'rightClickNodes',
-        'overNode',
-        'overNodes',
-        'outNode',
-        'outNodes',
+        'hovers',
         'downNode',
         'downNodes',
         'upNode',
@@ -266,7 +263,7 @@
     }
 
     camera.bind('coordinatesUpdated', function(e) {
-      self.renderCamera(camera, camera.isAnimated);
+      self.renderCamera(camera);
     });
 
     this.renderersPerCamera[id] = [];
@@ -401,14 +398,7 @@
           'rightClickNodes',
           'rightClickEdge',
           'rightClickEdges',
-          'overNode',
-          'overNodes',
-          'overEdge',
-          'overEdges',
-          'outNode',
-          'outNodes',
-          'outEdge',
-          'outEdges',
+          'hovers',
           'downNode',
           'downNodes',
           'downEdge',
@@ -529,7 +519,7 @@
         );
 
         // Refresh quadtree:
-        c.quadtree.index(this.graph.nodes(), {
+        c.quadtree.index(this.graph, {
           prefix: c.readPrefix,
           maxLevel: c.settings('nodeQuadtreeMaxLevel'),
           curvatureCoefficients: c.settings('curvatureCoefficients'),
@@ -545,7 +535,8 @@
         if (
           c.edgequadtree !== undefined &&
           c.settings('drawEdges') &&
-          c.settings('enableEdgeHovering')
+          (c.settings('enableEdgeHovering') ||
+            c.settings('edgesClippingWithNodes'))
         ) {
           c.edgequadtree.index(this.graph, {
             prefix: c.readPrefix,
@@ -589,34 +580,32 @@
    * @return {sigma} Returns the instance itself.
    */
   sigma.prototype.render = function() {
-    var i,
-        l,
-        a,
+    var l,
+        i,
         prefix = 0;
 
     // Call each renderer:
-    a = Object.keys(this.renderers);
-    for (i = 0, l = a.length; i < l; i++)
+    for (i in this.renderers)
       if (this.settings('skipErrors'))
         try {
-          this.renderers[a[i]].render();
+          this.renderers[i].render();
         } catch (e) {
           if (this.settings('verbose'))
             console.log(
-              'Warning: The renderer "' + a[i] + '" crashed on ".render()"'
+              'Warning: The renderer "' + this.renderers[i] +
+              '" crashed on ".render()"'
             );
         }
       else
-        this.renderers[a[i]].render();
+        this.renderers[i].render();
 
     return this;
   };
 
   /**
    * This method calls the "render" method of each renderer that is bound to
-   * the specified camera. To improve the performances, if this method is
-   * called too often, the number of effective renderings is limitated to one
-   * per frame, unless you are using the "force" flag.
+   * the specified camera. The number of effective renderings is limitated to
+   * one per frame, unless you are using the "force" flag.
    *
    * @param  {sigma.classes.camera} camera The camera to render.
    * @param  {?boolean}             force  If true, will render the camera
@@ -627,46 +616,36 @@
     var i,
         l,
         a,
+        render,
         self = this;
 
-    if (force) {
-      a = this.renderersPerCamera[camera.id];
-      for (i = 0, l = a.length; i < l; i++)
-        if (this.settings('skipErrors'))
+    render = function() {
+      a = self.renderersPerCamera[camera.id];
+      for (i = 0, l = a.length; i < l; i++) {
+        if (self.settings('skipErrors'))
           try {
             a[i].render();
           } catch (e) {
-            if (this.settings('verbose'))
+            if (self.settings('verbose'))
               console.log(
-                'Warning: The renderer "' + a[i].id + '" crashed on ".render()"'
+                'Warning: The renderer "' +
+                  a[i].id +
+                  '" crashed on ".render()"'
               );
           }
         else
           a[i].render();
-    } else {
-      if (!this.cameraFrames[camera.id]) {
-        a = this.renderersPerCamera[camera.id];
-        for (i = 0, l = a.length; i < l; i++)
-          if (this.settings('skipErrors'))
-            try {
-              a[i].render();
-            } catch (e) {
-              if (this.settings('verbose'))
-                console.log(
-                  'Warning: The renderer "' +
-                    a[i].id +
-                    '" crashed on ".render()"'
-                );
-            }
-          else
-            a[i].render();
-
-        this.cameraFrames[camera.id] = requestAnimationFrame(function() {
-          delete self.cameraFrames[camera.id];
-        });
       }
-    }
+    };
 
+    if (force) {
+      render();
+    } else {
+      self.cameraFrames[camera.id] = render;
+      requestAnimationFrame(function() {
+        self.cameraFrames[camera.id]();
+      });
+    }
     return this;
   };
 

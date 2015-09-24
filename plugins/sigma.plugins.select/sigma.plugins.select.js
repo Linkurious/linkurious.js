@@ -140,10 +140,9 @@
 
         var activeNode = a.nodes()[0];
 
-        if(activeNode != null && sigma.plugins.dragNodes) {
+        if(activeNode != null) {
           if(_nodeReference === activeNode.id) {
             if(newTargets.length) {
-              // console.log('x');
               a.dropNodes();
               _nodeReference = null;
             }
@@ -157,7 +156,6 @@
               }, s.settings('doubleClickTimeout'));
             }
           } else {
-            // console.log('y');
             _nodeReference = activeNode.id;
           }
         }
@@ -259,8 +257,20 @@
 
     // Drop selected nodes and edges
     function spaceDel() {
-      s.graph.dropNodes(a.nodes().map(function(n) { return n.id; }));
-      s.graph.dropEdges(a.edges().map(function(e) { return e.id; }));
+      var nodes = a.nodes().map(function(n) { return n.id; }),
+        edges = a.edges().map(function(e) { return e.id; });
+
+      a.dropEdges(edges);
+      a.dropNodes(nodes);
+
+      if (nodes.length == s.graph.nodes().length) {
+        s.graph.clear();
+      }
+      else {
+        s.graph.dropEdges(edges);
+        s.graph.dropNodes(nodes);
+      }
+
       s.refresh();
     }
 

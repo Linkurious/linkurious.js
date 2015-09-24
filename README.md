@@ -1,15 +1,25 @@
 [ ![Codeship Status for Linkurious/linkurious.js](https://www.codeship.io/projects/b0710040-7f11-0132-f563-62fa786c5210/status)](https://www.codeship.io/projects/57170)
 [![Issue Stats](http://issuestats.com/github/Linkurious/linkurious.js/badge/pr?style=flat)](http://issuestats.com/github/Linkurious/linkurious.js)
 [![Issue Stats](http://issuestats.com/github/Linkurious/linkurious.js/badge/issue?style=flat)](http://issuestats.com/github/Linkurious/linkurious.js)
+[![Join the chat at https://gitter.im/Linkurious/linkurious.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Linkurious/linkurious.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 linkurious.js
 =================
+**A JavaScript library to visualize and interact with graphs.**
 
-The linkurious.js toolkit speeds up the development of modern Web applications that leverage the power of **graph visualization and interaction**.
+Linkurious.js is an active fork of [Sigma.js](https://github.com/jacomyal/sigma.js). It's dual-licensed under both GPLv3 and a [commercial license for proprietary projects](https://linkurio.us/toolkit/#pricing).
 
-Graphs are also called networks: they are made of nodes linked by edges. Graphs are a powerful way to represent any relationships in data like social networks (i.e. who likes who), infrastructure (i.e. how devices are connected), flows (i.e. where does the money go), and much more.
 
-Linkurious.js provides a collection of **HTML5** features based on [Sigma.js](http://sigmajs.org/), the fastest open source Javascript graph drawing engine on the market. Linkurious.js is published in dual licenses, **available under both commercial and GNU GPLv3 licenses** (see below).
+* [Live demo on JSFiddle](https://jsfiddle.net/6voan7k9/)
+* [Examples](https://rawgit.com/Linkurious/linkurious.js/develop/examples/)
+* [Plugins](https://rawgit.com/Linkurious/linkurious.js/develop/plugins/list.html)
+* [Download](https://github.com/Linkurious/linkurious.js/releases/latest)
+* [Documentation](https://github.com/Linkurious/linkurious.js/wiki)
+	 - [Vizualisation API](https://github.com/Linkurious/linkurious.js/wiki/Public-API)
+	 - [Graph API](https://github.com/Linkurious/linkurious.js/wiki/Graph-API)
+	 - [Settings available](https://github.com/Linkurious/linkurious.js/wiki/Settings)
+
+The library is used by [Linkurious SAS](http://linkurio.us) as the main building block for the [Linkurious](http://linkurio.us/product/) product.
 
 ---
 
@@ -33,30 +43,40 @@ Linkurious.js provides a collection of **HTML5** features based on [Sigma.js](ht
 
 ---
 
-### Introduction
-
-Linkurious.js is developed in pure Javascript. It uses Sigma.js for its graph data structure and visualization engine, which provides both **Canvas**, **WebGL** and **SVG** renderers for nodes and edges. Sigma.js is highly flexible thanks to its modular architecture, and is extensible by plugins. The linkurious.js toolkit is made of **more than 30 Sigma.js plugins**, combined to work together and tested for integration into modern Web applications.
-
-### Resources
-
-The [wiki](https://github.com/Linkurious/linkurious.js/wiki) provides documentation on APIs, and you can start learning how to code with Linkurious.js with the `examples` and `test` directories.
-
 ### Getting started
 
-To use it, clone the repository:
+For prototyping, you can direclty use `rawgit`:
+
+```html
+<script src="https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js"></script>
+```
+
+And look at the [examples](https://github.com/Linkurious/linkurious.js/tree/develop/examples).
+
+### Getting help
+
+The easiest way is to [file an issue](https://github.com/Linkurious/linkurious.js/issues/). You can also ask on [StackOverflow](http://stackoverflow.com/search?q=linkurious.js) if you want more general help with JavaScript and [gitter](https://gitter.im/Linkurious/linkurious.js) if you want to chat with us.
+
+### Building the library
 
 ```
-git clone git@github.com:Linkurious/sigma.js.git
+git clone git@github.com:Linkurious/linkurious.js.git
 ```
+
+You can try the examples in the `examples/` directory to see how to use sigma.
 
 To build the code:
 
+ - `git clone git@github.com:Linkurious/linkurious.js.git`
  - Install [Node.js](http://nodejs.org/).
  - Install [gjslint](https://developers.google.com/closure/utilities/docs/linter_howto?hl=en).
- - Use `npm install` to install sigma development dependencies.
- - Use `npm run build` to minify the code with [Uglify](https://github.com/mishoo/UglifyJS). The minified files `sigma.min.js` and sigma plugins will then be accessible in the `build/` folder.
+ - Use `npm install` to install dev dependencies.
+ - Use `npm run build` make the minified files (`sigma.min.js`, plugins) under the `build/` folder.
 
-You can also customize the build by adding or removing files from the `coreJsFiles` array in `Gruntfile.js` before applying the grunt task.
+You can customize the build by adding or removing files from the `coreJsFiles` array in `Gruntfile.js` before applying the grunt task.
+
+You can get the latest release directly from the `dist/` without having to build it yourself.
+
 
 ### Why linkurious.js?
 
@@ -88,14 +108,6 @@ All modern web browsers are supported, including:
 Touch events on tablet and mobile are currently supported as *beta* features.
 
 ### Performance
-
-Performance depends on the graph size, the graphic renderers, the computer and browser on which the web application runs.
-
-* **Canvas** is supported in all modern browsers. It is a great tradeoff between flexibility and performance. Use it to display up to 5 000 nodes and 8 000 edges.
-* **WebGL** needs a graph card and is thus not suitable to all clients, but it unlocks the graph size boundaries. It is great to display large graph withs a layout previously computed (e.g. from [Gephi](http://gephi.github.io/)) because the graphic card memory is loaded only once. Use it to display up to 20 000 nodes and 30 000 edges.
-* **SVG** is partially supported and is still under active development. It is great for interactivity and animations but performances drop quickly with the number of displayed items. Use it to display up to 500 nodes and 1 000 edges. Notice that an [SVG export plugin](https://github.com/Linkurious/linkurious.js/tree/linkurious-version/plugins/sigma.exporters.svg) is available to generate files for Inkscape or Adobe Illustrator.
-
-Different kinds of renderers can be mixed, and automatic fallback from WebGL to Canvas makes adoption wider and smoother. With linkurious.js your application is not bound to a specific rendering technology anymore!
 
 See our [performance guide](https://github.com/Linkurious/linkurious.js/wiki/Performance) to learn more.
 
