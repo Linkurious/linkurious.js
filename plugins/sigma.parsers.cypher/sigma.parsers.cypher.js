@@ -68,7 +68,7 @@
             edgesMap = {},
             key;
 
-        if (typeof result === 'object')
+        if (!Array.isArray(result))
           result = result.results[0].data;
 
         // Iteration on all result data
