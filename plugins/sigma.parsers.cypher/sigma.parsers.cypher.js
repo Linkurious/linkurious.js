@@ -68,13 +68,9 @@
             edgesMap = {},
             key;
 
-<<<<<<< HEAD
-        if (typeof result === 'object') result = result.results[0].data;
-=======
         if (!Array.isArray(result))
           result = result.results[0].data;
 
->>>>>>> develop
         // Iteration on all result data
         result.forEach(function (data) {
 
