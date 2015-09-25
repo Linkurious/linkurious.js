@@ -16,13 +16,8 @@ This plugin overrides default renderers to provide more powerful renderers.Nodes
 - `icon`: *object*
 - `image`: *object*
 - `level`: *number*
-<<<<<<< HEAD
-- 'border_size': *number*
-- 'border_color': *string*
-=======
 - `border_size`: *number*
 - `border_color`: *string*
->>>>>>> develop
 
 Edges take the following attributes:
 - `type`: *string*
