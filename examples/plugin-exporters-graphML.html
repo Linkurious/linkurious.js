@@ -77,7 +77,7 @@
       x: Math.random(),
       y: Math.random(),
       size: Math.random(),
-      color: '#FF0000',
+      color: '#00FF00',
       data: {
         aString: 'abc ' + i,
         aCrappyString: 'cr"p\n\r test',
@@ -144,5 +144,16 @@
     renderer: {
       container: document.getElementById('graph-container')
     }
+  });
+
+  s.toGraphML({
+    nodesAttributes: 'data',
+    nodesCategories: 'categories',
+    nodesCategoriesName: 'categories',
+    edgesAttributes: 'data.properties',
+    edgesCategories: 'data.type',
+    edgesCategoriesName: 'type',
+    filename: 'myGraph.graphml',
+    download:true
   });
 </script>
