@@ -233,7 +233,7 @@
    * @return {x,y}        The control point coordinates.
    */
   sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2, cc) {
-	cc = $.extend({ x: 2, y: 4 }, cc);
+	cc = this.extend({ x: 2, y: 4 }, cc);
 	if (cc.x) { if (!cc.xx) cc.xx = cc.x; if (!cc.yx) cc.yx = cc.x; }
 	if (cc.y) { if (!cc.xy) cc.xy = cc.y; if (!cc.yy) cc.yy = cc.y; }
     return {

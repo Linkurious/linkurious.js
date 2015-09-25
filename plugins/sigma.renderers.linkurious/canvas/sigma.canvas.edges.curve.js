@@ -131,7 +131,8 @@
 			this[this.key(o)].n++;
 		}
 	};
-	$(s.graph.edges()).each(function() { count.inc(this); });
+	var edges = s.graph.edges();
+	for (var i in edges) count.inc(edges[i]);
 
 	if (!cc) cc = { length: 0 };
 	if (typeof cc == 'number') cc = { length: cc };
@@ -139,15 +140,15 @@
 	if (!cc.step) cc.step = function(len, n) { return len / (n/2); };
 	if (!cc.calc) cc.calc = function(len, step, i) { return { y: 1/(len - step * i) }; };
 	if (!cc.type) cc.type = 'curve';
-	$(s.graph.edges()).each(function() {
-		var key = count.key(this);
+	for (var i in edges) {
+		var key = count.key(edges[i]);
 		var n = count[key].n; if (n % 2 > 0) n--;
 		var step = cc.step(cc.length, n);
 		if (count[key].n > 1) {
-			this.type = cc.type;
-			this.cc = $.extend({}, cc, cc.calc(cc.length, step, count[key].i++));
+			edges[i].type = cc.type;
+			edges[i].cc = sigma.utils.extend({}, cc, cc.calc(cc.length, step, count[key].i++));
 		}
-    });
+    }
   };
 
 })();
