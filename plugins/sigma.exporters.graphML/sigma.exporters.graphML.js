@@ -69,5 +69,5 @@
     return str.split('.').reduce(function(obj, i) { return obj[i] }, obj);
   }
 
-  
+
 }.call(this));
