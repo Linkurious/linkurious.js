@@ -99,6 +99,37 @@
       prefix = '';
     }
 
+    function hexToRgb(hex) {
+      // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+      var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+      hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+        return r + r + g + g + b + b;
+      });
+
+      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+      ] : null;
+    }
+
+    function setRGB(obj, color) {
+      var rgb;
+      if (color[0] === '#') {
+        rgb = hexToRgb(color);
+      } else {
+        rgb = color.match(/\d+(\.\d+)?/g);
+      }
+
+      obj.r = rgb[0];
+      obj.g = rgb[1];
+      obj.b = rgb[2];
+      if (obj.a) {
+        obj.a = rgb[3];
+      }
+    }
+
     function createAndAppend(parentElement, typeToCreate, attributes, elementValue, force) {
       attributes = attributes || {};
 
@@ -142,6 +173,10 @@
         'y': {for: 'node', type: 'float'},
         'type': {for: 'all', type: 'string'},
         'color': {for: 'all', type: 'string'},
+        'r': {for:'all', type:'int'},
+        'g': {for:'all', type:'int'},
+        'b': {for:'all', type:'int'},
+        'a': {for:'all', type:'float'},
         'label': {for: 'all', type: 'string'},
         'fixed': {for: 'node', type: 'boolean'},
         'hidden': {for: 'all', type: 'boolean'},
@@ -154,6 +189,21 @@
       var dataAttributes = strToObjectRef(item, itemAttributesName);
       var elt = {id:item.id};
 
+      reservedAttributes.forEach(function (attr) {
+        var value = (attr === 'x' || attr === 'y') ? item[prefix + attr] : item[attr];
+        if (attr === 'y' && value) {
+          value = -parseFloat(value);
+        }
+
+
+        if (value !== undefined) {
+          elt[attr] = value;
+          if (attr === 'color') {
+            setRGB(elt, value);
+          }
+        }
+      });
+
       iterate(dataAttributes, function (value, key) {
         if (reservedAttributes.indexOf(key) !== -1 || builtinAttributes.indexOf(key) !== -1) {
           return;
@@ -162,17 +212,10 @@
         if (!keyElements[key]) {
           keyElements[key] = {for:itemType, type:'string'};
         } else if (keyElements[key].for !== itemType) {
-          keyElements[key] = 'all';
+          keyElements[key].for = 'all';
         }
 
         elt[key] = value;
-      });
-
-      reservedAttributes.forEach(function (attr) {
-        var value = (attr === 'x' || attr === 'y') ? item[prefix + attr] : item[attr];
-        if (value !== undefined) {
-          elt[attr] = value;
-        }
       });
 
       if (itemType === 'edge') {
@@ -202,10 +245,10 @@
     /* GraphML attributes */
     iterate(keyElements, function (value, key) {
       createAndAppend(rootElem, 'key', {
-        'id': key,
-        'for': value.for,
         'attr.name': key,
-        'attr.type': value.type
+        'attr.type': value.type,
+        'for': value.for,
+        'id': key
       });
     });
 
