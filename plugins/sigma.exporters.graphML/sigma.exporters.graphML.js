@@ -99,7 +99,7 @@
       prefix = '';
     }
 
-    function createAndAppend(parentElement, typeToCreate, attributes, elementValue) {
+    function createAndAppend(parentElement, typeToCreate, attributes, elementValue, force) {
       attributes = attributes || {};
 
       var elt = doc.createElement(typeToCreate);
@@ -114,7 +114,11 @@
         }
       }
 
-      if (elementValue !== undefined) {
+      if (elementValue !== undefined || force) {
+        if (Object.prototype.toString.call(elementValue) === '[object Object]') {
+          elementValue = JSON.stringify(elementValue);
+        }
+
         var textNode = document.createTextNode(elementValue);
         elt.appendChild(textNode);
       }
@@ -222,7 +226,7 @@
           return;
         }
 
-        createAndAppend(nodeElem, 'data', {key:key}, value);
+        createAndAppend(nodeElem, 'data', {key: key}, value, true);
       });
     });
 
@@ -234,7 +238,7 @@
           return;
         }
 
-        createAndAppend(edgeElem, 'data', {key:key}, value);
+        createAndAppend(edgeElem, 'data', {key:key}, value, true);
       });
     });
 
