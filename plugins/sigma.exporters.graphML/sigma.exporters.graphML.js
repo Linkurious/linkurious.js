@@ -232,7 +232,7 @@
 
     /* Edge elements */
     edgeElements.forEach(function (elt) {
-      var edgeElem = createAndAppend(graphElem, 'edge', { id:elt.id });
+      var edgeElem = createAndAppend(graphElem, 'edge', { id:elt.id, source:elt.source, target:elt.target });
       iterate(elt, function (value, key) {
         if (builtinAttributes.indexOf(key) !== -1) {
           return;
