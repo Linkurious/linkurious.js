@@ -134,7 +134,7 @@
           labelOffsetY = - size - 2 * fontSize / 3;
           break;
         case 'inside':
-          labelWidth = getTextWidth(node.label);
+          labelWidth = sigma.utils.canvas.getTextWidth(node.label);
           if (labelWidth <= (size + fontSize / 3) * 2) {
             break;
           }
