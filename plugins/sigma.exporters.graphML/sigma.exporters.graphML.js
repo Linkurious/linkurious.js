@@ -56,6 +56,16 @@
     }
   }
 
+  function iterate(obj, func) {
+    for (var k in obj) {
+      if (!obj.hasOwnProperty(k)) {
+        continue;
+      }
+
+      func(obj[k], k);
+    }
+  }
+
   /**
    * Convert Javascript string in dot notation into an object reference.
    *
@@ -104,7 +114,7 @@
         }
       }
 
-      if (elementValue) {
+      if (elementValue !== undefined) {
         var textNode = document.createTextNode(elementValue);
         elt.appendChild(textNode);
       }
@@ -114,31 +124,69 @@
       return elt;
     }
 
-    function appendGraphMLAttributesDefinition(parentElem, attributeList) {
-      attributeList.forEach(function (a) {
-        var attributeElem = createAndAppend(parentElem, 'key', {
-          'id': a.name,
-          'for': a.for,
-          'attr.name': a.name,
-          'attr.type': a.type
-        });
-        if (a.defaultValue) {
-          createAndAppend(attributeElem, 'default', null, a.defaultValue);
+    var builtinAttributes = [
+      'id', 'source', 'target'
+    ];
+
+    var reservedAttributes = [
+      'size', 'x', 'y', 'type', 'color', 'label', 'fixed', 'hidden', 'active'
+    ];
+
+    var keyElements = {
+        'size': {for: 'all', type: 'float'},
+        'x': {for: 'node', type: 'float'},
+        'y': {for: 'node', type: 'float'},
+        'type': {for: 'all', type: 'string'},
+        'color': {for: 'all', type: 'string'},
+        'label': {for: 'all', type: 'string'},
+        'fixed': {for: 'node', type: 'boolean'},
+        'hidden': {for: 'all', type: 'boolean'},
+        'active': {for: 'all', type: 'boolean'}
+      },
+        nodeElements = [],
+        edgeElements = [];
+
+    function processItem(item, itemType, itemAttributesName) {
+      var dataAttributes = strToObjectRef(item, itemAttributesName);
+      var elt = {id:item.id};
+
+      iterate(dataAttributes, function (value, key) {
+        if (reservedAttributes.indexOf(key) !== -1 || builtinAttributes.indexOf(key) !== -1) {
+          return;
+        }
+
+        if (!keyElements[key]) {
+          keyElements[key] = {for:itemType, type:'string'};
+        } else if (keyElements[key].for !== itemType) {
+          keyElements[key] = 'all';
+        }
+
+        elt[key] = value;
+      });
+
+      reservedAttributes.forEach(function (attr) {
+        var value = (attr === 'x' || attr === 'y') ? item[prefix + attr] : item[attr];
+        if (value !== undefined) {
+          elt[attr] = value;
         }
       });
-    }
 
-    function appendGraphMLAttributes(parent, attributeList) {
-      for (var key in attributeList) {
-        if (!attributeList.hasOwnProperty(key)) {
-          continue;
-        }
-        var value = attributeList[key];
-        if (value) {
-          createAndAppend(parent, 'data', {key: key}, value);
-        }
+      if (itemType === 'edge') {
+        elt.source = item.source;
+        elt.target = item.target;
+        edgeElements.push(elt);
+      } else {
+        nodeElements.push(elt);
       }
     }
+
+    nodes.forEach(function (n) {
+      processItem(n, 'node', params.nodesAttributes);
+    });
+
+    edges.forEach(function (e) {
+      processItem(e, 'edge', params.edgesAttributes);
+    });
 
     /* Root element */
     var rootElem = createAndAppend(doc, 'graphml', {
@@ -147,64 +195,46 @@
     'xsi:schemaLocation': 'http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd'
   });
 
-    var graphmlAttributeList = [
-      { name:'size', for:'all', type: 'float'},
-      { name:'x', for:'node', type:'float'},
-      { name:'y', for:'node', type:'float'},
-      { name:'type', for:'all', type:'string'},
-      { name:'color', for:'all', type:'string'},
-      { name:'label', for:'all', type:'string'},
-      { name:'fixed', for:'node', type:'boolean'},
-      { name:'hidden', for:'all', type:'boolean'},
-      { name:'active', for:'all', type:'boolean'}
-    ];
-
     /* GraphML attributes */
-    appendGraphMLAttributesDefinition(rootElem, graphmlAttributeList);
+    iterate(keyElements, function (value, key) {
+      createAndAppend(rootElem, 'key', {
+        'id': key,
+        'for': value.for,
+        'attr.name': key,
+        'attr.type': value.type
+      });
+    });
 
     /* Graph element */
     var graphElem = createAndAppend(rootElem, 'graph', {
       'edgedefault': params.undirectedEdges ? 'undirected' : 'directed',
-      'id': params.graphId,
+      'id': params.graphId ? params.graphId : 'G',
       'parse.nodes': nodes.length,
       'parse.edges': edges.length,
       'parse.order': 'nodesfirst'
     });
 
-    /* Nodes & edges */
+    /* Node elements */
+    nodeElements.forEach(function (elt) {
+      var nodeElem = createAndAppend(graphElem, 'node', { id:elt.id });
+      iterate(elt, function (value, key) {
+        if (builtinAttributes.indexOf(key) !== -1) {
+          return;
+        }
 
-    nodes.forEach(function (n) {
-      var nodeElem = createAndAppend(graphElem, 'node', {
-        'id': n.id
-      });
-
-      appendGraphMLAttributes(nodeElem, {
-        'x': n[prefix + 'x'],
-        'y': 1 - n[prefix + 'y'],
-        'size': n.size,
-        'type': n.type,
-        'color': n.color,
-        'label': n.label,
-        'fixed': n.fixed,
-        'hidden': n.hidden,
-        'active': n.active
+        createAndAppend(nodeElem, 'data', {key:key}, value);
       });
     });
 
-    edges.forEach(function (e) {
-      var edgeElem = createAndAppend(graphElem, 'edge', {
-        'id': e.id,
-        'source': e.source,
-        'target': e.target
-      });
+    /* Edge elements */
+    edgeElements.forEach(function (elt) {
+      var edgeElem = createAndAppend(graphElem, 'edge', { id:elt.id });
+      iterate(elt, function (value, key) {
+        if (builtinAttributes.indexOf(key) !== -1) {
+          return;
+        }
 
-      appendGraphMLAttributes(edgeElem, {
-        'size': e.size,
-        'type': e.type,
-        'color': e.color,
-        'label': e.label,
-        'hidden': e.hidden,
-        'active': e.active
+        createAndAppend(edgeElem, 'data', {key:key}, value);
       });
     });
 

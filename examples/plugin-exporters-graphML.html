@@ -88,6 +88,7 @@
         aNull: null,
         anUndef: undefined,
         anObject: {},
+        toto:'a string',
         aFunction: function (argument) {
         }
       },
@@ -108,6 +109,8 @@
         anInteger: i,
         aNull: null,
         anObject: {},
+        toto: 42,
+        color:'DARK',
         aFunction: function (argument) {
         }
       }
@@ -131,6 +134,7 @@
           aNull: null,
           anUndef: undefined,
           anObject: {},
+          edgeOnly: 'bla',
           aFunction: function (argument) {
           }
         },
@@ -154,6 +158,7 @@
     edgesCategories: 'data.type',
     edgesCategoriesName: 'type',
     filename: 'myGraph.graphml',
-    download:true
+    download:true,
+    renderer: s.renderers[0]
   });
 </script>
