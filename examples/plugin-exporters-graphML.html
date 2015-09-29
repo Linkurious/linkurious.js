@@ -46,7 +46,7 @@
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
 
-<script src="../plugins/sigma.exporters.graphML/sigma.exporters.graphML.js"></script>
+<script src="../plugins/sigma.exporters.graphml/sigma.exporters.graphml.js"></script>
 <div id="container">
   <style>
     #graph-container {
@@ -62,8 +62,8 @@
 <script>
   var i,
     s,
-    N = 3,
-    E = 3,
+    N = 100,
+    E = 50,
     g = {
       nodes: [],
       edges: []
@@ -76,7 +76,7 @@
       label: 'Node ' + i,
       x: Math.random(),
       y: Math.random(),
-      size: Math.random(),
+      size: Math.random() * 50,
       color: '#990066',
       data: {
         aString: 'abc ' + i,
@@ -101,7 +101,7 @@
       label: 'Node ' + i,
       x: Math.random(),
       y: Math.random(),
-      size: Math.random(),
+      size: Math.random() * 50,
       color: '#1188BB',
       data: {
         aString: 'abc ' + i,
@@ -157,21 +157,12 @@
 
   // Instantiate sigma:
   s = new sigma({
-    graph: small,
+    graph: g,
     renderer: {
       container: document.getElementById('graph-container')
     }
   });
 
-  s.toGraphML({
-    nodesAttributes: 'data',
-    filename: 'myGraph.graphml',
-    download:true,
-    renderer: s.renderers[0],
-    undirectedEdges:true
-  });
-
-  /*
   s.toGraphML({
     nodesAttributes: 'data',
     nodesCategories: 'categories',
@@ -184,5 +175,4 @@
     renderer: s.renderers[0],
     undirectedEdges:true
   });
-  */
 </script>

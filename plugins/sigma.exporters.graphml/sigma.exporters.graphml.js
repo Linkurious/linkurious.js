@@ -245,11 +245,6 @@
     'xmlns:x': 'http://ww.yworks.com/xml/yfiles-common/markup/2.0'
   });
 
-    createAndAppend(rootElem, 'key', { for:'port', id:'d0', 'yfiles.types':'portgraphics' });
-    createAndAppend(rootElem, 'key', { for:'port', id:'d1', 'yfiles.types':'portgeometry' });
-    createAndAppend(rootElem, 'key', { for:'port', id:'d2', 'yfiles.types':'portuserdata' });
-    createAndAppend(rootElem, 'key', { for:'node', id:'d3', 'yfiles.types':'resources' });
-
     /* GraphML attributes */
     iterate(keyElements, function (value, key) {
       if (value.for === 'node' || value.for === 'all') {
