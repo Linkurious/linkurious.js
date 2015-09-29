@@ -191,6 +191,8 @@
       if (node.label && typeof node.label === 'string') {
         // draw a rectangle for the label
         switch (alignment) {
+          case 'constrained':
+          /* falls through*/
           case 'center':
             y = Math.round(node[prefix + 'y'] - fontSize * 0.5 - 2);
             context.rect(x - w * 0.5, y, w, h);
