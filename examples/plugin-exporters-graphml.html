@@ -45,7 +45,8 @@
 <script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
-<script src="../plugins/sigma.exporters.gexf/sigma.exporters.gexf.js"></script>
+
+<script src="../plugins/sigma.exporters.graphml/sigma.exporters.graphml.js"></script>
 <div id="container">
   <style>
     #graph-container {
@@ -59,68 +60,119 @@
   <div id="graph-container"></div>
 </div>
 <script>
-var i,
+  var i,
     s,
-    N = 10,
-    E = 5,
+    N = 100,
+    E = 50,
     g = {
       nodes: [],
       edges: []
     };
 
-// Generate a random graph:
-for (i = 0; i < N; i++)
-  g.nodes.push({
-    id: 'n' + i,
-    label: 'Node ' + i,
-    x: Math.random(),
-    y: Math.random(),
-    size: Math.random(),
-    hidden: Math.random() > 0.5,
-    color: '#FF0000',
-    data: {
-      aString: 'abc ' + i,
-      aBoolean: true,
-      anInteger: i,
-      aFloat: Math.random(),
-      anArray: [1, 2, 3]
-    }
-  });
-
-for (i = 0; i < E; i++)
-  g.edges.push({
-    id: 'e' + i,
-    source: 'n' + (Math.random() * N | 0),
-    target: 'n' + (Math.random() * N | 0),
-    size: Math.random(),
-    color: 'rgba(120, 120, 120, 0.5)',
-    data: {
-      properties: {
+  // Generate a random graph:
+  for (i = 0; i < N / 2; i++)
+    g.nodes.push({
+      id: 'n' + i,
+      label: 'Node ' + i,
+      x: Math.random(),
+      y: Math.random(),
+      size: Math.random() * 50,
+      color: '#990066',
+      data: {
         aString: 'abc ' + i,
-        aBoolean: false,
+        aCrappyString: 'cr"p\n\r test',
+        aBoolean: true,
         anInteger: i,
         aFloat: Math.random(),
-        anArray: [1, 2, 3]
+        anArray: [1, 2, 3],
+        aNull: null,
+        anUndef: undefined,
+        anObject: {a:1},
+        toto:'a string',
+        aFunction: function (argument) {
+        }
+      },
+      categories: ['catA', 'catB']
+    });
+
+  for (i = N / 2; i < N; i++)
+    g.nodes.push({
+      id: 'n' + i,
+      label: 'Node ' + i,
+      x: Math.random(),
+      y: Math.random(),
+      size: Math.random() * 50,
+      color: '#1188BB',
+      data: {
+        aString: 'abc ' + i,
+        aBoolean: true,
+        anInteger: i,
+        aNull: null,
+        anObject: {},
+        toto: 42,
+        color:'DARK',
+        aFunction: function (argument) {
+        }
       }
+    });
+
+  for (i = 0; i < E; i++)
+    g.edges.push({
+      id: 'e' + i,
+      source: 'n' + (Math.random() * N | 0),
+      target: 'n' + (Math.random() * N | 0),
+      size: Math.random(),
+      color: '#888888',
+      data: {
+        properties: {
+          aString: 'abc ' + i,
+          aCrappyString: 'cr"p ',
+          aBoolean: false,
+          anInteger: i,
+          aFloat: Math.random(),
+          anArray: [1, 2, 3],
+          aNull: null,
+          anUndef: undefined,
+          anObject: {},
+          edgeOnly: 'bla',
+          aFunction: function (argument) {
+          }
+        },
+        type: 'catA'
+      }
+    });
+
+  var small = {
+    nodes: [
+      {id:'n1', label:'Node 1', size:15, color:'#0000FF', x:20, y:20, data:{}},
+      {id:'n2', label:'Node 2', size:20, color:'#00FF00', x:80, y:80, data:{}},
+      {id:'n3', label:'Node 3', size:30, color:'#FF0000', x:30, y:70, data:{}}
+    ],
+    edges: [
+      {id:'e1', source:'n1', target:'n2', label:'Edge 1', size:1, color:'#AAAAAA'},
+      {id:'e2', source:'n2', target:'n3', label:'Edge 2', size:2, color:'#BBBBBB'},
+      {id:'e3', source:'n3', target:'n1', label:'Edge 3', size:3, color:'#FF0000'}
+    ]
+  };
+
+  // Instantiate sigma:
+  s = new sigma({
+    graph: g,
+    renderer: {
+      container: document.getElementById('graph-container')
     }
   });
 
-// Instantiate sigma:
-s = new sigma({
-  graph: g,
-  renderer: {
-    container: document.getElementById('graph-container'),
-    // type: 'canvas'
-  }
-});
-
-s.toGEXF({
-  download: true,
-  filename: 'myGraph.gexf',
-  nodeAttributes: 'data',
-  edgeAttributes: 'data.properties',
-  renderer: s.renderers[0],
-  creator: 'Sigma.js',
-  description: 'This is an awesome graph!'
-});
+  s.toGraphML({
+    nodesAttributes: 'data',
+    nodesCategories: 'categories',
+    nodesCategoriesName: 'categories',
+    edgesAttributes: 'data.properties',
+    edgesCategories: 'data.type',
+    edgesCategoriesName: 'type',
+    filename: 'myGraph.graphml',
+    download:true,
+    renderer: s.renderers[0],
+    undirectedEdges:true
+  });
 </script>
