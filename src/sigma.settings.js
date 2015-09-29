@@ -64,7 +64,7 @@
     labelThreshold: 8,
     // {number} The oversampling factor used in WebGL renderer.
     webglOversamplingRatio: 2,
-    // {number} The size of the border of hovered nodes.
+    // {number} The size of the border of nodes.
     borderSize: 0,
     // {number} The default hovered node border's color.
     defaultNodeBorderColor: '#000',
