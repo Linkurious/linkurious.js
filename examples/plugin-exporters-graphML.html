@@ -62,8 +62,8 @@
 <script>
   var i,
     s,
-    N = 100,
-    E = 50,
+    N = 3,
+    E = 3,
     g = {
       nodes: [],
       edges: []
@@ -122,7 +122,7 @@
       source: 'n' + (Math.random() * N | 0),
       target: 'n' + (Math.random() * N | 0),
       size: Math.random(),
-      color: 'rgba(120, 120, 120, 0.5)',
+      color: '#888888',
       data: {
         properties: {
           aString: 'abc ' + i,
@@ -142,14 +142,36 @@
       }
     });
 
+  var small = {
+    nodes: [
+      {id:'n1', label:'Node 1', size:15, color:'#0000FF', x:20, y:20, data:{}},
+      {id:'n2', label:'Node 2', size:20, color:'#00FF00', x:50, y:50, data:{}},
+      {id:'n3', label:'Node 3', size:60, color:'#FF0000', x:20, y:50, data:{}}
+    ],
+    edges: [
+      {id:'e1', source:'n1', target:'n2', label:'Edge 1', size:1, color:'#AAAAAA'},
+      {id:'e2', source:'n2', target:'n3', label:'Edge 2', size:2, color:'#BBBBBB'},
+      {id:'e3', source:'n3', target:'n1', label:'Edge 3', size:3, color:'#FF0000'}
+    ]
+  };
+
   // Instantiate sigma:
   s = new sigma({
-    graph: g,
+    graph: small,
     renderer: {
       container: document.getElementById('graph-container')
     }
   });
 
+  s.toGraphML({
+    nodesAttributes: 'data',
+    filename: 'myGraph.graphml',
+    download:true,
+    renderer: s.renderers[0],
+    undirectedEdges:true
+  });
+
+  /*
   s.toGraphML({
     nodesAttributes: 'data',
     nodesCategories: 'categories',
@@ -162,4 +184,5 @@
     renderer: s.renderers[0],
     undirectedEdges:true
   });
+  */
 </script>

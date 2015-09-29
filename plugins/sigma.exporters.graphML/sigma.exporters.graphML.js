@@ -75,7 +75,7 @@
    */
   function strToObjectRef(obj, str) {
     // http://stackoverflow.com/a/6393943
-    if (str === null) return null;
+    if (str == null) return null;
     return str.split('.').reduce(function(obj, i) { return obj[i] }, obj);
   }
 
@@ -195,9 +195,8 @@
           value = -parseFloat(value);
         }
 
-
         if (value !== undefined) {
-          elt[attr] = value;
+          elt[(itemType === 'edge' ? 'edge_' : '') + attr] = value;
           if (attr === 'color') {
             setRGB(elt, value);
           }
@@ -239,17 +238,44 @@
     var rootElem = createAndAppend(doc, 'graphml', {
     'xmlns': 'http://graphml.graphdrawing.org/xmlns',
     'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-    'xsi:schemaLocation': 'http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd'
+    'xsi:schemaLocation': 'http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd',
+    'xmlns:y':'http://www.yworks.com/xml/graphml'
   });
 
     /* GraphML attributes */
     iterate(keyElements, function (value, key) {
-      createAndAppend(rootElem, 'key', {
-        'attr.name': key,
-        'attr.type': value.type,
-        'for': value.for,
-        'id': key
-      });
+      if (value.for === 'node' || value.for === 'all') {
+        createAndAppend(rootElem, 'key', {
+          'attr.name': key,
+          'attr.type': value.type,
+          'for': 'node',
+          'id': key
+        });
+      }
+
+      if (value.for === 'edge' || value.for === 'all') {
+        createAndAppend(rootElem, 'key', {
+          'attr.name': key,
+          'attr.type': value.type,
+          'for': 'edge',
+          'id': 'edge_' + key
+        });
+      }
+    });
+
+    /* yFiles extension */
+    createAndAppend(rootElem, 'key', {
+      'id':'nodegraphics',
+      'for':'node',
+      'yfiles.type':'nodegraphics',
+      'attr.type': 'string'
+    });
+
+    createAndAppend(rootElem, 'key', {
+      'id':'edgegraphics',
+      'for':'edge',
+      'yfiles.type':'edgegraphics',
+      'attr.type': 'string'
     });
 
     /* Graph element */
@@ -261,9 +287,33 @@
       'parse.order': 'nodesfirst'
     });
 
+    function appendShapeNode(nodeElem, node) {
+      var shapeNodeElem = createAndAppend(nodeElem, 'y:ShapeNode');
+
+      createAndAppend(shapeNodeElem, 'y:Geometry', { x:node.x, y:node.y, width:node.size, height:node.size});
+      createAndAppend(shapeNodeElem, 'y:Fill', { color: node.color ? node.color : '#000000', transparent: false });
+      createAndAppend(shapeNodeElem, 'y:NodeLabel', null, node.label ? node.label : '');
+      createAndAppend(shapeNodeElem, 'y:Shape', {type:node.type ? node.type : 'circle'});
+    }
+
+    function appendPolyLineEdge(edgeElem, edge) {
+      var shapeEdgeElem = createAndAppend(edgeElem, 'y:PolyLineEdge');
+
+      createAndAppend(shapeEdgeElem, 'y:LineStyle', {
+        type:edge.type ? edge.type : 'circle',
+        color:edge.color ? edge.color : '#000000',
+        width:edge.size ? edge.size : 1
+      });
+
+      createAndAppend(shapeEdgeElem, 'y:EdgeLabel', null, edge.label ? edge.label : '');
+    }
+
     /* Node elements */
     nodeElements.forEach(function (elt) {
       var nodeElem = createAndAppend(graphElem, 'node', { id:elt.id });
+
+      appendShapeNode(nodeElem, elt);
+
       iterate(elt, function (value, key) {
         if (builtinAttributes.indexOf(key) !== -1) {
           return;
@@ -276,6 +326,9 @@
     /* Edge elements */
     edgeElements.forEach(function (elt) {
       var edgeElem = createAndAppend(graphElem, 'edge', { id:elt.id, source:elt.source, target:elt.target });
+
+      appendPolyLineEdge(edgeElem, elt);
+
       iterate(elt, function (value, key) {
         if (builtinAttributes.indexOf(key) !== -1) {
           return;
