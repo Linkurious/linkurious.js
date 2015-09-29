@@ -168,15 +168,15 @@
     ];
 
     var keyElements = {
-        'size': {for: 'all', type: 'float'},
-        'x': {for: 'node', type: 'float'},
-        'y': {for: 'node', type: 'float'},
+        'size': {for: 'all', type: 'double'},
+        'x': {for: 'node', type: 'double'},
+        'y': {for: 'node', type: 'double'},
         'type': {for: 'all', type: 'string'},
         'color': {for: 'all', type: 'string'},
         'r': {for:'all', type:'int'},
         'g': {for:'all', type:'int'},
         'b': {for:'all', type:'int'},
-        'a': {for:'all', type:'float'},
+        'a': {for:'all', type:'double'},
         'label': {for: 'all', type: 'string'},
         'fixed': {for: 'node', type: 'boolean'},
         'hidden': {for: 'all', type: 'boolean'},
@@ -238,9 +238,17 @@
     var rootElem = createAndAppend(doc, 'graphml', {
     'xmlns': 'http://graphml.graphdrawing.org/xmlns',
     'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-    'xsi:schemaLocation': 'http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd',
-    'xmlns:y':'http://www.yworks.com/xml/graphml'
+    'xsi:schemaLocation': 'http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd',
+    'xmlns:y': 'http://www.yworks.com/xml/graphml',
+    'xmlns:java': 'http://www.yworks.com/xml/yfiles-common/1.0/java',
+    'xmlns:sys': 'http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0',
+    'xmlns:x': 'http://ww.yworks.com/xml/yfiles-common/markup/2.0'
   });
+
+    createAndAppend(rootElem, 'key', { for:'port', id:'d0', 'yfiles.types':'portgraphics' });
+    createAndAppend(rootElem, 'key', { for:'port', id:'d1', 'yfiles.types':'portgeometry' });
+    createAndAppend(rootElem, 'key', { for:'port', id:'d2', 'yfiles.types':'portuserdata' });
+    createAndAppend(rootElem, 'key', { for:'node', id:'d3', 'yfiles.types':'resources' });
 
     /* GraphML attributes */
     iterate(keyElements, function (value, key) {
@@ -288,7 +296,8 @@
     });
 
     function appendShapeNode(nodeElem, node) {
-      var shapeNodeElem = createAndAppend(nodeElem, 'y:ShapeNode');
+      var dataElem = createAndAppend(nodeElem, 'data', { key:'nodegraphics'});
+      var shapeNodeElem = createAndAppend(dataElem, 'y:ShapeNode');
 
       createAndAppend(shapeNodeElem, 'y:Geometry', { x:node.x, y:node.y, width:node.size, height:node.size});
       createAndAppend(shapeNodeElem, 'y:Fill', { color: node.color ? node.color : '#000000', transparent: false });
@@ -297,15 +306,16 @@
     }
 
     function appendPolyLineEdge(edgeElem, edge) {
-      var shapeEdgeElem = createAndAppend(edgeElem, 'y:PolyLineEdge');
+      var dataElem = createAndAppend(edgeElem, 'data', { key:'edgegraphics'});
+      var shapeEdgeElem = createAndAppend(dataElem, 'y:PolyLineEdge');
 
       createAndAppend(shapeEdgeElem, 'y:LineStyle', {
-        type:edge.type ? edge.type : 'circle',
-        color:edge.color ? edge.color : '#000000',
-        width:edge.size ? edge.size : 1
+        type:edge.edge_type ? edge.edge_type : 'line',
+        color:edge.edge_color ? edge.edge_color : '#0000FF',
+        width:edge.edge_size ? edge.edge_size : 1
       });
 
-      createAndAppend(shapeEdgeElem, 'y:EdgeLabel', null, edge.label ? edge.label : '');
+      createAndAppend(shapeEdgeElem, 'y:EdgeLabel', null, edge.edge_label ? edge.edge_label : '');
     }
 
     /* Node elements */
