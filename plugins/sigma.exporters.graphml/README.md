@@ -7,7 +7,7 @@ Contact: sylvain@linkurio.us
 
 ---
 
-The aim of this plugin is to enable users to retrieve a [GraphML file](http://graphml.graphdrawing.org/) of the graph. GraphML is an XML dialect to encode graph data.
+The aim of this plugin is to enable users to retrieve a [GraphML file](http://graphml.graphdrawing.org/) of the graph. GraphML is an XML dialect to encode graph data. This file format is notably supported by [Gephi](http://gephi.org), [yEd](http://www.yworks.com/en/products/yfiles/yed/), [NetworkX](http://networkx.github.io/), and [NodeXL](http://nodexl.codeplex.com/).
 
 See the following [example code](../../examples/plugin-exporters-graphml.html) for full usage.
 
