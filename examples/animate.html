@@ -123,6 +123,9 @@ s = new sigma({
   }
 });
 
+s.bind('animate.start', function(e) { console.log(e.type); });
+s.bind('animate.end', function(e) { console.log(e.type); });
+
 setInterval(function() {
   var prefix = ['grid_', 'circular_'][step = +!step];
   sigma.plugins.animate(
@@ -132,6 +135,9 @@ setInterval(function() {
       y: prefix + 'y',
       size: prefix + 'size',
       color: prefix + 'color'
+    },
+    {
+      duration: 1000
     }
   );
 }, 2000);

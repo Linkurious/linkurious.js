@@ -54,16 +54,16 @@
       _body = document.body,
       _renderer = renderer,
       _mouse = renderer.container.lastChild,
-      _camera = renderer.camera,
+      _prefix = renderer.options.prefix,
       _node = null,
       _draggingNode = null,
-      _prefix = renderer.options.prefix,
       _hoverStack = [],
       _hoverIndex = {},
       _isMouseDown = false,
       _isMouseOverCanvas = false,
       _drag = false,
-      _sticky = true;
+      _sticky = true,
+      _enabled = true;
 
     if (renderer instanceof sigma.renderers.svg) {
         _mouse = renderer.container.firstChild;
@@ -73,9 +73,27 @@
     renderer.bind('hovers', treatOutNode);
     renderer.bind('click', click);
 
-    _s.bind('kill', function() {
-      _self.unbindAll();
-    });
+    /**
+     * Enable dragging and events.
+     */
+    this.enable = function() {
+      _enabled = true;
+    }
+
+    /**
+     * Disable dragging and events.
+     */
+    this.disable = function() {
+      _enabled = false;
+      _node = null,
+      _draggingNode = null,
+      _hoverStack = [],
+      _hoverIndex = {},
+      _isMouseDown = false,
+      _isMouseOverCanvas = false,
+      _drag = false,
+      _sticky = true;
+    }
 
     /**
      * Unbind all event listeners.
@@ -160,7 +178,7 @@
     };
 
     function nodeMouseDown(event) {
-      if(event.which == 3) return; // Right mouse button pressed
+      if(!_enabled || event.which == 3) return; // Right mouse button pressed
 
       _isMouseDown = true;
       if (_node && _s.graph.nodes().length > 0) {
@@ -228,8 +246,8 @@
         var offset = calculateOffset(_renderer.container),
             x = event.clientX - offset.left,
             y = event.clientY - offset.top,
-            cos = Math.cos(_camera.angle),
-            sin = Math.sin(_camera.angle),
+            cos = Math.cos(_renderer.camera.angle),
+            sin = Math.sin(_renderer.camera.angle),
             nodes = _s.graph.nodes(),
             ref = [],
             x2,
@@ -240,7 +258,7 @@
             isHoveredNodeActive,
             dist;
 
-        if (nodes.length < 2) return;
+        if (!_enabled || nodes.length < 2) return;
 
         dist = sigma.utils.getDistance(x, y, _node[_prefix + 'x'],_node[_prefix + 'y']);
 
@@ -251,6 +269,8 @@
         // We take the first node as a first reference point and then try to find
         // another node not aligned with it
         for (var i = 0;;i++) {
+          if(!_enabled) break;
+
           n = nodes[i];
           if (n) {
             aux = {
@@ -267,7 +287,7 @@
           if (i > 0) {
             if (ref[0].x == ref[1].x || ref[0].y == ref[1].y) {
               ref.pop() // drop last nodes and try to find another one
-            } else { // ww managed to find two nodes not aligned
+            } else { // we managed to find two nodes not aligned
               break
             }
           }
@@ -359,6 +379,16 @@
 
     s.bind('kill', function() {
       sigma.plugins.killDragNodes(s);
+    });
+
+    // disable on plugins.animate start.
+    s.bind('animate.start', function() {
+      _instance[s.id].disable();
+    });
+
+    // enable on plugins.animate end.
+    s.bind('animate.end', function() {
+      _instance[s.id].enable();
     });
 
     return _instance[s.id];
