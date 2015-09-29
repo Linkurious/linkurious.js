@@ -34,7 +34,7 @@
    * @param  {renderer}                   renderer The related renderer instance.
    * @param  {?sigma.plugins.activeState} a        The activeState plugin instance.
    */
-  function DragNodes(s, renderer, a) {
+  function DragNodes(s, renderer, a, opts) {
     sigma.classes.dispatcher.extend(this);
 
     // A quick hardcoded rule to prevent people from using this plugin with the
@@ -204,7 +204,7 @@
           }
         }
 
-        _s.refresh();
+        _s.refresh(opts);
       }
       _self.dispatchEvent('dragend', {
         node: _node,
@@ -323,7 +323,7 @@
         _node.x = x2;
         _node.y = y2;
 
-        _s.refresh({skipIndexation: true});
+        _s.refresh(sigma.utils.extend({skipIndexation: true}, opts));
 
         _drag = true;
         _self.dispatchEvent('drag', {
@@ -350,11 +350,11 @@
    * @param  {renderer}                   renderer The related renderer instance.
    * @param  {?sigma.plugins.activeState} a        The activeState plugin instance.
    */
-  sigma.plugins.dragNodes = function(s, renderer, a) {
+  sigma.plugins.dragNodes = function(s, renderer, a, opts) {
     // Create object if undefined
     if (!_instance[s.id]) {
       // Handle drag events:
-      _instance[s.id] = new DragNodes(s, renderer, a);
+      _instance[s.id] = new DragNodes(s, renderer, a, opts);
     }
 
     s.bind('kill', function() {
