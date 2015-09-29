@@ -1069,7 +1069,7 @@
    * Calculate the width of the text either approximated via the font size or
    * via the more expensive but accurate context.measureText.
    *
-   * @param  {context2D}   ctx           The canvas context.
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
    * @param  {boolean}     approximate   Approximate or not.
    * @param  {integer}     fontSize      Font size of the text.
    * @param  {string}      text          The text to use.
@@ -1078,9 +1078,169 @@
    */
    sigma.utils.canvas = {};
    sigma.utils.canvas.getTextWidth =
-        function(ctx, approximate, fontSize, text) {
+        function(context, approximate, fontSize, text) {
+
     if (!text) return 0;
+
     return approximate ? 0.6 * text.length * fontSize :
-      ctx.measureText(text).width;
+      context.measureText(text).width;
   };
+
+  /**
+   * Set the shadow values of the specified context according to the level
+   * to create visual depth.
+   *
+   * @param  {number}     level     The level (from 1 to 5).
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
+   */
+  sigma.utils.canvas.setLevel = function(level, context) {
+    if (level) {
+      context.shadowOffsetX = 0;
+      // inspired by Material Design shadows, level from 1 to 5:
+      switch(level) {
+        case 1:
+          context.shadowOffsetY = 1.5;
+          context.shadowBlur = 4;
+          context.shadowColor = 'rgba(0,0,0,0.36)';
+          break;
+        case 2:
+          context.shadowOffsetY = 3;
+          context.shadowBlur = 12;
+          context.shadowColor = 'rgba(0,0,0,0.39)';
+          break;
+        case 3:
+          context.shadowOffsetY = 6;
+          context.shadowBlur = 12;
+          context.shadowColor = 'rgba(0,0,0,0.42)';
+          break;
+        case 4:
+          context.shadowOffsetY = 10;
+          context.shadowBlur = 20;
+          context.shadowColor = 'rgba(0,0,0,0.47)';
+          break;
+        case 5:
+          context.shadowOffsetY = 15;
+          context.shadowBlur = 24;
+          context.shadowColor = 'rgba(0,0,0,0.52)';
+          break;
+      }
+    }
+  };
+
+  /**
+   * Reset the shadow values.
+   *
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
+   */
+  sigma.utils.canvas.resetLevel = function(context) {
+    context.shadowOffsetY = 0;
+    context.shadowBlur = 0;
+    context.shadowColor = '#000000';
+  };
+
+  // incrementally scaled, not automatically resized for now
+  // (ie. possible memory leak if there are many graph load / unload)
+  var imgCache = {};
+
+  /**
+   * Draw an image inside the specified node on the canvas.
+   *
+   * @param  {object}                   node     The node object.
+   * @param  {number}                   x        The node x coordinate.
+   * @param  {number}                   y        The node y coordinate.
+   * @param  {number}                   size     The node size.
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
+   * @param  {string}                   imgCrossOrigin Cross-origin URL or '*'.
+   * @param  {number}                  threshold Display if node size is larger
+   * @param  {function}                 clipFn    The clipping shape function.
+   */
+  sigma.utils.canvas.drawImage =
+    function(node, x, y, size, context, imgCrossOrigin, threshold, clipFn) {
+
+    if(!node.image || !node.image.url || size < threshold) return;
+
+    var url = node.image.url;
+    var ih = node.image.h || 1; // 1 is arbitrary, anyway only the ratio counts
+    var iw = node.image.w || 1;
+    var scale = node.image.scale || 1;
+    var clip = node.image.clip || 1;
+
+    // create new IMG or get from imgCache
+    var image = imgCache[url];
+    if(!image) {
+      image = document.createElement('IMG');
+      image.setAttribute('crossOrigin', imgCrossOrigin);
+      image.src = url;
+      image.onload = function() {
+        window.dispatchEvent(new Event('resize'));
+      };
+      imgCache[url] = image;
+    }
+
+    // calculate position and draw
+    var xratio = (iw < ih) ? (iw / ih) : 1;
+    var yratio = (ih < iw) ? (ih / iw) : 1;
+    var r = size * scale;
+
+    context.save(); // enter clipping mode
+      context.beginPath();
+    if (typeof clipFn === 'function') {
+      clipFn(node, x, y, size, context, clip);
+    }
+    else {
+      // Draw the clipping disc:
+      context.arc(x, y, size * clip, 0, Math. PI * 2, true);
+    }
+    context.closePath();
+    context.clip();
+
+    // Draw the actual image
+    context.drawImage(
+      image,
+      x + Math.sin(-3.142 / 4) * r * xratio,
+      y - Math.cos(-3.142 / 4) * r * yratio,
+      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
+      r * yratio * 2 * Math.cos(-3.142 / 4)
+    );
+    context.restore(); // exit clipping mode
+  };
+
+  /**
+   * Draw an icon inside the specified node on the canvas.
+   *
+   * @param  {object}                   node     The node object.
+   * @param  {number}                   x        The node x coordinate.
+   * @param  {number}                   y        The node y coordinate.
+   * @param  {number}                   size     The node size.
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
+   * @param  {number}                  threshold Display if node size is larger
+   */
+  sigma.utils.canvas.drawIcon = function(node, x, y, size, context, threshold){
+    if(!node.icon || size < threshold) return;
+
+    var font = node.icon.font || 'Arial',
+        fgColor = node.icon.color || '#F00',
+        text = node.icon.content || '?',
+        px = node.icon.x || 0.5,
+        py = node.icon.y || 0.5,
+        height = size,
+        width = size;
+
+    var fontSizeRatio = 0.70;
+    if (typeof node.icon.scale === "number") {
+      fontSizeRatio = Math.abs(Math.max(0.01, node.icon.scale));
+    }
+
+    var fontSize = Math.round(fontSizeRatio * height);
+
+    context.save();
+    context.fillStyle = fgColor;
+
+    context.font = '' + fontSize + 'px ' + font;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, x, y);
+    context.restore();
+  };
+
 }).call(this);
