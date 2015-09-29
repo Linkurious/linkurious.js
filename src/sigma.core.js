@@ -476,6 +476,10 @@
         prefix = 0;
 
     options = options || {};
+	var frame = options.graphFrame;
+	if (!frame) frame = this.settings('graphFrame');
+	if (!frame) frame = { X: 1, Y: 1 };
+	if (typeof frame == 'number') frame = { X: frame, Y: frame };
 
     // Call each middleware:
     a = this.middlewares || [];
@@ -500,8 +504,8 @@
           a.length ? 'ready:' : '',
           c.readPrefix,
           {
-            width: this.renderersPerCamera[c.id][0].width,
-            height: this.renderersPerCamera[c.id][0].height
+            width: this.renderersPerCamera[c.id][0].width * frame.X,
+            height: this.renderersPerCamera[c.id][0].height * frame.Y
           }
         );
       else
@@ -522,6 +526,7 @@
         c.quadtree.index(this.graph, {
           prefix: c.readPrefix,
           maxLevel: c.settings('nodeQuadtreeMaxLevel'),
+          curvatureCoefficients: c.settings('curvatureCoefficients'),
           bounds: {
             x: bounds.minX,
             y: bounds.minY,
@@ -540,6 +545,7 @@
           c.edgequadtree.index(this.graph, {
             prefix: c.readPrefix,
             maxLevel: c.settings('edgeQuadtreeMaxLevel'),
+            curvatureCoefficients: c.settings('curvatureCoefficients'),
             bounds: {
               x: bounds.minX,
               y: bounds.minY,
