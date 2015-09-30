@@ -68,7 +68,7 @@
  */
 var i,
     s,
-    N = 100,
+    N = 1500,
     E = 500,
     g = {
       nodes: [],
@@ -80,9 +80,9 @@ for (i = 0; i < N; i++)
   g.nodes.push({
     id: 'n' + i,
     label: 'Node ' + i,
-    x: Math.random(),
-    y: Math.random(),
-    size: Math.random(),
+    x: Math.random() * 0.9,
+    y: Math.random() * 0.9,
+    size: 10,
     color: '#666'
   });
 
@@ -100,4 +100,53 @@ s = new sigma({
   graph: g,
   container: 'graph-container'
 });
+
+  function truncate(nb) {
+    return Math.round(nb * 1000) / 1000;
+  }
+
+  function toPercent(nb) {
+    return Math.round(nb * 100);
+  }
+
+  function fullBenchmark() {
+    console.log('Benchmark:');
+    var full_display = benchmark('with labels', null);
+    var without_label = benchmark('without labels', {drawLabels:false});
+    var with_opti = benchmark('with label optimization', {labelOpti:true});
+
+    var current_label_time = truncate(full_display - without_label);
+    var opti_time_saving = truncate(full_display - with_opti);
+    var percent_saving_total = 100 - toPercent(with_opti / full_display);
+    var percent_saving_labels = toPercent(opti_time_saving / current_label_time);
+
+    console.log('---');
+    console.log('* Current labels render duration: ' + current_label_time + ' ms.');
+    console.log('* The optimisation saves: ' + opti_time_saving + ' ms.');
+    console.log('* ' + percent_saving_total + '% time saved on the complete graph rendering.');
+    console.log('* ' + percent_saving_labels + '% time saved on the labels rendering.');
+  }
+
+  function benchmark(description, options) {
+    var nbLoops = 100;
+    var sum = 0, min = null, max = null;
+
+    for (var i = 0; i < nbLoops; ++i) {
+      var t0 = performance.now();
+      s.renderers[0].render(options);
+      var t1 = performance.now();
+      var time = t1 - t0;
+
+      sum += time;
+      if (!min || time < min) min = time;
+      if (!max || time > max) max = time;
+    }
+
+    var avg = sum /= nbLoops;
+
+    //console.log('* ' + description + ': [' + truncate(avg) + ', ' + truncate(min) + ', ' + truncate(max) + ']');
+    console.log('* ' + description + ': ' + truncate(avg) + ' ms.');
+
+    return avg;
+  }
 </script>

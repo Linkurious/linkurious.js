@@ -225,6 +225,8 @@
           prefix: this.options.prefix
         });
 
+    embedSettings.labelOpti = options.labelOpti;
+
     // Call the resize function:
     this.resize(false);
 

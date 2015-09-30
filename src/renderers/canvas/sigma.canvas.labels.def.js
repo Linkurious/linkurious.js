@@ -26,11 +26,15 @@
         labelOffsetY,
         alignment = settings('labelAlignment');
 
+    /*
     if (size <= settings('labelThreshold'))
       return;
+    */
 
     if (!node.label || typeof node.label !== 'string')
       return;
+
+    var opti = settings.labelOpti;
 
     fontSize = (settings('labelSize') === 'fixed') ?
       settings('defaultLabelSize') :
@@ -86,6 +90,7 @@
         break;
     }
 
+    if (opti) return;
     context.fillText(
       node.label,
       Math.round(node[prefix + 'x'] + labelOffsetX),
