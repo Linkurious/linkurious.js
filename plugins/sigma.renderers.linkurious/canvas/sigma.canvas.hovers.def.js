@@ -105,7 +105,7 @@
 
     if (alignment === 'center') {
       prepareLabelBackground(context);
-      drawHoverBorder(alignment, context, fontSize, node);
+      drawLabelBackground(alignment, context, fontSize, node);
     }
 
     // Display the label:
