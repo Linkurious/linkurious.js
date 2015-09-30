@@ -39,9 +39,8 @@
 
     if (alignment !== 'center') {
       prepareLabelBackground(context);
-      drawHoverBorder(alignment, context, fontSize, node);
+      drawLabelBackground(alignment, context, fontSize, node);
     }
-
 
     // Level:
     if (level) {
@@ -134,7 +133,7 @@
           labelOffsetY = - size - 2 * fontSize / 3;
           break;
         case 'inside':
-          labelWidth = getTextWidth(node.label);
+          labelWidth = sigma.utils.canvas.getTextWidth(node.label);
           if (labelWidth <= (size + fontSize / 3) * 2) {
             break;
           }
@@ -171,7 +170,7 @@
       }
     }
 
-    function drawHoverBorder(alignment, context, fontSize, node) {
+    function drawLabelBackground(alignment, context, fontSize, node) {
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
           labelWidth = sigma.utils.canvas.getTextWidth(context,

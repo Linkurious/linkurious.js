@@ -73,6 +73,11 @@
    * basically call requestAnimationFrame, interpolate the values and call the
    * refresh method during a specified duration.
    *
+   * Events fired though sigma instance:
+   * *************
+   * animate.start  Fired at the beginning of the animation.
+   * animate.end    Fired at the end of the animation.
+   *
    * Recognized parameters:
    * **********************
    * Here is the exhaustive list of every accepted parameters in the settings
@@ -134,6 +139,8 @@
     s.animations = s.animations || Object.create({});
     sigma.plugins.killAnimate(s);
 
+    s.dispatchEvent('animate.start'); // send a sigma event
+
     function step() {
       var p = (sigma.utils.dateNow() - start) / duration;
 
@@ -145,9 +152,12 @@
         });
 
         s.refresh({skipIndexation: true});
-        if (typeof o.onComplete === 'function')
+        if (typeof o.onComplete === 'function') {
           o.onComplete();
-      } else {
+        }
+        s.dispatchEvent('animate.end'); // send a sigma event
+      }
+      else {
         p = easing(p);
         nodes.forEach(function(node) {
           for (var k in animate)
