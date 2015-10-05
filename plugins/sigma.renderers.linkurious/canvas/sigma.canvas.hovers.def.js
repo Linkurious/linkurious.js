@@ -116,6 +116,7 @@
 
       var labelOffsetX = 0,
           labelOffsetY = fontSize / 3,
+          shouldRender = true,
           labelWidth;
       context.textAlign = "center";
 
@@ -132,6 +133,12 @@
         case 'top':
           labelOffsetY = - size - 2 * fontSize / 3;
           break;
+        case 'constrained':
+          labelWidth = sigma.utils.canvas.getTextWidth(node.label);
+          if (labelWidth > (size + fontSize / 3) * 2) {
+            shouldRender = false;
+          }
+          break;
         case 'inside':
           labelWidth = sigma.utils.canvas.getTextWidth(node.label);
           if (labelWidth <= (size + fontSize / 3) * 2) {
@@ -146,11 +153,13 @@
           break;
       }
 
-      context.fillText(
-        node.label,
-        Math.round(node[prefix + 'x'] + labelOffsetX),
-        Math.round(node[prefix + 'y'] + labelOffsetY)
-      );
+      if (shouldRender) {
+        context.fillText(
+          node.label,
+          Math.round(node[prefix + 'x'] + labelOffsetX),
+          Math.round(node[prefix + 'y'] + labelOffsetY)
+        );
+      }
     }
 
     function prepareLabelBackground(context) {
@@ -182,6 +191,8 @@
       if (node.label && typeof node.label === 'string') {
         // draw a rectangle for the label
         switch (alignment) {
+          case 'constrained':
+          /* falls through*/
           case 'center':
             y = Math.round(node[prefix + 'y'] - fontSize * 0.5 - 2);
             context.rect(x - w * 0.5, y, w, h);

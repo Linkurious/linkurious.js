@@ -344,6 +344,12 @@ To assign a shape renderer to an edge, simply set `edge.type='shape-name'` e.g. 
    * default value: `0`
    * available values: `0` (no shadow), `1` (low), `2`, `3`, `4`, `5` (high)
 
+ * **labelAlignment**
+   * Defines the positioning of labels relative to their nodes.
+   * type: *string*
+   * default value: `right`
+   * available values: `center`, `constrained`, `inside`, `right`, `left`, `top`, `bottom`
+
 You may override the default values when instantiating Sigma, e.g.:
 
 ````javascript
