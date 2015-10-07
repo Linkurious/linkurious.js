@@ -24,7 +24,10 @@
         labelWidth,
         labelOffsetX,
         labelOffsetY,
-        alignment = settings('labelAlignment');
+        alignment = settings('labelAlignment'),
+        textAlign,
+        fillStyle,
+        font;
 
     /*
     if (size <= settings('labelThreshold'))
@@ -34,11 +37,17 @@
     if (!node.label || typeof node.label !== 'string')
       return;
 
-    var opti = settings.labelOpti;
+    /* ~6% */
+
+    bm[1] = performance.now();
 
     fontSize = (settings('labelSize') === 'fixed') ?
       settings('defaultLabelSize') :
       settings('labelSizeRatio') * size;
+
+    /* ~8% */
+
+    bm[2] = performance.now();
 
     var new_font = (fontStyle ? fontStyle + ' ' : '') +
       fontSize + 'px ' +
@@ -46,21 +55,33 @@
         settings('activeFont') || settings('font') :
         settings('font'));
 
+    /* ~10% */
+
+    bm[3] = performance.now();
+
     if (infos && infos.ctx.font != new_font) { //use font value caching
-      context.font = new_font;
+      font = new_font;
       infos.ctx.font = new_font;
     } else {
-      context.font = new_font;
+      font = new_font;
     }
 
-    context.fillStyle =
+    /* ~10% */
+
+    bm[4] = performance.now();
+
+    fillStyle =
         (settings('labelColor') === 'node') ?
         node.color || settings('defaultNodeColor') :
         settings('defaultLabelColor');
 
     labelOffsetX = 0;
     labelOffsetY = fontSize / 3;
-    context.textAlign = 'center';
+    textAlign = 'center';
+
+    /* ~14% */
+
+    bm[5] = performance.now();
 
     switch (alignment) {
       case 'bottom':
@@ -69,7 +90,7 @@
       case 'center':
         break;
       case 'left':
-        context.textAlign = 'right';
+        textAlign = 'right';
         labelOffsetX = - size - borderSize - 3;
         break;
       case 'top':
@@ -86,15 +107,35 @@
       /* falls through*/
       default:
         labelOffsetX = size + borderSize + 3;
-        context.textAlign = 'left';
+        textAlign = 'left';
         break;
     }
 
-    if (opti) return;
-    context.fillText(
-      node.label,
-      Math.round(node[prefix + 'x'] + labelOffsetX),
-      Math.round(node[prefix + 'y'] + labelOffsetY)
-    );
+    /* ~16% */
+
+    bm[6] = performance.now();
+
+    var textX = Math.round(node[prefix + 'x'] + labelOffsetX);
+    var textY = Math.round(node[prefix + 'y'] + labelOffsetY);
+
+    /* ~26% */
+
+
+    //var w = Math.ceil(0.6 * node.label.length * fontSize);
+    //var h = Math.ceil(w * 3 / 4);
+
+    bm[7] = performance.now();
+
+    context.textAlign = textAlign;
+    context.fillStyle = fillStyle;
+    context.font = font;
+
+    /* 31% */
+
+    bm[8] = performance.now();
+
+    context.fillText(node.label, textX, textY);
+
+    /* 86% */
   };
 }).call(this);

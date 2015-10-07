@@ -68,8 +68,8 @@
  */
 var i,
     s,
-    N = 1500,
-    E = 500,
+    N = 10000,
+    E = 0,
     g = {
       nodes: [],
       edges: []
@@ -95,11 +95,13 @@ for (i = 0; i < E; i++)
     color: '#ccc'
   });
 
-// Instantiate sigma:
-s = new sigma({
-  graph: g,
-  container: 'graph-container'
-});
+  var bm = [ 0 ];
+
+  // Instantiate sigma:
+  s = new sigma({
+    graph: g,
+    container: 'graph-container'
+  });
 
   function truncate(nb) {
     return Math.round(nb * 1000) / 1000;
@@ -109,44 +111,61 @@ s = new sigma({
     return Math.round(nb * 100);
   }
 
+  /* Current approximate label node rendering for 10.000 nodes: 35 ms */
+  /* Current approximate rendering time without labels: 50 ms */
+
   function fullBenchmark() {
     console.log('Benchmark:');
-    var full_display = benchmark('with labels', null);
     var without_label = benchmark('without labels', {drawLabels:false});
-    var with_opti = benchmark('with label optimization', {labelOpti:true});
+    var full_display = benchmark('with labels', {});
+    //var with_opti = benchmark('with label optimization', {labelOpti:true});
 
-    var current_label_time = truncate(full_display - without_label);
-    var opti_time_saving = truncate(full_display - with_opti);
-    var percent_saving_total = 100 - toPercent(with_opti / full_display);
-    var percent_saving_labels = toPercent(opti_time_saving / current_label_time);
+    var current_label_time = toPercent((full_display - without_label) / 35);
+    console.log('* Currently takes ' + current_label_time + '% of the total label rendering.');
+//    var opti_label_time = truncate(with_opti - without_label);
+//    var opti_time_saving = truncate(full_display - with_opti);
+//    var opti_percent_total = toPercent((with_opti - without_label) / (full_display - without_label));
+    //var percent_saving_labels = toPercent(opti_time_saving / current_label_time);
 
-    console.log('---');
-    console.log('* Current labels render duration: ' + current_label_time + ' ms.');
-    console.log('* The optimisation saves: ' + opti_time_saving + ' ms.');
-    console.log('* ' + percent_saving_total + '% time saved on the complete graph rendering.');
-    console.log('* ' + percent_saving_labels + '% time saved on the labels rendering.');
+//    console.log('---');
+//    console.log('* Labels rendering duration: ' + truncate(full_display - without_label) + 'ms (' + (100 - toPercent(without_label / full_display)) + '% of total rendering time).');
+//    console.log('* Labels rendering duration with optimization: ' + opti_label_time + ' ms.');
+//    console.log('* The optimization saves: ' + opti_time_saving + ' ms.');
+//    console.log('* Opti uses ' + opti_percent_total + '% time.');
+    //console.log('* ' + percent_saving_labels + '% time saved on the labels rendering.');
   }
 
-  function benchmark(description, options) {
+  function benchmark() {
     var nbLoops = 100;
-    var sum = 0, min = null, max = null;
+
+    var sum = [];
+
+    console.log('Benchmarking...');
 
     for (var i = 0; i < nbLoops; ++i) {
-      var t0 = performance.now();
-      s.renderers[0].render(options);
-      var t1 = performance.now();
-      var time = t1 - t0;
+      bm = [ performance.now() ];
+      s.renderers[0].render();
+      bm.push(performance.now());
 
-      sum += time;
-      if (!min || time < min) min = time;
-      if (!max || time > max) max = time;
+      for (var j = 0; j < bm.length - 1; ++j) {
+        var time = bm[j+1] - bm[j];
+        if (sum[j] === undefined) {
+          sum[j] = 0;
+        }
+        sum[j] += time;
+      }
     }
 
-    var avg = sum /= nbLoops;
+    for (var k = 0; k < sum.length; ++k) {
+      console.log('* Section ' + k + '-' + (k + 1) + ': ' + truncate(sum[k] / nbLoops) + ' ms.');
+    }
+  }
 
-    //console.log('* ' + description + ': [' + truncate(avg) + ', ' + truncate(min) + ', ' + truncate(max) + ']');
-    console.log('* ' + description + ': ' + truncate(avg) + ' ms.');
+  function renderNormal() {
+    s.renderers[0].render();
+  }
 
-    return avg;
+  function renderOpti() {
+    s.renderers[0].render({labelOpti:true});
   }
 </script>
