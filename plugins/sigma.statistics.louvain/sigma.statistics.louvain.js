@@ -418,7 +418,7 @@
      * @return {object}       Dictionary of node id => community id
      */
     core.getPartitions = function(level) {
-      if (level !== undefined && (level < 1 || level > dendogram.length - 1))
+      if (level !== undefined && (level < 0 || level > dendogram.length - 1))
         throw new RangeError('Invalid argument: "level" is not between 1 and ' + dendogram.length - 1 + ' included.');
 
       return partition_at_level(dendogram, level || dendogram.length - 1);
