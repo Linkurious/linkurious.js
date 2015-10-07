@@ -419,7 +419,7 @@
      */
     core.getPartitions = function(level) {
       if (level !== undefined && (level < 0 || level > dendogram.length - 1))
-        throw new RangeError('Invalid argument: "level" is not between 1 and ' + dendogram.length - 1 + ' included.');
+        throw new RangeError('Invalid argument: "level" is not between 0 and ' + dendogram.length - 1 + ' included.');
 
       return partition_at_level(dendogram, level || dendogram.length - 1);
     };
