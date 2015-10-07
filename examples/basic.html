@@ -95,7 +95,16 @@ for (i = 0; i < E; i++)
     color: '#ccc'
   });
 
-  var bm = [ 0 ];
+  var global = {bm:[ ]};
+
+  function pushBm() {
+    global.bm.push(performance.now());
+  }
+
+  function resetBm() {
+    global.bm = [];
+
+  }
 
   // Instantiate sigma:
   s = new sigma({
@@ -115,50 +124,34 @@ for (i = 0; i < E; i++)
   /* Current approximate rendering time without labels: 50 ms */
 
   function fullBenchmark() {
-    console.log('Benchmark:');
-    var without_label = benchmark('without labels', {drawLabels:false});
-    var full_display = benchmark('with labels', {});
-    //var with_opti = benchmark('with label optimization', {labelOpti:true});
+    console.log('Benchmarking...');
+    var without_labels = benchmark({drawLabels:false});
+    console.log('* Time without displaying labels: ' + truncate(without_labels) + ' ms.');
 
-    var current_label_time = toPercent((full_display - without_label) / 35);
-    console.log('* Currently takes ' + current_label_time + '% of the total label rendering.');
-//    var opti_label_time = truncate(with_opti - without_label);
-//    var opti_time_saving = truncate(full_display - with_opti);
-//    var opti_percent_total = toPercent((with_opti - without_label) / (full_display - without_label));
-    //var percent_saving_labels = toPercent(opti_time_saving / current_label_time);
+    var with_labels = benchmark({});
+    console.log('* Time if displaying labels: ' + truncate(with_labels) + ' ms.');
 
-//    console.log('---');
-//    console.log('* Labels rendering duration: ' + truncate(full_display - without_label) + 'ms (' + (100 - toPercent(without_label / full_display)) + '% of total rendering time).');
-//    console.log('* Labels rendering duration with optimization: ' + opti_label_time + ' ms.');
-//    console.log('* The optimization saves: ' + opti_time_saving + ' ms.');
-//    console.log('* Opti uses ' + opti_percent_total + '% time.');
-    //console.log('* ' + percent_saving_labels + '% time saved on the labels rendering.');
+    console.log('* Labels took ' + truncate(with_labels - without_labels) + ' ms to display.');
   }
 
-  function benchmark() {
-    var nbLoops = 100;
+  function benchmark(options) {
+    var nbLoops = 50;
 
-    var sum = [];
-
-    console.log('Benchmarking...');
+    var min = null;
 
     for (var i = 0; i < nbLoops; ++i) {
-      bm = [ performance.now() ];
-      s.renderers[0].render();
-      bm.push(performance.now());
+      var t0  = performance.now();
+      s.renderers[0].render(options);
+      var t1 = performance.now();
 
-      for (var j = 0; j < bm.length - 1; ++j) {
-        var time = bm[j+1] - bm[j];
-        if (sum[j] === undefined) {
-          sum[j] = 0;
-        }
-        sum[j] += time;
+      var time = t1 - t0;
+
+      if (!min || time < min) {
+        min = time;
       }
     }
 
-    for (var k = 0; k < sum.length; ++k) {
-      console.log('* Section ' + k + '-' + (k + 1) + ': ' + truncate(sum[k] / nbLoops) + ' ms.');
-    }
+    return min;
   }
 
   function renderNormal() {
@@ -168,4 +161,6 @@ for (i = 0; i < E; i++)
   function renderOpti() {
     s.renderers[0].render({labelOpti:true});
   }
+
+  fullBenchmark();
 </script>

@@ -16,6 +16,8 @@
    * @param  {object?}                  infos    The batch infos.
    */
   sigma.canvas.labels.def = function(node, context, settings, infos) {
+    /* < 1 ms */
+
     var fontSize,
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'] || 1,
@@ -37,27 +39,17 @@
     if (!node.label || typeof node.label !== 'string')
       return;
 
-    /* ~6% */
-
-    bm[1] = performance.now();
+    /* ~5ms */
 
     fontSize = (settings('labelSize') === 'fixed') ?
       settings('defaultLabelSize') :
       settings('labelSizeRatio') * size;
-
-    /* ~8% */
-
-    bm[2] = performance.now();
 
     var new_font = (fontStyle ? fontStyle + ' ' : '') +
       fontSize + 'px ' +
       (node.active ?
         settings('activeFont') || settings('font') :
         settings('font'));
-
-    /* ~10% */
-
-    bm[3] = performance.now();
 
     if (infos && infos.ctx.font != new_font) { //use font value caching
       font = new_font;
@@ -66,9 +58,7 @@
       font = new_font;
     }
 
-    /* ~10% */
-
-    bm[4] = performance.now();
+    /* < 7 ms */
 
     fillStyle =
         (settings('labelColor') === 'node') ?
@@ -79,9 +69,7 @@
     labelOffsetY = fontSize / 3;
     textAlign = 'center';
 
-    /* ~14% */
-
-    bm[5] = performance.now();
+    /* ~8 ms */
 
     switch (alignment) {
       case 'bottom':
@@ -111,31 +99,24 @@
         break;
     }
 
-    /* ~16% */
-
-    bm[6] = performance.now();
+    /* ~9 ms */
 
     var textX = Math.round(node[prefix + 'x'] + labelOffsetX);
     var textY = Math.round(node[prefix + 'y'] + labelOffsetY);
 
-    /* ~26% */
-
+    /* 10~13 ms */
 
     //var w = Math.ceil(0.6 * node.label.length * fontSize);
     //var h = Math.ceil(w * 3 / 4);
-
-    bm[7] = performance.now();
 
     context.textAlign = textAlign;
     context.fillStyle = fillStyle;
     context.font = font;
 
-    /* 31% */
-
-    bm[8] = performance.now();
+    /* 13~14 ms */
 
     context.fillText(node.label, textX, textY);
 
-    /* 86% */
+    /* ~34 ms */
   };
 }).call(this);
