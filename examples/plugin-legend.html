@@ -1,3 +1,4 @@
+<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 <!-- START SIGMA IMPORTS -->
 <script src="../src/sigma.core.js"></script>
 <script src="../src/conrad.js"></script>
@@ -46,101 +47,190 @@
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
 
+<script src="../plugins/sigma.plugins.colorbrewer/sigma.plugins.colorbrewer.js"></script>
+<script src="../plugins/sigma.plugins.design/sigma.plugins.design.js"></script>
 <script src="../plugins/sigma.plugins.legend/sigma.plugins.legend.js"></script>
+
+<script src="../plugins/sigma.renderers.linkurious/settings.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.nodes.def.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.nodes.fast.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.edges.def.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.edges.fast.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.edges.arrow.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.labels.def.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.hovers.def.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.def.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.cross.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.diamond.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.equilateral.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.square.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.star.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.def.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.curve.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.arrow.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+
+<script src="../plugins/sigma.renderers.customEdgeShapes/sigma.canvas.edges.dashed.js"></script>
+<script src="../plugins/sigma.renderers.customEdgeShapes/sigma.canvas.edges.dotted.js"></script>
+<script src="../plugins/sigma.renderers.customEdgeShapes/sigma.canvas.edges.parallel.js"></script>
+<script src="../plugins/sigma.renderers.customEdgeShapes/sigma.canvas.edges.tapered.js"></script>
+<script src="../plugins/sigma.renderers.customEdgeShapes/sigma.canvas.edgehovers.dashed.js"></script>
+<script src="../plugins/sigma.renderers.customEdgeShapes/sigma.canvas.edgehovers.dotted.js"></script>
+<script src="../plugins/sigma.renderers.customEdgeShapes/sigma.canvas.edgehovers.parallel.js"></script>
+<script src="../plugins/sigma.renderers.customEdgeShapes/sigma.canvas.edgehovers.tapered.js"></script>
+
 <div id="container">
   <style>
-    #graph-container {
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      position: absolute;
-    }
+    #graph-container { top: 0; bottom: 0; left: 0; right: 0; position: absolute; }
+    #legend-container { top: 0; bottom: 0; left: 0; right: 0; position: absolute; }
   </style>
+  <canvas id="legend-container" ></canvas>
   <div id="graph-container"></div>
 </div>
 <script>
+  var legendCanvas = document.getElementById('legend-container');
+  legendCanvas.width = window.innerWidth;
+  legendCanvas.height = window.innerHeight;
+
+  // Create a custom color palette:
+  var myPalette = {
+    categoryScheme: {
+      'Man': '#7fc97f',
+      'Woman': '#fdc086',
+      'Unknown': '#1188AA'
+    },
+    nameScheme: {
+      'Lorem ipsum': {
+        font: 'FontAwesome',
+        scale: 1.0,
+        color: '#000',
+        content: "\uF11a"
+      },
+      'Dolor': {
+        font: 'FontAwesome',
+        scale: 1.0,
+        color: '#d22',
+        content: "\uF11b"
+      },
+      'Sit Amet': {
+        font: 'FontAwesome',
+        scale: 1.0,
+        color: '#2d2',
+        content: "\uF11c"
+      },
+      'Consectetur': {
+        font: 'FontAwesome',
+        scale: 1.0,
+        color: '#22d',
+        content: "\uF11d"
+      }
+    },
+    relationTypeScheme: {
+      'Love': '#81A4E3',
+      'Hatred': '#CC2323'
+    }
+  };
+
   var i,
     s,
-    N = 100,
+    N = 50,
     E = 50,
     g = {
-      nodes: [],
-      edges: []
+      nodes:[],
+      edges:[]
     };
 
-  // Generate a random graph:
-  for (i = 0; i < N / 2; i++)
-    g.nodes.push({
-      id: 'n' + i,
-      label: 'Node ' + i,
-      x: Math.random(),
-      y: Math.random(),
-      size: Math.round(Math.random() * 10),
-      color: '#990066',
-      data: {
+  function randomValue(values) {
+    return values[Math.floor(Math.random() * values.length)];
+  }
 
-      },
-      categories: ['catA', 'catB']
-    });
-
-  for (i = N / 2; i < N; i++)
+  for (i = 0; i < N; i++)
     g.nodes.push({
-      id: 'n' + i,
+      id: i,
       label: 'Node ' + i,
-      x: Math.random(),
-      y: Math.random(),
-      size: Math.round(Math.random() * 10),
-      color: '#1188BB',
+      x: Math.random() * 0.9,
+      y: Math.random() * 0.9,
+      size: 1,
       data: {
+        properties: {
+          family_name: randomValue(['Lorem ipsum', 'Dolor', 'Sit Amet', 'Consectetur']),
+          age: Math.round(Math.random() * 90) + 1
+
+        },
+        categories: {
+          '0': randomValue(['Man', 'Woman', 'Unknown'])
+        }
       }
     });
 
   for (i = 0; i < E; i++)
     g.edges.push({
-      id: 'e' + i,
-      source: 'n' + (Math.random() * N | 0),
-      target: 'n' + (Math.random() * N | 0),
-      size: Math.random(),
-      color: '#888888',
+      id: i,
+      source: Math.floor(Math.random() * N),
+      target: Math.floor(Math.random() * N),
+      size: 1,
       data: {
         properties: {
-        },
-        type: 'catA'
+          relation_strength: Math.round(Math.random() * 100),
+          relation_type: randomValue(['Love, Hatred'])
+        }
       }
     });
 
-  var small = {
-    nodes: [
-      {id:'n1', label:'Node 1', size:15, color:'#0000FF', x:20, y:20, data:{}},
-      {id:'n2', label:'Node 2', size:20, color:'#00FF00', x:80, y:80, data:{}},
-      {id:'n3', label:'Node 3', size:30, color:'#FF0000', x:30, y:70, data:{}}
-    ],
-    edges: [
-      {id:'e1', source:'n1', target:'n2', label:'Edge 1', size:1, color:'#AAAAAA'},
-      {id:'e2', source:'n2', target:'n3', label:'Edge 2', size:2, color:'#BBBBBB'},
-      {id:'e3', source:'n3', target:'n1', label:'Edge 3', size:3, color:'#FF0000'}
-    ]
+  var myStyles = {
+    nodes: {
+      label: {
+        by: 'id',
+        format: function (value) {
+          return '#' + value;
+        }
+      },
+      size: {
+        by: 'data.properties.age',
+        bins: 7,
+        min: 3,
+        max: 15
+      },
+      color: {
+        by: 'data.categories.0',
+        scheme: 'categoryScheme'
+      },
+      icon: {
+        by: 'data.properties.family_name',
+        scheme: 'nameScheme'
+      }
+    },
+    edges: {
+      color: {
+        by: 'data.properties.relation_type',
+        scheme: 'relationTypeScheme'
+      },
+      size: {
+        by: 'data.properties.relation_strength',
+        bins: 7,
+        min: 1,
+        max: 10
+      }
+    }
   };
 
-  // Instantiate sigma:
   s = new sigma({
     graph: g,
     renderer: {
-      container: document.getElementById('graph-container')
+      container: document.getElementById('graph-container'),
+      type: 'canvas'
+    },
+    settings: {
+      labelThreshold:1
     }
   });
 
-  s.toGraphML({
-    nodesAttributes: 'data',
-    nodesCategories: 'categories',
-    nodesCategoriesName: 'categories',
-    edgesAttributes: 'data.properties',
-    edgesCategories: 'data.type',
-    edgesCategoriesName: 'type',
-    filename: 'myGraph.graphml',
-    download:true,
-    renderer: s.renderers[0],
-    undirectedEdges:true
+  var design = sigma.plugins.design(s, {
+    styles: myStyles,
+    palette: myPalette
   });
+
+  design.apply();
+
+  sigma.plugins.drawLegend(s, legendCanvas);
 </script>
