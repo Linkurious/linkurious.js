@@ -84,13 +84,13 @@
     #graph-container { top: 0; bottom: 0; left: 0; right: 0; position: absolute; }
     #legend-container { top: 0; bottom: 0; left: 0; right: 0; position: absolute; }
   </style>
-  <canvas id="legend-container" ></canvas>
+  <canvas id="legend-container"></canvas>
   <div id="graph-container"></div>
 </div>
 <script>
-  var legendCanvas = document.getElementById('legend-container');
-  legendCanvas.width = window.innerWidth;
-  legendCanvas.height = window.innerHeight;
+  var legendContainer = document.getElementById('legend-container');
+  legendContainer.width = window.innerWidth;
+  legendContainer.height = window.innerHeight;
 
   // Create a custom color palette:
   var myPalette = {
@@ -221,7 +221,8 @@
       type: 'canvas'
     },
     settings: {
-      labelThreshold:1
+      labelThreshold:1,
+      edgeColor:'default'
     }
   });
 
@@ -232,5 +233,8 @@
 
   design.apply();
 
-  sigma.plugins.drawLegend(s, legendCanvas);
+  var legendPlugin = sigma.plugins.legend(s);
+
+  legendPlugin.getWidget('edge_size').setUnit('%');
+  legendPlugin.build(legendContainer);
 </script>
