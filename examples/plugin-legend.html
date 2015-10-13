@@ -82,16 +82,10 @@
 <div id="container">
   <style>
     #graph-container { top: 0; bottom: 0; left: 0; right: 0; position: absolute; }
-    #legend-container { top: 0; bottom: 0; left: 0; right: 0; position: absolute; }
   </style>
-  <canvas id="legend-container"></canvas>
   <div id="graph-container"></div>
 </div>
 <script>
-  var legendContainer = document.getElementById('legend-container');
-  legendContainer.width = window.innerWidth;
-  legendContainer.height = window.innerHeight;
-
   // Create a custom color palette:
   var myPalette = {
     categoryScheme: {
@@ -236,5 +230,7 @@
   var legendPlugin = sigma.plugins.legend(s);
 
   legendPlugin.getWidget('edge_size').setUnit('%');
-  legendPlugin.build(legendContainer);
+  //var textWidget = legendPlugin.addTextWidget('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.')
+  legendPlugin.build();
+  legendPlugin.setPlacement('right');
 </script>

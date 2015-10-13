@@ -1,12 +1,19 @@
 /*
-  Let's summarize.
-  * One "caption format" per node category
-  * Color is bound to an attribute OR the category
-    - If the attribute is qualitative (or is category) -> random color
-    - If the attribute is quantitative -> gradient
-  * Icon is bound to an attribute OR the category (only qualitative)
-  * Size is bound a quantitative attribute
-*/
+  API:
+  * setText (widget)
+  * addWidget(elementType, visualVar)
+  * removeWidget(widget)/(elementType, visualVar, ?unit)
+  * addTextWidget(text)
+  * buildWidgets (legend)
+  * setPosition(x, y) (widget)
+  * setPlacement(top|bottom|right|left)
+ */
+
+/*
+  Settings:
+  * fontSize
+  *
+ */
 
 ;(function(undefined) {
   'use strict';
@@ -94,33 +101,19 @@
     return img;
   }
 
-  var widgetWidth = 200,
-      legendFontSize = 20,
+  var legendWidth = 200,
+      legendFontSize = 15,
       legendFontFamily = 'Arial',
       legendColor = 'black',
-      leftMargin = 10,
-      backgroundBorderWidth = 2,
-      widgetMargin = 5;
-
-  /**
-   *
-   * @param s                   The sigma instance
-   * @param canvas              The canvas object on which we must draw the legend
-   * @param config  {{Object}}  nbRows, nbColumns, ordering
-   *
-   * ordering: define the ordering of widgets: list of:
-   * 'node_size', 'node_icons', 'node_colors', 'node_text', 'edge_size', 'edge_direction'
-   * 'edge_colors', 'edge_text'
-   */
-  sigma.plugins.drawLegend = function (s, canvas) {
-    var designPlugin = sigma.plugins.design(s);
-
-    displaySvgOnCanvas(canvas, drawQuantitativeLegend(s.graph, designPlugin, 'node', null), 10, 10);
-    displaySvgOnCanvas(canvas, drawQuantitativeLegend(s.graph, designPlugin, 'edge', '%'), 10, 160);
-    displaySvgOnCanvas(canvas, drawQualitativeLegend(designPlugin, 'node', 'color'), 10, 300);
-    displaySvgOnCanvas(canvas, drawQualitativeLegend(designPlugin, 'node', 'icon'), 10, 550);
-    displaySvgOnCanvas(canvas, drawQualitativeLegend(designPlugin, 'edge', 'color'), 10, 800);
-  };
+      legendTitleFontFamily = 'Arial',
+      legendTitleFontSize = 25,
+      legendTitleFontColor = 'black',
+      legendBackgroundColor = 'white',
+      legendBorderColor =  'black',
+      legendBorderWidth = 2,
+      legendInnerMargin = 15,
+      legendOuterMargin = 5,
+      totalWidgetWidth = legendWidth + (legendBorderWidth + legendOuterMargin) * 2;
 
   sigma.plugins.legend = function (s) {
     if (!s.legendPlusinInstance) {
@@ -132,23 +125,38 @@
 
 
   function LegendPlugin(s) {
+    var self = this;
+
     this.fontURLs = [];
     this.active = true;
     this.sigmaInstance = s;
     this.designPlugin = sigma.plugins.design(s);
     this.textWidgetCounter = 1;
+    this.enoughSpace = false;
+    this.placement = 'bottom';
+
+    var renderer = s.renderers[0]; // TODO: handle several renderers?
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = renderer.container.offsetWidth;
+    this.canvas.height = renderer.container.offsetHeight;
+    renderer.container.appendChild(this.canvas);
+
+    window.addEventListener('resize', function () {
+      self.canvas.width = renderer.container.offsetWidth;
+      self.canvas.height = renderer.container.offsetHeight;
+      self.build();
+      self.setupLayout();
+    });
 
     var d = this.designPlugin;
 
     this.widgets = {
-      'node_size': new LegendWidget(s, d, 'quantitative', 'node'),
-      'edge_size': new LegendWidget(s, d, 'quantitative', 'edge'),
-      'node_color': new LegendWidget(s, d, 'qualitative', 'node', 'color'),
-      'edge_color': new LegendWidget(s, d, 'qualitative', 'edge', 'color'),
-      'node_icon': new LegendWidget(s, d, 'qualitative', 'node', 'icon')
+      'node_size': new LegendWidget(this.canvas, s, d, 'quantitative', 'node'),
+      'edge_size': new LegendWidget(this.canvas, s, d, 'quantitative', 'edge'),
+      'node_color': new LegendWidget(this.canvas, s, d, 'qualitative', 'node', 'color'),
+      'edge_color': new LegendWidget(this.canvas, s, d, 'qualitative', 'edge', 'color'),
+      'node_icon': new LegendWidget(this.canvas, s, d, 'qualitative', 'node', 'icon')
     };
-
-    this.setPlacement('bottom');
   }
 
   LegendPlugin.prototype.init = function (fontURLs) {
@@ -159,64 +167,136 @@
     return this.widgets[widget_id];
   };
 
-  LegendPlugin.prototype.build = function (canvas) {
-    iterate(this.widgets, function (value, key) {
-      value.build(canvas);
+  LegendPlugin.prototype.build = function () {
+    var self = this;
+    iterate(this.widgets, function (value) {
+      value.build(function () {
+        return self.enoughSpace && self.active;
+      });
     });
   };
 
-  LegendPlugin.prototype.setPlacement = function (newPlacement, canvas) {
+  LegendPlugin.prototype.setPlacement = function (newPlacement) {
     if (['top', 'bottom', 'right', 'left'].indexOf(newPlacement) === -1) {
       return;
     }
 
     this.placement = newPlacement;
-    var horizontal = newPlacement === 'top' || newPlacement === 'bottom',
-        maxHeight = canvas.height,
-        maxWidth = canvas.width,
-        ordered = getOrderedWidgets(this.widgets);
+    this.setupLayout();
+  };
 
-    if (horizontal) {
+  LegendPlugin.prototype.setupLayout = function () {
+    var horizontal = this.placement === 'top' || this.placement === 'bottom',
+        maxHeight = this.canvas.height,
+        maxWidth = this.canvas.width,
+        ordered = getOrderedWidgets(this.widgets),
+        cols,
+        height = horizontal ? ordered[0].svg.height : maxHeight,
+        maxNbCols = horizontal ? Math.floor(maxWidth / totalWidgetWidth) : 1,
+        layoutOk = false,
+        notEnoughSpace = false;
 
-    } else {
-      var cols = [];
+    while (!layoutOk) {
+      layoutOk = true;
+      if (height > maxHeight || maxNbCols * totalWidgetWidth > maxWidth) {
+        notEnoughSpace = true;
+        break;
+      }
+
+      cols = [];
+      for (var i = 0; i < maxNbCols; ++i) {
+        cols.push({widgets: [], height: 0});
+      }
+
+      for (var i = 0; i < ordered.length; ++i) {
+        var colFound = false;
+        for (var j = 0; j < cols.length; ++j) {
+          if (ordered[i].svg.height + cols[j].height <= height) {
+            cols[j].widgets.push(ordered[i]);
+            cols[j].height += ordered[i].svg.height;
+            colFound = true;
+            break;
+          }
+        }
+
+        if (!colFound) {
+          if (horizontal) {
+            height *= 1.2;
+          } else {
+            maxNbCols += 1;
+          }
+          layoutOk = false;
+          break;
+        }
+      }
     }
+
+    if (!notEnoughSpace) {
+        cols.sort(this.placement === 'right'
+          ? function (c1, c2) { return c1.height < c2.height ?  -1 : 1; }
+          : function (c1, c2) { return c1.height > c2.height ? -1 : 1; }
+        );
+
+      for (var i = 0; i < cols.length; ++i) {
+        var h = this.placement === 'bottom' ? height - cols[i].height : 0;
+        for (var j = 0; j < cols[i].widgets.length; ++j) {
+          cols[i].widgets[j].x = totalWidgetWidth * i + (this.placement === 'right' ? (maxWidth - cols.length * totalWidgetWidth) : legendInnerMargin);
+          cols[i].widgets[j].y = h + (this.placement === 'bottom' ? (maxHeight - height - legendInnerMargin) : legendInnerMargin);
+          h += cols[i].widgets[j].svg.height;
+        }
+      }
+    }
+
+    this.draw();
+    this.enoughSpace = !notEnoughSpace;
   };
 
   function getOrderedWidgets(widgets) {
     var ordered = [];
     iterate(widgets, function (value) {
-      ordered.push(value);
+      if (value.active) {
+        ordered.push(value);
+      }
     });
 
     ordered.sort(function (w1, w2) {
-      return w1.svg.height < w2.svg.height ? -1 : 1;
+      return w1.svg.height > w2.svg.height ? -1 : 1;
     });
 
     return ordered;
   }
 
-  LegendPlugin.prototype.draw = function (canvas) {
-    if (this.active) {
-      iterate(this.widgets, function (value, key) {
-        value.draw(canvas);
+  LegendPlugin.prototype.clear = function () {
+    var context = this.canvas.getContext('2d');
+
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  };
+
+  LegendPlugin.prototype.draw = function () {
+    this.clear();
+    if (this.active && this.enoughSpace) {
+      iterate(this.widgets, function (value) {
+        value.draw();
       });
     }
   };
 
   LegendPlugin.prototype.addTextWidget = function (text) {
-    var widget = new LegendWidget(this.sigmaInstance, this.designPlugin, 'text');
+    var widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, 'text');
 
     widget.text = text;
     widget.id = 'text' + this.textWidgetCounter++;
     widget.build();
 
     this.widgets[widget.id] = widget;
+
+    return widget;
   };
 
   LegendPlugin.prototype.removeWidget = function (widget) {
     if (this.widgets[widget.id]) {
-      delete this.widgets[widget.id];
+      this.widgets[widget.id] = undefined;
     }
   };
 
@@ -224,7 +304,8 @@
     this.active = !this.active;
   };
 
-  function LegendWidget(sigmaInstance, designPlugin, legendType, elementType, visualVar) {
+  function LegendWidget(canvas, sigmaInstance, designPlugin, legendType, elementType, visualVar) {
+    this.canvas = canvas;
     this.sigmaInstance = sigmaInstance;
     this.designPlugin = designPlugin;
     this.legendType = legendType;
@@ -238,25 +319,30 @@
     this.img = null;
   }
 
-  LegendWidget.prototype.build = function (canvas) {
+  LegendWidget.prototype.build = function (displayWhenBuilt) {
+    var self = this;
+
     if (this.legendType === 'quantitative') {
-      this.svg = drawQuantitativeLegend(this.sigmaInstance.graph, this.designPlugin, this.elementType, null)
+      this.svg = drawSizeLegend(this.sigmaInstance.graph, this.designPlugin, this.elementType, null)
     } else if (this.legendType === 'qualitative') {
-      this.svg = drawQualitativeLegend(this.designPlugin, this.elementType, this.visualVar);
+      this.svg = drawNonSizeLegend(this.designPlugin, this.elementType, this.visualVar);
     } else {
       this.svg = document.createElement('svg');
-      drawText(this.svg, this.text, 0, 0);
+      drawText(this.svg, this.text, 0, 0, null, null, null, null, 'text-before-edge');
+      this.svg.width = totalWidgetWidth;
+      this.svg.height = 300;
     }
 
-    var self = this;
-    this.img = canvas
-      ? buildImageFromSvg(this.svg, this.fontURLs, function () { self.draw(canvas); })
-      : buildImageFromSvg(this.svg, this.fontURLs);
+    this.img = buildImageFromSvg(this.svg, this.fontURLs, function () {
+      if (displayWhenBuilt() && self.active) {
+        self.draw();
+      }
+    });
   };
 
-  LegendWidget.prototype.draw = function (canvas) {
+  LegendWidget.prototype.draw = function () {
     if (this.active) {
-      canvas.getContext('2d').drawImage(this.img, this.x, this.y);
+      this.canvas.getContext('2d').drawImage(this.img, this.x, this.y);
     }
   };
 
@@ -280,11 +366,11 @@
    * @param unit
    * @returns {*}
    */
-  function drawQuantitativeLegend(graph, designPluginInstance, elementType, unit) {
+  function drawSizeLegend(graph, designPluginInstance, elementType, unit) {
     var svg = document.createElement('svg'),
         elts = elementType === 'node' ? graph.nodes() : graph.edges(),
         styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges,
-        titleMargin = legendFontSize * 2.4,
+        titleMargin = legendTitleFontSize + legendInnerMargin * 2,
         propName = styles.size.by,
         minValue = elts.length > 0 ? strToObjectRef(elts[0], propName) : 0,
         maxValue = minValue,
@@ -315,68 +401,60 @@
 
       height = titleMargin + bigElementSize * 2 + 10;
 
-      draw(svg, 'rect', {x:backgroundBorderWidth, y:backgroundBorderWidth, width:widgetWidth, height:height, stroke:'black', 'stroke-width':backgroundBorderWidth, fill:'black', rx:10, ry:10, 'fill-opacity': 0.1});
+      draw(svg, 'rect', {x:legendBorderWidth, y:legendBorderWidth, width:legendWidth, height:height, stroke:legendBorderColor, 'stroke-width':legendBorderWidth, fill:legendBackgroundColor, rx:10, ry:10});
 
       drawWidgetTitle(svg, getPropertyName(styles.size.by), unit);
-      drawText(svg, maxValue, widgetWidth / 2, titleMargin + legendFontSize);
-      drawText(svg, meanValue, widgetWidth / 2, titleMargin + 2 * legendFontSize);
-      drawText(svg, minValue, widgetWidth / 2, titleMargin + 3 * legendFontSize);
+      drawText(svg, maxValue, legendWidth / 2, titleMargin + legendFontSize);
+      drawText(svg, meanValue, legendWidth / 2, titleMargin + 2 * legendFontSize);
+      drawText(svg, minValue, legendWidth / 2, titleMargin + 3 * legendFontSize);
 
-      drawCircle(svg, bigElementSize + circleBorerWidth + leftMargin, titleMargin + bigElementSize, bigElementSize, 'white', 'black', circleBorerWidth);
-      drawCircle(svg, bigElementSize + circleBorerWidth + leftMargin, titleMargin + bigElementSize * 2 - mediumElementSize, mediumElementSize, 'white', 'black', circleBorerWidth);
-      drawCircle(svg, bigElementSize + circleBorerWidth + leftMargin, titleMargin + bigElementSize * 2 - smallElementSize, smallElementSize, 'white', 'black', circleBorerWidth);
+      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize, bigElementSize, 'white', 'black', circleBorerWidth);
+      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize * 2 - mediumElementSize, mediumElementSize, 'white', 'black', circleBorerWidth);
+      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize * 2 - smallElementSize, smallElementSize, 'white', 'black', circleBorerWidth);
 
     } else if (elementType === 'edge') {
       var labelOffsetY = titleMargin + bigElementSize * 1.7,
-          rectWidth = (widgetWidth - leftMargin * 2) / 3;
+          rectWidth = (legendWidth - legendInnerMargin * 2) / 3;
 
       height = labelOffsetY + legendFontSize;
 
 
-      draw(svg, 'rect', {x:backgroundBorderWidth, y:backgroundBorderWidth, width:widgetWidth, height:height, stroke:'black', 'stroke-width':backgroundBorderWidth, fill:'black', rx:10, ry:10, 'fill-opacity': 0.1});
+      draw(svg, 'rect', {x:legendBorderWidth, y:legendBorderWidth, width:legendWidth, height:height, stroke:legendBorderColor, 'stroke-width':legendBorderWidth, fill:legendBackgroundColor, rx:10, ry:10});
       drawWidgetTitle(svg, getPropertyName(styles.size.by), unit);
 
-      draw(svg, 'rect', {x:leftMargin, y:titleMargin + 5, width:rectWidth, height:bigElementSize / 2, fill:'black'});
-      draw(svg, 'rect', {x:leftMargin + rectWidth, y:titleMargin + 5 + (bigElementSize - mediumElementSize) / 4, width:rectWidth, height:mediumElementSize / 2, fill:'black'});
-      draw(svg, 'rect', {x:leftMargin + 2 * rectWidth, y:titleMargin + 5 + (bigElementSize - smallElementSize) / 4, width:rectWidth, height:smallElementSize / 2, fill:'black'});
+      draw(svg, 'rect', {x:legendInnerMargin, y:titleMargin + 5, width:rectWidth, height:bigElementSize / 2, fill:'black'});
+      draw(svg, 'rect', {x:legendInnerMargin + rectWidth, y:titleMargin + 5 + (bigElementSize - mediumElementSize) / 4, width:rectWidth, height:mediumElementSize / 2, fill:'black'});
+      draw(svg, 'rect', {x:legendInnerMargin + 2 * rectWidth, y:titleMargin + 5 + (bigElementSize - smallElementSize) / 4, width:rectWidth, height:smallElementSize / 2, fill:'black'});
 
-      drawText(svg, maxValue, leftMargin + rectWidth * 0.5, labelOffsetY, 'middle');
-      drawText(svg, meanValue, leftMargin + rectWidth * 1.5, labelOffsetY, 'middle');
-      drawText(svg, minValue, leftMargin + rectWidth * 2.5, labelOffsetY, 'middle');
+      drawText(svg, maxValue, legendInnerMargin + rectWidth * 0.5, labelOffsetY, 'middle');
+      drawText(svg, meanValue, legendInnerMargin + rectWidth * 1.5, labelOffsetY, 'middle');
+      drawText(svg, minValue, legendInnerMargin + rectWidth * 2.5, labelOffsetY, 'middle');
     }
 
-    svg.width = widgetWidth + backgroundBorderWidth * 2;
-    svg.height = height + backgroundBorderWidth * 2;
+    svg.width = totalWidgetWidth;
+    svg.height = height + (legendBorderWidth + legendOuterMargin) * 2;
 
     return svg;
   }
 
-  /**
-   *
-   * @param nodes
-   * @param nodeStyles
-   * @param palette
-   * @param elementType     'node' or 'edge'
-   * @param legendType      'color' or 'icon'
-   */
-  function drawQualitativeLegend(designPluginInstance, elementType, legendType) {
+  function drawNonSizeLegend(designPluginInstance, elementType, legendType) {
     var svg = document.createElement('svg'),
         styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges,
         palette = designPluginInstance.palette,
-        titleMargin = legendFontSize * 3.5,
+        titleMargin = legendTitleFontSize + legendInnerMargin * 2.5,
         lineHeight = legendFontSize + 20,
         scheme = palette[styles[legendType].scheme],
         height = lineHeight * Object.keys(scheme).length + titleMargin - 10,
-        leftColumnWidth = widgetWidth / 3,
+        leftColumnWidth = legendWidth / 3,
         offsetY = titleMargin;
 
-    draw(svg, 'rect', {x:backgroundBorderWidth, y:backgroundBorderWidth, width:widgetWidth, height:height, stroke:'black', 'stroke-width':backgroundBorderWidth, fill:'black', rx:10, ry:10, 'fill-opacity': 0.1});
+    draw(svg, 'rect', {x:legendBorderWidth, y:legendBorderWidth, width:legendWidth, height:height, stroke:legendBorderColor, 'stroke-width':legendBorderWidth, fill:legendBackgroundColor, rx:10, ry:10});
     drawWidgetTitle(svg, getPropertyName(styles[legendType].by));
 
     iterate(scheme, function (value, key) {
       if (legendType === 'color') {
         if (elementType === 'edge') {
-          draw(svg, 'rect', {x:leftMargin, y:offsetY - lineHeight / 8, width:leftColumnWidth - leftMargin * 2, height:lineHeight / 4, fill:value});
+          draw(svg, 'rect', {x:legendInnerMargin, y:offsetY - lineHeight / 8, width:leftColumnWidth - legendInnerMargin * 2, height:lineHeight / 4, fill:value});
         } else {
           drawCircle(svg, leftColumnWidth / 2, offsetY, legendFontSize / 2, value);
         }
@@ -392,8 +470,8 @@
       offsetY += lineHeight;
     });
 
-    svg.width = widgetWidth + backgroundBorderWidth * 2;
-    svg.height = height + backgroundBorderWidth * 2;
+    svg.width = totalWidgetWidth;
+    svg.height = height + (legendBorderWidth + legendOuterMargin) * 2;
 
     return svg;
   }
@@ -426,7 +504,7 @@
   }
 
   function drawWidgetTitle(svg, title, unit) {
-    drawText(svg, title + (unit ? ' (' + unit + ')' : ''), widgetWidth / 2, legendFontSize + 5, 'middle');
+    drawText(svg, title + (unit ? ' (' + unit + ')' : ''), legendWidth / 2, legendFontSize + legendInnerMargin, 'middle', legendTitleFontColor, legendTitleFontFamily, legendTitleFontSize);
   }
 
   function prettyfy(txt) {
