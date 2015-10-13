@@ -228,9 +228,11 @@
   design.apply();
 
   var legendPlugin = sigma.plugins.legend(s);
-
-  legendPlugin.getWidget('edge_size').setUnit('%');
   //var textWidget = legendPlugin.addTextWidget('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.')
-  legendPlugin.build();
-  legendPlugin.setPlacement('right');
+  legendPlugin.setPlacement('left');
+  legendPlugin.addWidget('node', 'size');
+  legendPlugin.addWidget('edge', 'size', '%');
+  legendPlugin.addWidget('node', 'color');
+  var nodeIconPlugin = legendPlugin.addWidget('node', 'icon');
+  legendPlugin.addWidget('edge', 'color');
 </script>

@@ -1,12 +1,12 @@
 /*
   API:
-  * setText (widget)
-  * addWidget(elementType, visualVar)
-  * removeWidget(widget)/(elementType, visualVar, ?unit)
-  * addTextWidget(text)
-  * buildWidgets (legend)
-  * setPosition(x, y) (widget)
-  * setPlacement(top|bottom|right|left)
+  * [legend] addWidget(elementType, visualVar)
+  * [legend] removeWidget(widget)/(elementType, visualVar, ?unit)
+  * [legend] setPlacement(top|bottom|right|left)
+  * [legend] refresh()
+  * [widget] addTextWidget(text)
+  * [widget] setPosition(x, y)
+  * [widget] setText(text)
  */
 
 /*
@@ -24,7 +24,6 @@
   // Initialize package:
   sigma.utils.pkg('sigma.plugins');
 
-
   function getPropertyName(prop) {
     var s = prop.split('.');
     if (s.length > 2 && s[s.length - 2] === 'categories') {
@@ -41,7 +40,7 @@
 
   function iterate(obj, func) {
     for (var k in obj) {
-      if (!obj.hasOwnProperty(k)) {
+      if (!obj.hasOwnProperty(k) || obj[k] === undefined) {
         continue;
       }
 
@@ -83,10 +82,9 @@
    * to handle the special characters that are not part of Latin1.
    * http://stackoverflow.com/questions/23223718/failed-to-execute-btoa-on-window-the-string-to-be-encoded-contains-characte
    *
-   * @param canvas
    * @param svg
-   * @param x
-   * @param y
+   * @param fontURLs
+   * @param onload
    */
   function buildImageFromSvg(svg, fontURLs, onload) {
     var str = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">' + svg.innerHTML + '</svg>',
@@ -102,25 +100,27 @@
   }
 
   var legendWidth = 200,
-      legendFontSize = 15,
       legendFontFamily = 'Arial',
-      legendColor = 'black',
+      legendFontSize = 15,
+      legendFontColor = 'black',
       legendTitleFontFamily = 'Arial',
-      legendTitleFontSize = 25,
+      legendTitleFontSize = 20,
       legendTitleFontColor = 'black',
       legendBackgroundColor = 'white',
       legendBorderColor =  'black',
-      legendBorderWidth = 2,
+      legendBorderWidth = 1,
       legendInnerMargin = 15,
       legendOuterMargin = 5,
       totalWidgetWidth = legendWidth + (legendBorderWidth + legendOuterMargin) * 2;
 
+  var _legendInstances = {};
+
   sigma.plugins.legend = function (s) {
-    if (!s.legendPlusinInstance) {
-      s.legendPlusinInstance = new LegendPlugin(s);
+    if (!_legendInstances[s.id]) {
+      _legendInstances[s.id] = new LegendPlugin(s);
     }
 
-    return s.legendPlusinInstance;
+    return _legendInstances[s.id];
   };
 
 
@@ -139,35 +139,29 @@
     this.canvas = document.createElement('canvas');
     this.canvas.width = renderer.container.offsetWidth;
     this.canvas.height = renderer.container.offsetHeight;
+    this.canvas.style.position = 'absolute';
+    this.canvas.style.pointerEvents = 'none';
     renderer.container.appendChild(this.canvas);
 
     window.addEventListener('resize', function () {
       self.canvas.width = renderer.container.offsetWidth;
       self.canvas.height = renderer.container.offsetHeight;
-      self.build();
       self.setupLayout();
     });
 
-    var d = this.designPlugin;
-
-    this.widgets = {
-      'node_size': new LegendWidget(this.canvas, s, d, 'quantitative', 'node'),
-      'edge_size': new LegendWidget(this.canvas, s, d, 'quantitative', 'edge'),
-      'node_color': new LegendWidget(this.canvas, s, d, 'qualitative', 'node', 'color'),
-      'edge_color': new LegendWidget(this.canvas, s, d, 'qualitative', 'edge', 'color'),
-      'node_icon': new LegendWidget(this.canvas, s, d, 'qualitative', 'node', 'icon')
-    };
+    this.widgets = { };
   }
 
   LegendPlugin.prototype.init = function (fontURLs) {
     this.fontURLs = fontURLs;
   };
 
-  LegendPlugin.prototype.getWidget = function (widget_id) {
-    return this.widgets[widget_id];
+  LegendPlugin.prototype.redraw = function () {
+    this.buildWidgets();
+    this.setupLayout();
   };
 
-  LegendPlugin.prototype.build = function () {
+  LegendPlugin.prototype.buildWidgets = function () {
     var self = this;
     iterate(this.widgets, function (value) {
       value.build(function () {
@@ -182,14 +176,14 @@
     }
 
     this.placement = newPlacement;
-    this.setupLayout();
+    this.drawLayout();
   };
 
-  LegendPlugin.prototype.setupLayout = function () {
+  LegendPlugin.prototype.drawLayout = function () {
     var horizontal = this.placement === 'top' || this.placement === 'bottom',
         maxHeight = this.canvas.height,
         maxWidth = this.canvas.width,
-        ordered = getOrderedWidgets(this.widgets),
+        ordered = getOrderedUnpinnedWidgets(this.widgets),
         cols,
         height = horizontal ? ordered[0].svg.height : maxHeight,
         maxNbCols = horizontal ? Math.floor(maxWidth / totalWidgetWidth) : 1,
@@ -205,7 +199,7 @@
 
       cols = [];
       for (var i = 0; i < maxNbCols; ++i) {
-        cols.push({widgets: [], height: 0});
+        cols.push({widgets: [], height: legendInnerMargin * 2});
       }
 
       for (var i = 0; i < ordered.length; ++i) {
@@ -251,10 +245,10 @@
     this.enoughSpace = !notEnoughSpace;
   };
 
-  function getOrderedWidgets(widgets) {
+  function getOrderedUnpinnedWidgets(widgets) {
     var ordered = [];
     iterate(widgets, function (value) {
-      if (value.active) {
+      if (!value.pinned) {
         ordered.push(value);
       }
     });
@@ -269,21 +263,49 @@
   LegendPlugin.prototype.clear = function () {
     var context = this.canvas.getContext('2d');
 
-    context.fillStyle = 'white';
-    context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   };
 
   LegendPlugin.prototype.draw = function () {
     this.clear();
     if (this.active && this.enoughSpace) {
       iterate(this.widgets, function (value) {
-        value.draw();
+        if (!value.pinned) {
+          value.draw();
+        }
+      });
+      iterate(this.widgets, function (value) {
+        if (value.pinned) {
+          value.draw();
+        }
       });
     }
   };
 
+  LegendPlugin.prototype.addWidget = function (elementType, visualVar, unit) {
+    var self = this,
+        widget = this.widgets[elementType + '_' + visualVar];
+
+    if (!widget) {
+      widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, elementType, visualVar);
+      widget.id = elementType + '_' + visualVar;
+      this.widgets[elementType + '_' + visualVar] = widget;
+    }
+    if (visualVar === 'size' && unit !== undefined) {
+      widget.unit = unit;
+    }
+
+    widget.build();
+
+    return widget;
+  };
+
+  LegendPlugin.prototype.mustDisplayWidget = function (widget) {
+    return this.active && (this.enoughSpace || widget.pinned) && this.widgets[widget.id] !== undefined;
+  };
+
   LegendPlugin.prototype.addTextWidget = function (text) {
-    var widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, 'text');
+    var widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, null, 'text');
 
     widget.text = text;
     widget.id = 'text' + this.textWidgetCounter++;
@@ -297,34 +319,36 @@
   LegendPlugin.prototype.removeWidget = function (widget) {
     if (this.widgets[widget.id]) {
       this.widgets[widget.id] = undefined;
+      this.drawLayout();
     }
   };
 
-  LegendPlugin.prototype.toggleVisibility = function () {
-    this.active = !this.active;
-  };
-
-  function LegendWidget(canvas, sigmaInstance, designPlugin, legendType, elementType, visualVar) {
+  function LegendWidget(canvas, sigmaInstance, designPlugin, legendPlugin, elementType, visualVar) {
     this.canvas = canvas;
     this.sigmaInstance = sigmaInstance;
     this.designPlugin = designPlugin;
-    this.legendType = legendType;
+    this.legendPlugin = legendPlugin;
     this.visualVar = visualVar;
     this.elementType = elementType;
     this.x = 0;
     this.y = 0;
     this.text = '';
     this.unit = null;
-    this.active = true;
     this.img = null;
+    this.pinned = false;
   }
 
-  LegendWidget.prototype.build = function (displayWhenBuilt) {
+  LegendWidget.prototype.unpin = function () {
+    this.pinned = false;
+    this.legendPlugin.drawLayout();
+  };
+
+  LegendWidget.prototype.build = function () {
     var self = this;
 
-    if (this.legendType === 'quantitative') {
-      this.svg = drawSizeLegend(this.sigmaInstance.graph, this.designPlugin, this.elementType, null)
-    } else if (this.legendType === 'qualitative') {
+    if (this.visualVar === 'size') {
+      this.svg = drawSizeLegend(this.sigmaInstance.graph, this.designPlugin, this.elementType, this.unit)
+    } else if (this.visualVar !== 'text') {
       this.svg = drawNonSizeLegend(this.designPlugin, this.elementType, this.visualVar);
     } else {
       this.svg = document.createElement('svg');
@@ -334,38 +358,23 @@
     }
 
     this.img = buildImageFromSvg(this.svg, this.fontURLs, function () {
-      if (displayWhenBuilt() && self.active) {
-        self.draw();
+      if (self.legendPlugin.mustDisplayWidget(self)) {
+        self.legendPlugin.drawLayout();
       }
     });
   };
 
   LegendWidget.prototype.draw = function () {
-    if (this.active) {
-      this.canvas.getContext('2d').drawImage(this.img, this.x, this.y);
-    }
+    this.canvas.getContext('2d').drawImage(this.img, this.x, this.y);
   };
 
-  LegendWidget.prototype.toggleVisibility = function () {
-    this.active = !this.active;
+  LegendWidget.prototype.setPosition = function (x, y) {
+    this.pinned = true;
+    this.x = x;
+    this.y = y;
+    this.legendPlugin.drawLayout();
   };
 
-  LegendWidget.prototype.setUnit = function (unit) {
-    this.unit = unit;
-  };
-
-  LegendWidget.prototype.setText = function (text) {
-    this.text = text;
-  };
-
-  /**
-   *
-   * @param elts
-   * @param styles
-   * @param eltType 'node' or 'edge'
-   * @param unit
-   * @returns {*}
-   */
   function drawSizeLegend(graph, designPluginInstance, elementType, unit) {
     var svg = document.createElement('svg'),
         elts = elementType === 'node' ? graph.nodes() : graph.edges(),
@@ -408,9 +417,9 @@
       drawText(svg, meanValue, legendWidth / 2, titleMargin + 2 * legendFontSize);
       drawText(svg, minValue, legendWidth / 2, titleMargin + 3 * legendFontSize);
 
-      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize, bigElementSize, 'white', 'black', circleBorerWidth);
-      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize * 2 - mediumElementSize, mediumElementSize, 'white', 'black', circleBorerWidth);
-      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize * 2 - smallElementSize, smallElementSize, 'white', 'black', circleBorerWidth);
+      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize, bigElementSize, legendBackgroundColor, legendFontColor, circleBorerWidth);
+      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize * 2 - mediumElementSize, mediumElementSize, legendBackgroundColor, legendFontColor, circleBorerWidth);
+      drawCircle(svg, bigElementSize + circleBorerWidth + legendInnerMargin, titleMargin + bigElementSize * 2 - smallElementSize, smallElementSize, legendBackgroundColor, legendFontColor, circleBorerWidth);
 
     } else if (elementType === 'edge') {
       var labelOffsetY = titleMargin + bigElementSize * 1.7,
@@ -481,7 +490,7 @@
       x: x,
       y: y,
       'text-anchor': textAlign ? textAlign : 'left',
-      fill: color ? color : legendColor,
+      fill: color ? color : legendFontColor,
       'font-size': fontSize ? fontSize : legendFontSize,
       'font-family': fontFamily ? fontFamily : legendFontFamily,
       'alignment-baseline': verticalAlign ? verticalAlign : 'auto'
