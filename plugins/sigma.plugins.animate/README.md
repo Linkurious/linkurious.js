@@ -71,3 +71,18 @@ sigma.plugins.animate(
     }
   );
 ```
+
+## Events
+
+The plugin fires the following events though the Sigma instance:
+
+- `animate.start`: Fired at the beginning of the animation.
+- `animate.end`: Fired at the end of the animation.
+
+Example:
+
+```js
+sigmaInstance.bind('animate.start', function(event) { 
+  console.log(event.type); // "animate.start"
+});
+```

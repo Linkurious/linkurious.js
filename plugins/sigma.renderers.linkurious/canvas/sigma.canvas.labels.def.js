@@ -26,6 +26,7 @@
         labelWidth,
         labelOffsetX,
         labelOffsetY,
+        shouldRender = true,
         alignment = settings('labelAlignment');
 
     if (size <= settings('labelThreshold'))
@@ -79,6 +80,13 @@
       case 'top':
         labelOffsetY = - size - 2 * fontSize / 3;
         break;
+      case 'constrained':
+        labelWidth = sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, node.label);
+        if (labelWidth > (size + fontSize / 3) * 2) {
+          shouldRender = false;
+        }
+        break;
       case 'inside':
         labelWidth = sigma.utils.canvas.getTextWidth(context,
             settings('approximateLabelWidth'), fontSize, node.label);
@@ -94,10 +102,12 @@
         break;
     }
 
-    context.fillText(
-      node.label,
-      Math.round(node[prefix + 'x'] + labelOffsetX),
-      Math.round(node[prefix + 'y'] + labelOffsetY)
-    );
+    if (shouldRender) {
+      context.fillText(
+        node.label,
+        Math.round(node[prefix + 'x'] + labelOffsetX),
+        Math.round(node[prefix + 'y'] + labelOffsetY)
+      );
+    }
   };
 }).call(this);

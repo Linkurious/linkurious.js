@@ -43,3 +43,7 @@ dragListener.bind('startdrag', function(event) {
   console.log(event);
 });
 ````
+
+## Compatibility
+
+The plugin is compatible with `sigma.plugins.animate`: dragging is disabled when an animation is running.
