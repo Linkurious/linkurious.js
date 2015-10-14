@@ -138,15 +138,17 @@
 	if (typeof cc == 'number') cc = { length: cc };
 	if (!cc.length) cc.length = 0.125;
 	if (!cc.step) cc.step = function(len, n) { return len / (n/2); };
-	if (!cc.calc) cc.calc = function(len, step, i) { return { y: 1/(len - step * i) }; };
+	if (!cc.calc) cc.calc = function(len, step, i) {
+		var d = len - step * i; return { y: d ? 1/d : d };
+	};
 	if (!cc.type) cc.type = 'curve';
 	for (var i in edges) {
 		var key = count.key(edges[i]);
-		var n = count[key].n; if (n % 2 > 0) n--;
+		var n = count[key].n; if (n % 2 == 0) n--;
 		var step = cc.step(cc.length, n);
 		if (count[key].n > 1) {
 			edges[i].type = cc.type;
-			edges[i].cc = sigma.utils.extend({}, cc, cc.calc(cc.length, step, count[key].i++));
+			edges[i].cc = sigma.utils.extend({}, cc.calc(cc.length, step, count[key].i++), cc);
 		}
     }
   };
