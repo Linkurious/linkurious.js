@@ -732,7 +732,7 @@
    */
   graph.addMethod('nodes', function(v) {
     // Clone the array of nodes and return it:
-    if (!arguments.length)
+    if (!arguments.length || !v)
       return this.nodesArray.slice(0);
 
     // Return the related node:
