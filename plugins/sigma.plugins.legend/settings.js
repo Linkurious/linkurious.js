@@ -25,6 +25,8 @@
     legendTitleFontSize: 25,
     /* {string} Color of the titles */
     legendTitleFontColor: 'black',
+    /* {string} Color of the shapes in the legend */
+    legendShapeColor: 'black',
     /* {string} Color of the widgets' background */
     legendBackgroundColor: 'white',
     /* {string} Color of the widgets' border */

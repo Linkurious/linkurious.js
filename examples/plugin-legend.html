@@ -91,6 +91,8 @@
     categoryScheme: {
       'Man': '#7fc97f',
       'Woman': '#fdc086',
+      'Martian': '#798345',
+      'Thing': '#925647',
       'Unknown': '#1188AA'
     },
     nameScheme: {
@@ -122,6 +124,22 @@
     relationTypeScheme: {
       'Love': '#81A4E3',
       'Hatred': '#CC2323'
+    },
+    interestScheme: {
+      'Books':'equilateral',
+      'Movies':'star',
+      'Music':'square',
+      'Video games':'diamond',
+      'Nothing':'cross'
+    },
+    relationDurationScheme: {
+      '> 40 years': 'parallel',
+      '> 20 years': 'arrow',
+      '> 10 years': 'curve',
+      '> 5 years': 'curvedArrow',
+      '> 2 years': 'dashed',
+      '> 1 year': 'dotted',
+      '< 1 year': 'tapered'
     }
   };
 
@@ -148,11 +166,11 @@
       data: {
         properties: {
           family_name: randomValue(['Lorem ipsum', 'Dolor', 'Sit Amet', 'Consectetur']),
-          age: Math.round(Math.random() * 90) + 1
-
+          age: Math.round(Math.random() * 70) + 15,
+          interest: randomValue(['Books', 'Movies', 'Music', 'Video games', 'Nothing'])
         },
         categories: {
-          '0': randomValue(['Man', 'Woman', 'Unknown'])
+          '0': randomValue(['Man', 'Woman', 'Martian', 'Thing', 'Unknown'])
         }
       }
     });
@@ -165,8 +183,9 @@
       size: 1,
       data: {
         properties: {
-          relation_strength: Math.round(Math.random() * 100),
-          relation_type: randomValue(['Love, Hatred'])
+          relation_strength: Math.ceil(Math.random() * 100),
+          relation_type: randomValue(['Love, Hatred']),
+          relation_duration: randomValue(['> 40 years', '> 20 years', '> 10 years', '> 5 years', '> 2 years', '> 1 year', '< 1 year'])
         }
       }
     });
@@ -192,6 +211,10 @@
       icon: {
         by: 'data.properties.family_name',
         scheme: 'nameScheme'
+      },
+      type: {
+        by: 'data.properties.interest',
+        scheme: 'interestScheme'
       }
     },
     edges: {
@@ -204,6 +227,10 @@
         bins: 7,
         min: 1,
         max: 10
+      },
+      type: {
+        by: 'data.properties.relation_duration',
+        scheme: 'relationDurationScheme'
       }
     }
   };
@@ -228,11 +255,13 @@
   design.apply();
 
   var legendPlugin = sigma.plugins.legend(s);
-  //var textWidget = legendPlugin.addTextWidget('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.')
-  legendPlugin.setPlacement('left');
+  legendPlugin.setPlacement('bottom');
   legendPlugin.addWidget('node', 'size');
   legendPlugin.addWidget('edge', 'size', '%');
   legendPlugin.addWidget('node', 'color');
   var nodeIconPlugin = legendPlugin.addWidget('node', 'icon');
   legendPlugin.addWidget('edge', 'color');
+  legendPlugin.addWidget('node', 'type');
+  legendPlugin.addWidget('edge', 'type');
+  var textWidget = legendPlugin.addTextWidget('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.')
 </script>
