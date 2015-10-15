@@ -4,6 +4,7 @@
   * [legend] removeWidget(widget)/(elementType, visualVar)
   * [legend] setPlacement(top|bottom|right|left)
   * [legend] refresh()
+  * [legend] toggleVisibility()
   * [widget] addTextWidget(text)
   * [widget] setPosition(x, y)
   * [widget] unpin()
@@ -82,7 +83,8 @@
    * @param onload
    */
   function buildImageFromSvg(svg, fontURLs, onload) {
-    var str = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">' + svg.innerHTML + '</svg>',
+    var str = '<?xml-stylesheet type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" ?>' +
+        '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">' + svg.innerHTML + '</svg>',
         src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str))),
         img = new Image();
 
@@ -94,6 +96,7 @@
     return img;
   }
 
+  /* Default values */
   var legendWidth = 150,
       legendFontFamily = 'Arial',
       legendFontSize = 10,
@@ -134,7 +137,7 @@
     var self = this;
 
     this.fontURLs = [];
-    this.active = true;
+    this.visible = true;
     this.sigmaInstance = s;
     this.designPlugin = sigma.plugins.design(s);
     this.textWidgetCounter = 1;
@@ -175,9 +178,14 @@
     var self = this;
     iterate(this.widgets, function (value) {
       value.build(function () {
-        return self.enoughSpace && self.active;
+        return self.enoughSpace && self.visible;
       });
     });
+  };
+
+  LegendPlugin.prototype.toggleVisibility = function () {
+    this.visible = !this.visible;
+    this.draw();
   };
 
   /**
@@ -293,7 +301,7 @@
 
   LegendPlugin.prototype.draw = function () {
     this.clear();
-    if (this.active && this.enoughSpace) {
+    if (this.visible && this.enoughSpace) {
       iterate(this.widgets, function (value) {
         if (!value.pinned) {
           value.draw();
@@ -329,7 +337,7 @@
   };
 
   LegendPlugin.prototype.mustDisplayWidget = function (widget) {
-    return this.active && (this.enoughSpace || widget.pinned) && this.widgets[widget.id] !== undefined;
+    return this.visible && (this.enoughSpace || widget.pinned) && this.widgets[widget.id] !== undefined;
   };
 
   /**
@@ -583,7 +591,7 @@
 
     /* Display additional information for the type of edge */
     if (elementType === 'edge' && visualVar === 'type') {
-      drawText(svg, '(Source --> Target)', legendWidth / 2, offsetY, 'middle');
+      drawText(svg, '(source node to target node)', legendWidth / 2, offsetY, 'middle');
       offsetY += lineHeight;
     }
 
