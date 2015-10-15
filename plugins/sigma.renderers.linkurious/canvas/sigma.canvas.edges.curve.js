@@ -13,9 +13,6 @@
    * @param  {configurable}             settings     The settings function.
    */
   sigma.canvas.edges.curve = function(edge, source, target, context, settings) {
-    if (edge instanceof sigma) {
-		return this.autoCurve(edge, source);
-	}
     var color = edge.active ?
           edge.active_color || settings('defaultEdgeActiveColor') :
           edge.color,
@@ -107,49 +104,6 @@
       context.shadowOffsetY = 0;
       context.shadowBlur = 0;
       context.shadowColor = '#000000'
-    }
-  };
-
-  /**
-   * This curves edges between two nodes when there are more than one
-   *
-   * @param  {object}     s      An instance of the sigma object
-   * @param  {object}     cc     The curvature coefficients to use
-   */
-
-  sigma.canvas.edges.autoCurve = function(s, cc) {
-	var count = {
-		key: function(o) {
-			var key = o.source + o.target;
-			if (this[key]) return key;
-			key = o.target + o.source;
-			if (this[key]) return key;
-			this[key] = { i: 0, n: 0 };
-			return key;
-		},
-		inc: function(o) {
-			this[this.key(o)].n++;
-		}
-	};
-	var edges = s.graph.edges();
-	for (var i in edges) count.inc(edges[i]);
-
-	if (!cc) cc = { length: 0 };
-	if (typeof cc == 'number') cc = { length: cc };
-	if (!cc.length) cc.length = 0.125;
-	if (!cc.step) cc.step = function(len, n) { return len / (n/2); };
-	if (!cc.calc) cc.calc = function(len, step, i) {
-		var d = len - step * i; return { y: d ? 1/d : d };
-	};
-	if (!cc.type) cc.type = 'curve';
-	for (var i in edges) {
-		var key = count.key(edges[i]);
-		var n = count[key].n; if (n % 2 == 0) n--;
-		var step = cc.step(cc.length, n);
-		if (count[key].n > 1) {
-			edges[i].type = cc.type;
-			edges[i].cc = sigma.utils.extend({}, cc.calc(cc.length, step, count[key].i++), cc);
-		}
     }
   };
 
