@@ -29,7 +29,7 @@ Plugins:
  - #253 plugins.tooltips: fire 'shown' after the open() function was fully executed (thanks @mdamien)
  - Fix #248 Animate set node coordinated to undefined if the target position are not included (thanks @mdamien)
  - #245 plugins.dragNodes: add sticky effect (avoid drag on clicking inside the node)
- - #237 Add exporters.graphml
+ - #237 Add exporters.graphml (thanks @Ytawo)
  - #186 Add exporters.json
 
 Docs:
