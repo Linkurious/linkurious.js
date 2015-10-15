@@ -65,6 +65,7 @@
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.curve.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.arrow.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.autoCurve.js"></script>
 <div id="container">
   <style>
     #graph-container {
@@ -154,6 +155,10 @@ var keyboard = sigma.plugins.keyboard(s, s.renderers[0]);
 
 // Bind the Keyboard plugin to the Select plugin:
 select.bindKeyboard(keyboard);
+
+// Curve parallel edges:
+sigma.canvas.edges.autoCurve(s);
+s.refresh();
 
 dragListener.bind('startdrag', function(event) {
   console.log(event);
