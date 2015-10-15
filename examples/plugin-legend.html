@@ -140,6 +140,9 @@
       '> 2 years': 'dashed',
       '> 1 year': 'dotted',
       '< 1 year': 'tapered'
+    },
+    meetingFrequencyScheme: {
+      7: ['#132b43','#1d3f5d','#27547a','#326896','#3d7fb5','#4897d4','#54aef3']
     }
   };
 
@@ -185,7 +188,8 @@
         properties: {
           relation_strength: Math.ceil(Math.random() * 100),
           relation_type: randomValue(['Love, Hatred']),
-          relation_duration: randomValue(['> 40 years', '> 20 years', '> 10 years', '> 5 years', '> 2 years', '> 1 year', '< 1 year'])
+          relation_duration: randomValue(['> 40 years', '> 20 years', '> 10 years', '> 5 years', '> 2 years', '> 1 year', '< 1 year']),
+          meeting_frequency: Math.ceil(Math.random() * 30)
         }
       }
     });
@@ -218,9 +222,14 @@
       }
     },
     edges: {
+//      color: {
+//        by: 'data.properties.relation_type',
+//        scheme: 'relationTypeScheme'
+//      },
       color: {
-        by: 'data.properties.relation_type',
-        scheme: 'relationTypeScheme'
+        by: 'data.properties.meeting_frequency',
+        scheme: 'meetingFrequencyScheme',
+        bins: 7
       },
       size: {
         by: 'data.properties.relation_strength',
@@ -259,8 +268,8 @@
   legendPlugin.addWidget('node', 'size');
   legendPlugin.addWidget('edge', 'size', '%');
   legendPlugin.addWidget('node', 'color');
-  var nodeIconPlugin = legendPlugin.addWidget('node', 'icon');
-  legendPlugin.addWidget('edge', 'color');
+  var nodeIconWidget = legendPlugin.addWidget('node', 'icon');
+  legendPlugin.addWidget('edge', 'color', 'days');
   legendPlugin.addWidget('node', 'type');
   legendPlugin.addWidget('edge', 'type');
   var textWidget = legendPlugin.addTextWidget('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.')
