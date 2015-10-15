@@ -225,21 +225,21 @@
   /**
    * Return the control point coordinates for a quadratic bezier curve.
    *
-   * @param  {number} x1  The X coordinate of the start point.
-   * @param  {number} y1  The Y coordinate of the start point.
-   * @param  {number} x2  The X coordinate of the end point.
-   * @param  {number} y2  The Y coordinate of the end point.
-   * @param  {number} cc  The curvature coefficients.
-   * @return {x,y}        The control point coordinates.
+   * @param  {number}  x1  The X coordinate of the start point.
+   * @param  {number}  y1  The Y coordinate of the start point.
+   * @param  {number}  x2  The X coordinate of the end point.
+   * @param  {number}  y2  The Y coordinate of the end point.
+   * @param  {?number} cc  The curvature coefficients.
+   * @return {x,y}         The control point coordinates.
    */
   sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2, cc) {
-	cc = this.extend(cc, { x: 2, y: 4 });
-	if (cc.x) { if (!cc.xx) cc.xx = cc.x; if (!cc.yx) cc.yx = cc.x; }
-	if (cc.y) { if (!cc.xy) cc.xy = cc.y; if (!cc.yy) cc.yy = cc.y; }
-    return {
-      x: (x1 + x2) / cc.xx + (y2 - y1) / cc.xy,
-      y: (y1 + y2) / cc.yx + (x1 - x2) / cc.yy
-    };
+  	cc = this.extend(cc, { x: 2, y: 4 });
+  	if (cc.x) { if (!cc.xx) cc.xx = cc.x; if (!cc.yx) cc.yx = cc.x; }
+  	if (cc.y) { if (!cc.xy) cc.xy = cc.y; if (!cc.yy) cc.yy = cc.y; }
+      return {
+        x: (x1 + x2) / cc.xx + (y2 - y1) / cc.xy,
+        y: (y1 + y2) / cc.yx + (x1 - x2) / cc.yy
+      };
   };
 
   /**
