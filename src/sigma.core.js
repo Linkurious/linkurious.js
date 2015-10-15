@@ -522,7 +522,6 @@
         c.quadtree.index(this.graph, {
           prefix: c.readPrefix,
           maxLevel: c.settings('nodeQuadtreeMaxLevel'),
-          curvatureCoefficients: c.settings('curvatureCoefficients'),
           bounds: {
             x: bounds.minX,
             y: bounds.minY,
@@ -541,7 +540,6 @@
           c.edgequadtree.index(this.graph, {
             prefix: c.readPrefix,
             maxLevel: c.settings('edgeQuadtreeMaxLevel'),
-            curvatureCoefficients: c.settings('curvatureCoefficients'),
             bounds: {
               x: bounds.minX,
               y: bounds.minY,

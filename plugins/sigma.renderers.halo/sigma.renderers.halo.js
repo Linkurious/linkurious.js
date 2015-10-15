@@ -207,7 +207,6 @@
         source,
         target,
         cp,
-        cc = self.settings('curvatureCoefficients'),
         sSize,
         sX,
         sY,
@@ -253,7 +252,7 @@
           context.bezierCurveTo(cp.x1, cp.y1, cp.x2, cp.y2, tX, tY);
         }
         else {
-          cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc || cc);
+          cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
           context.quadraticCurveTo(cp.x, cp.y, tX, tY);
         }
       }

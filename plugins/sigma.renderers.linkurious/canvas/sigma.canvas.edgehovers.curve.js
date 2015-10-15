@@ -25,7 +25,6 @@
         defaultEdgeColor = settings('defaultEdgeColor'),
         level = settings('edgeHoverLevel'),
         cp = {},
-        cc = settings('curvatureCoefficients'),
         sSize = source[prefix + 'size'],
         sX = source[prefix + 'x'],
         sY = source[prefix + 'y'],
@@ -34,7 +33,7 @@
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, sSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc || cc);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     // Level:
     if (level) {
