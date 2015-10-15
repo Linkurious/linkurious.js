@@ -233,13 +233,11 @@
    * @return {x,y}         The control point coordinates.
    */
   sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2, cc) {
-  	cc = this.extend(cc, { x: 2, y: 4 });
-  	if (cc.x) { if (!cc.xx) cc.xx = cc.x; if (!cc.yx) cc.yx = cc.x; }
-  	if (cc.y) { if (!cc.xy) cc.xy = cc.y; if (!cc.yy) cc.yy = cc.y; }
-      return {
-        x: (x1 + x2) / cc.xx + (y2 - y1) / cc.xy,
-        y: (y1 + y2) / cc.yx + (x1 - x2) / cc.yy
-      };
+    cc = this.extend(cc, { x: 2, y: 4 });
+    return {
+      x: (x1 + x2) / cc.x + (y2 - y1) / cc.y,
+      y: (y1 + y2) / cc.x + (x1 - x2) / cc.y
+    };
   };
 
   /**
