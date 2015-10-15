@@ -132,7 +132,7 @@
     autoCurveRatio: 1,
     // {boolean} if sigma.canvas.edges.autoCurve is called, sort edges by
     // direction.
-    autoCurveSortByDirection: false,
+    autoCurveSortByDirection: true,
 
 
     /**
