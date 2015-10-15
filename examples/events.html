@@ -62,6 +62,7 @@
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edgehovers.curve.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edgehovers.arrow.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.autoCurve.js"></script>
 <div id="container">
   <style>
     #graph-container {
@@ -126,8 +127,14 @@ s = new sigma({
     defaultEdgeHoverColor: '#000',
     edgeHoverSizeRatio: 1,
     edgeHoverExtremities: true,
+
+    autoCurveRatio: 2
   }
 });
+
+// Curve parallel edges:
+sigma.canvas.edges.autoCurve(s);
+s.refresh();
 
 // Bind the events:
 s.bind('clickNode doubleClickNode rightClickNode', function(e) {
