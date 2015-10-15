@@ -1,5 +1,41 @@
 ## linkurious.js - changelog:
 
+#### 1.2.0 (October 15, 2015)
+
+This release is greatly powered by the community. Multiple plugins are stabilized and important features are added for rendering and integration.
+
+Hightlights:
+- Support of [WebPack](http://webpack.github.io/) module builder
+- New file exporters in GraphML and JSON
+- Nodes can have borders (aka strokes) without hover
+- Curve parallel edges automatically (i.e. edges with same extremities), add new settings: `autoCurveRatio`, `autoCurveSortByDirection`
+- The dragNodes plugin becomes stable
+
+Core:
+ - Fix #247 No hovering or graph disappears when nodes are on the same axis (thanks @mdamien)
+ - #242 Factorize quadtree & edgequadtree (thanks @mdamien)
+ - Fix #241 Only one label displayed on all examples (thanks @mdamien)
+
+Plugins:
+ - Fix #287 minimum edges louvain (thanks @partizanos)
+ - #282 Add "constrained" labelAllignment setting (thanks @NicholasAntonov )
+ - Fix #281 Prevent dragNodes during animations
+ - Fix #278 getTextWidth not being called correctly (thanks @NicholasAntonov)
+ - Fix #277 bugs when sigma was required with webpack (thanks @NicholasAntonov)
+ - #273 Add parametric edge curvature (canvas renderer) (thanks @ekkis)
+ - #270 renderers.linkurious: add node border on canvas (without hover) (thanks @ekkis)
+ - #267 A* plugin, v1.0.1 Fix non-optimal path (thanks @A----)
+ - #263 parsers.cypher: increase robustness (thanks @ekkis)
+ - #253 plugins.tooltips: fire 'shown' after the open() function was fully executed (thanks @mdamien)
+ - Fix #248 Animate set node coordinated to undefined if the target position are not included (thanks @mdamien)
+ - #245 plugins.dragNodes: add sticky effect (avoid drag on clicking inside the node)
+ - #237 Add exporters.graphml
+ - #186 Add exporters.json
+
+Docs:
+ - #53 Add documentation on sigma lifecycle
+
+
 #### 1.1.0 (August 10, 2015)
 
 This release provides A BREAKING CHANGE from the core of Sigma.js and focuses on performance.
