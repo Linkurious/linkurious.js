@@ -813,7 +813,7 @@
    */
   graph.addMethod('edges', function(v) {
     // Clone the array of edges and return it:
-    if (!arguments.length)
+    if (!arguments.length || !v)
       return this.edgesArray.slice(0);
 
     // Return the related edge:
