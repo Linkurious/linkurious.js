@@ -67,11 +67,15 @@
         if (edge.type === 'arrow' || edge.type === 'tapered' ||
           defaultEdgeType === 'arrow' || defaultEdgeType === 'tapered') {
 
-          edge.cc_prev_type = edge.type;
+          if (!edge.cc_prev_type) {
+            edge.cc_prev_type = edge.type;
+          }
           edge.type = 'curvedArrow';
         }
         else {
-          edge.cc_prev_type = edge.type;
+          if (!edge.cc_prev_type) {
+            edge.cc_prev_type = edge.type;
+          }
           edge.type = 'curve';
         }
 
