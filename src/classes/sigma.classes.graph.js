@@ -732,7 +732,7 @@
    */
   graph.addMethod('nodes', function(v) {
     // Clone the array of nodes and return it:
-    if (!arguments.length || !v)
+    if (!arguments.length)
       return this.nodesArray.slice(0);
 
     // Return the related node:
@@ -813,7 +813,7 @@
    */
   graph.addMethod('edges', function(v) {
     // Clone the array of edges and return it:
-    if (!arguments.length || !v)
+    if (!arguments.length)
       return this.edgesArray.slice(0);
 
     // Return the related edge:
