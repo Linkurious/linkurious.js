@@ -33,6 +33,7 @@
    * @param  {sigma}                      s        The related sigma instance.
    * @param  {renderer}                   renderer The related renderer instance.
    * @param  {?sigma.plugins.activeState} a        The activeState plugin instance.
+   * @param  {?object}                    opts     Options of sigma.refresh().
    */
   function DragNodes(s, renderer, a, opts) {
     sigma.classes.dispatcher.extend(this);
@@ -343,7 +344,7 @@
         _node.x = x2;
         _node.y = y2;
 
-        _s.refresh(sigma.utils.extend(opts, {skipIndexation: true}));
+        _s.refresh({skipIndexation: true});
 
         _drag = true;
         _self.dispatchEvent('drag', {
@@ -369,6 +370,7 @@
    * @param  {sigma}                      s        The related sigma instance.
    * @param  {renderer}                   renderer The related renderer instance.
    * @param  {?sigma.plugins.activeState} a        The activeState plugin instance.
+   * @param  {?object}                    opts     Options of sigma.refresh().
    */
   sigma.plugins.dragNodes = function(s, renderer, a, opts) {
     // Create object if undefined
