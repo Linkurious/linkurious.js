@@ -1,3 +1,5 @@
+<head><meta charset="UTF-8"></head>
+
 <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 <!-- START SIGMA IMPORTS -->
 <script src="../src/sigma.core.js"></script>
@@ -49,6 +51,7 @@
 
 <script src="../plugins/sigma.plugins.colorbrewer/sigma.plugins.colorbrewer.js"></script>
 <script src="../plugins/sigma.plugins.design/sigma.plugins.design.js"></script>
+<script src="../plugins/sigma.plugins.legend/settings.js"></script>
 <script src="../plugins/sigma.plugins.legend/sigma.plugins.legend.js"></script>
 
 <script src="../plugins/sigma.renderers.linkurious/settings.js"></script>
@@ -264,6 +267,7 @@
   design.apply();
 
   var legendPlugin = sigma.plugins.legend(s);
+  legendPlugin.setExternalCSS(['http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css']);
   legendPlugin.setPlacement('bottom');
   legendPlugin.addWidget('node', 'size');
   legendPlugin.addWidget('edge', 'size', '%');

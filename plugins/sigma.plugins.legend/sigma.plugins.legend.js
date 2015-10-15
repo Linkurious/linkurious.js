@@ -79,13 +79,21 @@
    * http://stackoverflow.com/questions/23223718/failed-to-execute-btoa-on-window-the-string-to-be-encoded-contains-characte
    *
    * @param svg
-   * @param fontURLs
+   * @param externalCSS
    * @param onload
    */
-  function buildImageFromSvg(svg, fontURLs, onload) {
-    var str = '<?xml-stylesheet type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" ?>' +
-        '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">' + svg.innerHTML + '</svg>',
-        src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str))),
+  function buildImageFromSvg(svg, externalCSS, onload) {
+    var str =
+      '<?xml-stylesheet type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" ?>' +
+      '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
+        //+ '<defs><style type="text/css"><![CDATA[' + externalCSS + ']]></style></defs>'
+
+    //for (var i = 0; i < externalCSS.length; ++i) {
+    //  str += '<use xlink:href="' + externalCSS[i] + '"></use>';
+    //}
+
+    str += svg.innerHTML + '</svg>';
+    var src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str))),
         img = new Image();
 
     if (typeof onload === 'function') {
@@ -95,22 +103,6 @@
 
     return img;
   }
-
-  /* Default values */
-  var legendWidth = 150,
-      legendFontFamily = 'Arial',
-      legendFontSize = 10,
-      legendFontColor = 'black',
-      legendTitleFontFamily = 'Arial',
-      legendTitleFontSize = 15,
-      legendTitleFontColor = 'black',
-      legendShapeColor = 'orange',
-      legendBackgroundColor = 'white',
-      legendBorderColor =  'black',
-      legendBorderWidth = 1,
-      legendInnerMargin = 8,
-      legendOuterMargin = 5,
-      totalWidgetWidth = legendWidth + (legendBorderWidth + legendOuterMargin) * 2;
 
   var _legendInstances = {};
 
@@ -132,17 +124,40 @@
     }
   };
 
+  function computeTotalWidth(visualSettings) {
+    visualSettings.totalWidgetWidth = visualSettings.legendWidth + (visualSettings.legendBorderWidth + visualSettings.legendOuterMargin) * 2
+  }
+
 
   function LegendPlugin(s) {
-    var self = this;
+    var self = this,
+        settings = s.settings;
 
-    this.fontURLs = [];
     this.visible = true;
     this.sigmaInstance = s;
     this.designPlugin = sigma.plugins.design(s);
     this.textWidgetCounter = 1;
     this.enoughSpace = false;
     this.placement = 'bottom';
+    this.externalCSS = [];
+
+    this.visualSettings = {
+      legendWidth: settings('legendWidth') || 150,
+      legendFontFamily: settings('legendFontFamily') || 'Arial',
+      legendFontSize: settings('legendFontSize') || 10,
+      legendFontColor: settings('legendFontColor') || 'black',
+      legendTitleFontFamily: settings('legendTitleFontFamily') || 'Arial',
+      legendTitleFontSize: settings('legendTitleFontSize') || 15,
+      legendTitleFontColor: settings('legendTitleFontColor') || 'black',
+      legendShapeColor: settings('legendShapeColor') || 'orange',
+      legendBackgroundColor: settings('legendBackgroundColor') || 'white',
+      legendBorderColor: settings('legendBorderColor') || 'black',
+      legendBorderWidth: settings('legendBorderWidth') || 1,
+      legendInnerMargin: settings('legendInnerMargin') || 8,
+      legendOuterMargin: settings('legendOuterMargin') || 5
+    };
+
+    computeTotalWidth(this.visualSettings);
 
     var renderer = s.renderers[0]; // TODO: handle several renderers?
     this.canvas = document.createElement('canvas');
@@ -161,8 +176,9 @@
     this.widgets = { };
   }
 
-  LegendPlugin.prototype.init = function (fontURLs) {
-    this.fontURLs = fontURLs;
+  LegendPlugin.prototype.setExternalCSS = function (externalCSSList) {
+    var self = this;
+    this.externalCSS = externalCSSList;
   };
 
   /**
@@ -183,6 +199,9 @@
     });
   };
 
+  /**
+   * Toggle the visibility of the legend.
+   */
   LegendPlugin.prototype.toggleVisibility = function () {
     this.visible = !this.visible;
     this.draw();
@@ -202,26 +221,27 @@
   };
 
   LegendPlugin.prototype.drawLayout = function () {
-    var horizontal = this.placement === 'top' || this.placement === 'bottom',
+    var vs = this.visualSettings,
+        horizontal = this.placement === 'top' || this.placement === 'bottom',
         maxHeight = this.canvas.height,
         maxWidth = this.canvas.width,
         widgetList = getUnpinnedWidgets(this.widgets),
         cols,
-        height = horizontal ? getMaxHeight(this.widgets) + legendOuterMargin * 2 : maxHeight,
-        maxNbCols = horizontal ? Math.floor(maxWidth / totalWidgetWidth) : 1,
+        height = horizontal ? getMaxHeight(this.widgets) + vs.legendOuterMargin * 2 : maxHeight,
+        maxNbCols = horizontal ? Math.floor(maxWidth / vs.totalWidgetWidth) : 1,
         layoutOk = false,
         notEnoughSpace = false;
 
     while (!layoutOk) {
       layoutOk = true;
-      if (height > maxHeight || maxNbCols * totalWidgetWidth > maxWidth) {
+      if (height > maxHeight || maxNbCols * vs.totalWidgetWidth > maxWidth) {
         notEnoughSpace = true;
         break;
       }
 
       cols = [];
       for (var i = 0; i < maxNbCols; ++i) {
-        cols.push({widgets: [], height: legendOuterMargin * 2});
+        cols.push({widgets: [], height: vs.legendOuterMargin * 2});
       }
 
       for (var i = 0; i < widgetList.length; ++i) {
@@ -256,8 +276,8 @@
       for (var i = 0; i < cols.length; ++i) {
         var h = this.placement === 'bottom' ? height - cols[i].height : 0;
         for (var j = 0; j < cols[i].widgets.length; ++j) {
-          cols[i].widgets[j].x = totalWidgetWidth * i + (this.placement === 'right' ? (maxWidth - cols.length * totalWidgetWidth) : legendInnerMargin);
-          cols[i].widgets[j].y = h + (this.placement === 'bottom' ? (maxHeight - height - legendInnerMargin) : legendInnerMargin);
+          cols[i].widgets[j].x = vs.totalWidgetWidth * i + (this.placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendInnerMargin);
+          cols[i].widgets[j].y = h + (this.placement === 'bottom' ? (maxHeight - height - vs.legendInnerMargin) : vs.legendInnerMargin);
           h += cols[i].widgets[j].svg.height;
         }
       }
@@ -396,47 +416,48 @@
   };
 
   LegendWidget.prototype.build = function () {
-    var self = this;
+    var self = this,
+        vs = this.legendPlugin.visualSettings;
 
     if (this.visualVar === 'size') {
-      this.svg = drawSizeLegend(this.sigmaInstance.graph, this.designPlugin, this.elementType, this.unit)
+      this.svg = drawSizeLegend(vs, this.sigmaInstance.graph, this.designPlugin, this.elementType, this.unit)
     } else if (this.visualVar !== 'text') {
-      this.svg = drawNonSizeLegend(this.sigmaInstance.graph, this.designPlugin, this.elementType, this.visualVar, this.unit);
+      this.svg = drawNonSizeLegend(vs, this.sigmaInstance.graph, this.designPlugin, this.elementType, this.visualVar, this.unit);
     } else {
-      var lines = getLines(this.text, legendWidth - 2 * legendInnerMargin),
-          lineHeight = legendFontSize + 2,
-          height = lines.length * lineHeight + legendInnerMargin * 2,
-          offsetY = legendInnerMargin;
+      var lines = getLines(vs, this.text, vs.legendWidth - 2 * vs.legendInnerMargin),
+          lineHeight = vs.legendFontSize + 2,
+          height = lines.length * lineHeight + vs.legendInnerMargin * 2,
+          offsetY = vs.legendInnerMargin;
 
       this.svg = document.createElement('svg');
-      draw(this.svg, 'rect', {x:legendBorderWidth, y:legendBorderWidth, width:legendWidth, height:height, stroke:legendBorderColor, 'stroke-width':legendBorderWidth, fill:legendBackgroundColor, rx:10, ry:10});
+      draw(this.svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:10, ry:10});
 
       for (var i = 0; i < lines.length; ++i) {
-        drawText(this.svg, lines[i], legendInnerMargin, offsetY, null, null, null, null, 'text-before-edge');
+        drawText(vs, this.svg, lines[i], vs.legendInnerMargin, offsetY, null, null, null, null, 'text-before-edge');
         offsetY += lineHeight;
       }
 
-      this.svg.width = totalWidgetWidth;
-      this.svg.height = height + 2 * legendOuterMargin;
+      this.svg.width = vs.totalWidgetWidth;
+      this.svg.height = height + 2 * vs.legendOuterMargin;
     }
 
-    this.img = buildImageFromSvg(this.svg, this.fontURLs, function () {
+    this.img = buildImageFromSvg(this.svg, this.legendPlugin.externalCSS, function () {
       if (self.legendPlugin.mustDisplayWidget(self)) {
         self.legendPlugin.drawLayout();
       }
     });
   };
 
-  function getLines(text, maxWidth) {
+  function getLines(vs, text, maxWidth) {
     var approximateWidthMeasuring = false,
-        spaceWidth = getTextWidth(' ', legendFontFamily, legendFontSize, approximateWidthMeasuring),
+        spaceWidth = getTextWidth(' ', vs.legendFontFamily, vs.legendFontSize, approximateWidthMeasuring),
         words = text.split(' '),
         lines = [{width:-spaceWidth, words:[]}],
         lineIndex = 0,
         lineList = [];
 
     for (var i = 0; i < words.length; ++i) {
-      var width = getTextWidth(words[i] + ' ', legendFontFamily, legendFontSize, approximateWidthMeasuring);
+      var width = getTextWidth(words[i] + ' ', vs.legendFontFamily, vs.legendFontSize, approximateWidthMeasuring);
       if (lines[lineIndex].width + width <= maxWidth) {
         lines[lineIndex].words.push(words[i] + ' ');
         lines[lineIndex].width += width;
@@ -510,18 +531,19 @@
     return list;
   }
 
-  function drawSizeLegend(graph, designPluginInstance, elementType, unit) {
-    var svg = document.createElement('svg'),
+  function drawSizeLegend(visualSettings, graph, designPluginInstance, elementType, unit) {
+    var vs = visualSettings,
+        svg = document.createElement('svg'),
         elts = elementType === 'node' ? graph.nodes() : graph.edges(),
         styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges,
-        titleMargin = legendTitleFontSize + legendInnerMargin + legendFontSize * 1.5,
+        titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + vs.legendFontSize * 1.5,
         propName = styles.size.by,
         boundaries = getBoundaryValues(elts, propName),
         minValue = boundaries.min,
         maxValue = boundaries.max,
         meanValue,
         ratio = styles.size.max / styles.size.min,
-        bigElementSize = legendFontSize * 1.5,
+        bigElementSize = vs.legendFontSize * 1.5,
         smallElementSize = bigElementSize / ratio,
         mediumElementSize = (bigElementSize + smallElementSize) / 2,
         height;
@@ -537,78 +559,79 @@
 
       height = titleMargin + bigElementSize * 2 + 10;
 
-      draw(svg, 'rect', {x:legendBorderWidth, y:legendBorderWidth, width:legendWidth, height:height, stroke:legendBorderColor, 'stroke-width':legendBorderWidth, fill:legendBackgroundColor, rx:10, ry:10});
+      draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:10, ry:10});
 
-      drawWidgetTitle(svg, getPropertyName(styles.size.by), unit);
-      drawText(svg, maxValue, legendWidth / 2, titleMargin + legendFontSize);
-      drawText(svg, meanValue, legendWidth / 2, titleMargin + 2 * legendFontSize);
-      drawText(svg, minValue, legendWidth / 2, titleMargin + 3 * legendFontSize);
+      drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
+      drawText(vs, svg, maxValue, vs.legendWidth / 2, titleMargin + vs.legendFontSize);
+      drawText(vs, svg, meanValue, vs.legendWidth / 2, titleMargin + 2 * vs.legendFontSize);
+      drawText(vs, svg, minValue, vs.legendWidth / 2, titleMargin + 3 * vs.legendFontSize);
 
-      drawCircle(svg, bigElementSize + circleBorderWidth + legendInnerMargin, titleMargin + bigElementSize, bigElementSize, legendBackgroundColor, legendShapeColor, circleBorderWidth);
-      drawCircle(svg, bigElementSize + circleBorderWidth + legendInnerMargin, titleMargin + bigElementSize * 2 - mediumElementSize, mediumElementSize, legendBackgroundColor, legendShapeColor, circleBorderWidth);
-      drawCircle(svg, bigElementSize + circleBorderWidth + legendInnerMargin, titleMargin + bigElementSize * 2 - smallElementSize, smallElementSize, legendBackgroundColor, legendShapeColor, circleBorderWidth);
+      drawCircle(svg, bigElementSize + circleBorderWidth + vs.legendInnerMargin, titleMargin + bigElementSize, bigElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
+      drawCircle(svg, bigElementSize + circleBorderWidth + vs.legendInnerMargin, titleMargin + bigElementSize * 2 - mediumElementSize, mediumElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
+      drawCircle(svg, bigElementSize + circleBorderWidth + vs.legendInnerMargin, titleMargin + bigElementSize * 2 - smallElementSize, smallElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
 
     } else if (elementType === 'edge') {
       var labelOffsetY = titleMargin + bigElementSize * 1.7,
-          rectWidth = (legendWidth - legendInnerMargin * 2) / 3;
+          rectWidth = (vs.legendWidth - vs.legendInnerMargin * 2) / 3;
 
-      height = labelOffsetY + legendFontSize;
+      height = labelOffsetY + vs.legendFontSize;
 
 
-      draw(svg, 'rect', {x:legendBorderWidth, y:legendBorderWidth, width:legendWidth, height:height, stroke:legendBorderColor, 'stroke-width':legendBorderWidth, fill:legendBackgroundColor, rx:10, ry:10});
-      drawWidgetTitle(svg, getPropertyName(styles.size.by), unit);
+      draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:10, ry:10});
+      drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
 
-      draw(svg, 'rect', {x:legendInnerMargin, y:titleMargin + 5, width:rectWidth, height:bigElementSize / 2, fill:legendShapeColor});
-      draw(svg, 'rect', {x:legendInnerMargin + rectWidth, y:titleMargin + 5 + (bigElementSize - mediumElementSize) / 4, width:rectWidth, height:mediumElementSize / 2, fill:legendShapeColor});
-      draw(svg, 'rect', {x:legendInnerMargin + 2 * rectWidth, y:titleMargin + 5 + (bigElementSize - smallElementSize) / 4, width:rectWidth, height:smallElementSize / 2, fill:legendShapeColor});
+      draw(svg, 'rect', {x:vs.legendInnerMargin, y:titleMargin + 5, width:rectWidth, height:bigElementSize / 2, fill:vs.legendShapeColor});
+      draw(svg, 'rect', {x:vs.legendInnerMargin + rectWidth, y:titleMargin + 5 + (bigElementSize - mediumElementSize) / 4, width:rectWidth, height:mediumElementSize / 2, fill:vs.legendShapeColor});
+      draw(svg, 'rect', {x:vs.legendInnerMargin + 2 * rectWidth, y:titleMargin + 5 + (bigElementSize - smallElementSize) / 4, width:rectWidth, height:smallElementSize / 2, fill:vs.legendShapeColor});
 
-      drawText(svg, maxValue, legendInnerMargin + rectWidth * 0.5, labelOffsetY, 'middle');
-      drawText(svg, meanValue, legendInnerMargin + rectWidth * 1.5, labelOffsetY, 'middle');
-      drawText(svg, minValue, legendInnerMargin + rectWidth * 2.5, labelOffsetY, 'middle');
+      drawText(vs, svg, maxValue, vs.legendInnerMargin + rectWidth * 0.5, labelOffsetY, 'middle');
+      drawText(vs, svg, meanValue, vs.legendInnerMargin + rectWidth * 1.5, labelOffsetY, 'middle');
+      drawText(vs, svg, minValue, vs.legendInnerMargin + rectWidth * 2.5, labelOffsetY, 'middle');
     }
 
-    svg.width = totalWidgetWidth;
-    svg.height = height + (legendBorderWidth + legendOuterMargin) * 2;
+    svg.width = vs.totalWidgetWidth;
+    svg.height = height + (vs.legendBorderWidth + vs.legendOuterMargin) * 2;
 
     return svg;
   }
 
-  function drawNonSizeLegend(graph, designPluginInstance, elementType, visualVar, unit) {
-    var svg = document.createElement('svg'),
+  function drawNonSizeLegend(visualSettings, graph, designPluginInstance, elementType, visualVar, unit) {
+    var vs = visualSettings,
+        svg = document.createElement('svg'),
         elts = elementType === 'node' ? graph.nodes() : graph.edges(),
         styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges,
         palette = designPluginInstance.palette,
-        lineHeight = legendFontSize * 1.5,
-        titleMargin = legendTitleFontSize + legendInnerMargin + lineHeight,
+        lineHeight = vs.legendFontSize * 1.5,
+        titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + lineHeight,
         quantitativeColorEdge = elementType === 'edge' && visualVar === 'color' && styles.color.bins,
         scheme = quantitativeColorEdge ? palette[styles.color.scheme][styles.color.bins] : palette[styles[visualVar].scheme],
         height = lineHeight * Object.keys(scheme).length + titleMargin + (elementType === 'edge' && visualVar === 'type' ? lineHeight : 0),
-        leftColumnWidth = legendWidth / 3,
+        leftColumnWidth = vs.legendWidth / 3,
         offsetY = titleMargin;
 
-    draw(svg, 'rect', {x:legendBorderWidth, y:legendBorderWidth, width:legendWidth, height:height, stroke:legendBorderColor, 'stroke-width':legendBorderWidth, fill:legendBackgroundColor, rx:10, ry:10});
-    drawWidgetTitle(svg, getPropertyName(styles[visualVar].by), unit);
+    draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:10, ry:10});
+    drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
 
     /* Display additional information for the type of edge */
     if (elementType === 'edge' && visualVar === 'type') {
-      drawText(svg, '(source node to target node)', legendWidth / 2, offsetY, 'middle');
+      drawText(vs, svg, '(source node to target node)', vs.legendWidth / 2, offsetY, 'middle');
       offsetY += lineHeight;
     }
 
     iterate(scheme, function (value) {
       if (visualVar === 'color') {
         if (elementType === 'edge') {
-          draw(svg, 'rect', {x:legendInnerMargin, y:offsetY - lineHeight / 8, width:leftColumnWidth - legendInnerMargin * 2, height:lineHeight / 4, fill:value});
+          draw(svg, 'rect', {x:vs.legendInnerMargin, y:offsetY - lineHeight / 8, width:leftColumnWidth - vs.legendInnerMargin * 2, height:lineHeight / 4, fill:value});
         } else {
-          drawCircle(svg, leftColumnWidth / 2, offsetY, legendFontSize / 2, value);
+          drawCircle(svg, leftColumnWidth / 2, offsetY, vs.legendFontSize / 2, value);
         }
       } else if (visualVar === 'icon') {
-        drawText(svg, value.content, leftColumnWidth / 2, offsetY, 'middle', value.color, value.font, legendFontSize * value.scale);
+        drawText(vs, svg, value.content, leftColumnWidth / 2, offsetY, 'middle', value.color, value.font, vs.legendFontSize * value.scale);
       } else if (visualVar === 'type') {
         if (elementType === 'edge') {
-          drawEdge(svg, value, legendInnerMargin, leftColumnWidth - legendInnerMargin, offsetY, legendFontSize / 3);
+          drawEdge(vs, svg, value, vs.legendInnerMargin, leftColumnWidth - vs.legendInnerMargin, offsetY, vs.legendFontSize / 3);
         } else {
-          drawShape(svg, value, leftColumnWidth / 2, offsetY, legendFontSize / 2);
+          drawShape(vs, svg, value, leftColumnWidth / 2, offsetY, vs.legendFontSize / 2);
         }
       }
       offsetY += lineHeight;
@@ -622,30 +645,30 @@
 
       for (var i = 0; i < scheme.length; ++i) {
         var txt = round(valueList[i] + (isInteger && i !== 0 ? 1 : 0), isInteger) + ' - ' + round(valueList[i+1], isInteger);
-        drawText(svg, txt, leftColumnWidth * 1.2, offsetY, 'left', null, null, null, 'middle');
+        drawText(vs, svg, txt, leftColumnWidth * 1.2, offsetY, 'left', null, null, null, 'middle');
         offsetY += lineHeight;
       }
     } else {
       iterate(scheme, function (value, key) {
-        drawText(svg, prettyfy(key), leftColumnWidth * 1.2, offsetY, 'left', null, null, null, 'middle');
+        drawText(vs, svg, prettyfy(key), leftColumnWidth * 1.2, offsetY, 'left', null, null, null, 'middle');
         offsetY += lineHeight;
       });
     }
 
-    svg.width = totalWidgetWidth;
-    svg.height = height + (legendBorderWidth + legendOuterMargin) * 2;
+    svg.width = vs.totalWidgetWidth;
+    svg.height = height + (vs.legendBorderWidth + vs.legendOuterMargin) * 2;
 
     return svg;
   }
 
-  function drawText(svg, content, x, y, textAlign, color, fontFamily, fontSize, verticalAlign) {
+  function drawText(vs, svg, content, x, y, textAlign, color, fontFamily, fontSize, verticalAlign) {
     createAndAppend(svg, 'text', {
       x: x,
       y: y,
       'text-anchor': textAlign ? textAlign : 'left',
-      fill: color ? color : legendFontColor,
-      'font-size': fontSize ? fontSize : legendFontSize,
-      'font-family': fontFamily ? fontFamily : legendFontFamily,
+      fill: color ? color : vs.legendFontColor,
+      'font-size': fontSize ? fontSize : vs.legendFontSize,
+      'font-family': fontFamily ? fontFamily : vs.legendFontFamily,
       'alignment-baseline': verticalAlign ? verticalAlign : 'auto'
     }, content);
   }
@@ -661,20 +684,20 @@
     });
   }
 
-  function drawEdge(svg, type, x1, x2, y, size) {
+  function drawEdge(vs, svg, type, x1, x2, y, size) {
     var triangleSize = size * 2.5,
         curveHeight = size * 3,
         offsetX = Math.sqrt(3) / 2 * triangleSize;
 
     if (type === 'arrow') {
-      drawLine(svg, x1, y, x2 - offsetX + 1, y, legendShapeColor, size);
-      drawPolygon(svg, [x2, y, x2 - offsetX, y - triangleSize / 2, x2 - offsetX, y + triangleSize / 2]);
+      drawLine(svg, x1, y, x2 - offsetX + 1, y, vs.legendShapeColor, size);
+      drawPolygon(svg, [x2, y, x2 - offsetX, y - triangleSize / 2, x2 - offsetX, y + triangleSize / 2], vs.legendShapeColor);
     } else if (type === 'parallel') {
       size *= 0.8;
-      drawLine(svg, x1, y - size, x2, y - size, legendShapeColor, size);
-      drawLine(svg, x1, y + size, x2, y + size, legendShapeColor, size);
+      drawLine(svg, x1, y - size, x2, y - size, vs.legendShapeColor, size);
+      drawLine(svg, x1, y + size, x2, y + size, vs.legendShapeColor, size);
     } else if (type === 'curve') {
-      drawCurve(svg, x1, y, (x1 + x2) / 2, y - curveHeight, x2, y, legendShapeColor, size);
+      drawCurve(svg, x1, y, (x1 + x2) / 2, y - curveHeight, x2, y, vs.legendShapeColor, size);
     } else if (type === 'curvedArrow') {
       var angle,
           len = x2 - x1;
@@ -688,16 +711,16 @@
         angle = 30;
       }
 
-      drawCurve(svg, x1, y, (x1 + x2) / 2, y - curveHeight, x2 - triangleSize / 2, y - size, legendShapeColor, size);
-      drawPolygon(svg, [x2, y, x2 - offsetX, y - triangleSize / 2, x2 - offsetX, y + triangleSize / 2], {angle:angle, cx:x2, cy:y});
+      drawCurve(svg, x1, y, (x1 + x2) / 2, y - curveHeight, x2 - triangleSize / 2, y - size, vs.legendShapeColor, size);
+      drawPolygon(svg, [x2, y, x2 - offsetX, y - triangleSize / 2, x2 - offsetX, y + triangleSize / 2], vs.legendShapeColor, {angle:angle, cx:x2, cy:y});
     } else if (type === 'dashed') {
       var dashArray = '8 3';  // Same values as in sigma.renderers.linkurious/canvas/sigma.canvas.edges.dashed
-      drawLine(svg, x1, y, x2, y, legendShapeColor, size, dashArray);
+      drawLine(svg, x1, y, x2, y, vs.legendShapeColor, size, dashArray);
     } else if (type === 'dotted') {
       var dotDashArray = '2'; // Same values as in sigma.renderers.linkurious/canvas/sigma.canvas.edges.dotted
-      drawLine(svg, x1, y, x2, y, legendShapeColor, size, dotDashArray);
+      drawLine(svg, x1, y, x2, y, vs.legendShapeColor, size, dotDashArray);
     } else if (type === 'tapered') {
-      drawPolygon(svg, [x1, y + size, x1, y - size, x2, y]);
+      drawPolygon(svg, [x1, y + size, x1, y - size, x2, y], vs.legendShapeColor);
     }
   }
 
@@ -712,7 +735,7 @@
     });
   }
 
-  function drawShape(svg, shape, x, y, size) {
+  function drawShape(vs, svg, shape, x, y, size) {
     var points = [],
         angle;
 
@@ -751,22 +774,22 @@
     }
 
     if (shape !== 'cross') {
-      drawPolygon(svg, points);
+      drawPolygon(svg, points, vs.legendShapeColor);
     } else {
       size *= 1.2;
       var lineWidth = 2; // Arbitrary
-      drawLine(svg, x - size, y, x + size, y, legendShapeColor, lineWidth);
-      drawLine(svg, x, y - size, x, y + size, legendShapeColor, lineWidth);
+      drawLine(svg, x - size, y, x + size, y, vs.legendShapeColor, lineWidth);
+      drawLine(svg, x, y - size, x, y + size, vs.legendShapeColor, lineWidth);
     }
   }
 
-  function drawPolygon(svg, points, rotation) {
+  function drawPolygon(svg, points, color, rotation) {
     var attrPoints = points[0] + ',' + points[1];
     for (var i = 2; i < points.length; i += 2) {
       attrPoints += ' ' + points[i] + ',' + points[i+1];
     }
 
-    var attributes = {points:attrPoints, fill:legendShapeColor};
+    var attributes = {points:attrPoints, fill:color};
     if (rotation) {
       attributes.transform = 'rotate(' + rotation.angle + ', ' + rotation.cx + ', ' + rotation.cy + ')';
     }
@@ -790,11 +813,11 @@
     createAndAppend(svg, type, args);
   }
 
-  function drawWidgetTitle(svg, title, unit) {
+  function drawWidgetTitle(vs, svg, title, unit) {
     var text = title + (unit ? ' (' + unit + ')' : ''),
-        fontSize = shrinkFontSize(text, legendTitleFontFamily, legendTitleFontSize, legendWidth - legendInnerMargin);
+        fontSize = shrinkFontSize(text, vs.legendTitleFontFamily, vs.legendTitleFontSize, vs.legendWidth - vs.legendInnerMargin);
 
-    drawText(svg, text, legendWidth / 2, legendFontSize + legendInnerMargin, 'middle', legendTitleFontColor, legendTitleFontFamily, fontSize);
+    drawText(vs, svg, text, vs.legendWidth / 2, vs.legendFontSize + vs.legendInnerMargin, 'middle', vs.legendTitleFontColor, vs.legendTitleFontFamily, fontSize);
   }
 
   function prettyfy(txt) {

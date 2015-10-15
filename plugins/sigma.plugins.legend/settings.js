@@ -26,7 +26,7 @@
     /* {string} Color of the titles */
     legendTitleFontColor: 'black',
     /* {string} Color of the shapes in the legend */
-    legendShapeColor: 'black',
+    legendShapeColor: 'orange',
     /* {string} Color of the widgets' background */
     legendBackgroundColor: 'white',
     /* {string} Color of the widgets' border */
