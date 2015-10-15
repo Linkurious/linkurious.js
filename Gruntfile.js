@@ -106,7 +106,6 @@ module.exports = function(grunt) {
     'renderers.glyphs',
     'renderers.halo',
     'renderers.linkurious',
-    'renderers.parallelEdges',
     'statistics.HITS',
     'statistics.louvain'
   ];
