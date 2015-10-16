@@ -86,8 +86,8 @@
    */
   function buildImageFromSvg(svg, externalCSS, onload) {
     var str =
-      '<?xml-stylesheet type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" ?>' +
-      '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
+      '<?xml-stylesheet type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" ?>'
+      + '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
         //+ '<defs><style type="text/css"><![CDATA[' + externalCSS + ']]></style></defs>'
 
     //for (var i = 0; i < externalCSS.length; ++i) {
@@ -432,7 +432,7 @@
           offsetY = vs.legendInnerMargin;
 
       this.svg = document.createElement('svg');
-      draw(this.svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:10, ry:10});
+      draw(this.svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:vs.legendInnerMargin, ry:vs.legendInnerMargin});
 
       for (var i = 0; i < lines.length; ++i) {
         drawText(vs, this.svg, lines[i], vs.legendInnerMargin, offsetY, null, null, null, null, 'text-before-edge');
@@ -561,7 +561,7 @@
 
       height = titleMargin + bigElementSize * 2 + 10;
 
-      draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:10, ry:10});
+      draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:vs.legendInnerMargin, ry:vs.legendInnerMargin});
 
       drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
       drawText(vs, svg, maxValue, vs.legendWidth / 2, titleMargin + vs.legendFontSize);
@@ -611,7 +611,7 @@
         leftColumnWidth = vs.legendWidth / 3,
         offsetY = titleMargin;
 
-    draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:10, ry:10});
+    draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:vs.legendInnerMargin, ry:vs.legendInnerMargin});
     drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
 
     /* Display additional information for the type of edge */
