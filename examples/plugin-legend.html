@@ -136,13 +136,13 @@
       'Nothing':'cross'
     },
     relationDurationScheme: {
-      '> 40 years': 'parallel',
-      '> 20 years': 'arrow',
-      '> 10 years': 'curve',
-      '> 5 years': 'curvedArrow',
-      '> 2 years': 'dashed',
-      '> 1 year': 'dotted',
-      '< 1 year': 'tapered'
+      'Amazing': 'parallel',
+      'Good': 'arrow',
+      'Quite good but not that much': 'curve',
+      'Not really good': 'curvedArrow',
+      'Bad': 'dashed',
+      'Really bad': 'dotted',
+      'In ruins': 'tapered'
     },
     meetingFrequencyScheme: {
       7: ['#132b43','#1d3f5d','#27547a','#326896','#3d7fb5','#4897d4','#54aef3']
@@ -191,7 +191,7 @@
         properties: {
           relation_strength: Math.ceil(Math.random() * 100),
           relation_type: randomValue(['Love, Hatred']),
-          relation_duration: randomValue(['> 40 years', '> 20 years', '> 10 years', '> 5 years', '> 2 years', '> 1 year', '< 1 year']),
+          relationship_quality: randomValue(['Amazing', 'Good', 'Quite good but not that much', 'Not really good', 'Bad', 'Really bad', 'In ruins']),
           meeting_frequency: Math.ceil(Math.random() * 30)
         }
       }

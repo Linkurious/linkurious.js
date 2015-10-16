@@ -330,7 +330,7 @@
           offsetY = vs.legendInnerMargin;
 
       this.svg = document.createElement('svg');
-      drawBackground(svg, vs);
+      drawBackground(this.svg, vs, height);
 
       for (var i = 0; i < lines.length; ++i) {
         drawText(vs, this.svg, lines[i], vs.legendInnerMargin, offsetY, null, null, null, null, 'text-before-edge');
@@ -442,7 +442,7 @@
 
       height = titleMargin + bigElementSize * 2 + 10;
 
-      drawBackground(svg, vs);
+      drawBackground(svg, vs, height);
       drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
 
       var textOffsetX = bigElementSize * 2 + circleBorderWidth + vs.legendInnerMargin * 2;
@@ -465,7 +465,7 @@
       height = labelOffsetY + vs.legendFontSize;
 
 
-      drawBackground(svg, vs);
+      drawBackground(svg, vs, height);
       drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
 
       draw(svg, 'rect', {x:vs.legendInnerMargin, y:titleMargin + 5, width:rectWidth, height:bigElementSize / 2,
@@ -503,7 +503,7 @@
         textOffsetX = elementType === 'edge' ? leftColumnWidth : vs.legendFontSize * 1.5 + vs.legendInnerMargin,
         icons = {};
 
-    drawBackground(svg, vs);
+    drawBackground(svg, vs, height);
     drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
 
     /* Display additional information for the type of edge */
@@ -560,7 +560,10 @@
       }
     } else {
       iterate(scheme, function (value, key) {
-        drawText(vs, svg, prettyfy(key), textOffsetX, offsetY, 'left', null, null, null, 'middle');
+        var shrinkedText = getShrinkedText(prettyfy(key), vs.legendWidth - vs.legendInnerMargin - textOffsetX,
+          vs.legendFontFamily, vs.legendFontSize);
+
+        drawText(vs, svg, shrinkedText, textOffsetX, offsetY, 'left', null, null, null, 'middle');
         offsetY += lineHeight;
       });
     }
@@ -569,6 +572,24 @@
     svg.height = height + (vs.legendBorderWidth + vs.legendOuterMargin) * 2;
 
     return svg;
+  }
+
+  function getShrinkedText(text, maxWidth, fontFamily, fontSize) {
+    var textWidth = getTextWidth(text, fontFamily, fontSize, false),
+        shrinked = false;
+
+    while (textWidth > maxWidth) {
+      shrinked = true;
+      var ratio = maxWidth / textWidth,
+          text = text.substr(0, text.length * ratio);
+      textWidth = getTextWidth(text, fontFamily, fontSize, false);
+    }
+
+    if (shrinked) {
+      text += '...';
+    }
+
+    return text;
   }
 
   function drawImage(svg, base64Img, x, y) {
@@ -602,7 +623,7 @@
     });
   }
 
-  function drawBackground(svg, vs) {
+  function drawBackground(svg, vs, height) {
     draw(svg, 'rect', {
       x:vs.legendBorderWidth,
       y:vs.legendBorderWidth,
