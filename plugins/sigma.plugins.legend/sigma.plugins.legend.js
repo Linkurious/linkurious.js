@@ -105,28 +105,9 @@
     return img;
   }
 
-  var _legendInstances = {};
-
-  sigma.plugins.legend = function (s) {
-    if (!_legendInstances[s.id]) {
-      _legendInstances[s.id] = new LegendPlugin(s);
-    }
-
-    return _legendInstances[s.id];
-  };
-
-  sigma.plugins.killLegend = function (s) {
-    var legendInstance = _legendInstances[s.id];
-    if (legendInstance) {
-      iterate(legendInstance.widgets, function (value, key) {
-        legendInstance.widgets[key] = undefined;
-      });
-      _legendInstances[s.id] = undefined;
-    }
-  };
-
   function computeTotalWidth(visualSettings) {
-    visualSettings.totalWidgetWidth = visualSettings.legendWidth + (visualSettings.legendBorderWidth + visualSettings.legendOuterMargin) * 2
+    visualSettings.totalWidgetWidth =
+      visualSettings.legendWidth + (visualSettings.legendBorderWidth + visualSettings.legendOuterMargin) * 2
   }
 
 
@@ -184,15 +165,6 @@
     this.externalCSS = externalCSSList;
   };
 
-  /**
-   * Build the widgets and redraw the legend.
-   * Must be called whenever the graph's design changes
-   */
-  LegendPlugin.prototype.redraw = function () {
-    this.buildWidgets();
-    this.drawLayout();
-  };
-
   LegendPlugin.prototype.buildWidgets = function () {
     var self = this;
     iterate(this.widgets, function (value) {
@@ -200,27 +172,6 @@
         return self.enoughSpace && self.visible;
       });
     });
-  };
-
-  /**
-   * Toggle the visibility of the legend.
-   */
-  LegendPlugin.prototype.toggleVisibility = function () {
-    this.visible = !this.visible;
-    this.draw();
-  };
-
-  /**
-   * Change the position of the legend.
-   * @param newPlacement 'top', 'bottom', 'left' or 'right'
-   */
-  LegendPlugin.prototype.setPlacement = function (newPlacement) {
-    if (['top', 'bottom', 'right', 'left'].indexOf(newPlacement) === -1) {
-      return;
-    }
-
-    this.placement = newPlacement;
-    this.drawLayout();
   };
 
   LegendPlugin.prototype.drawLayout = function () {
@@ -279,8 +230,10 @@
       for (var i = 0; i < cols.length; ++i) {
         var h = this.placement === 'bottom' ? height - cols[i].height : 0;
         for (var j = 0; j < cols[i].widgets.length; ++j) {
-          cols[i].widgets[j].x = vs.totalWidgetWidth * i + (this.placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendInnerMargin);
-          cols[i].widgets[j].y = h + (this.placement === 'bottom' ? (maxHeight - height - vs.legendInnerMargin) : vs.legendInnerMargin);
+          cols[i].widgets[j].x = vs.totalWidgetWidth * i +
+            (this.placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendInnerMargin);
+          cols[i].widgets[j].y = h +
+            (this.placement === 'bottom' ? (maxHeight - height - vs.legendInnerMargin) : vs.legendInnerMargin);
           h += cols[i].widgets[j].svg.height;
         }
       }
@@ -341,60 +294,9 @@
     }
   };
 
-  /**
-   * Add a widget to the legend. Redraw the legend.
-   * @param elementType 'node' or 'edge'
-   * @param visualVar   'size', 'color', 'icon'
-   * @param ?unit       Optional. The unit to be displayed beside the widget's title
-   * @returns {*}       The added widget.
-   */
-  LegendPlugin.prototype.addWidget = function (elementType, visualVar, unit) {
-    var widget = this.widgets[makeWidgetId(elementType, visualVar)];
-
-    if (!widget) {
-      widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, elementType, visualVar);
-      widget.id = makeWidgetId(elementType, visualVar);
-      this.widgets[widget.id] = widget;
-    }
-    widget.unit = unit;
-    widget.build();
-
-    return widget;
-  };
 
   LegendPlugin.prototype.mustDisplayWidget = function (widget) {
     return this.visible && (this.enoughSpace || widget.pinned) && this.widgets[widget.id] !== undefined;
-  };
-
-  /**
-   * Add a widget that only contains text. Redraw the legend.
-   * @param text              The text to be displayed inside the widget.
-   * @returns {LegendWidget}  The added widget
-   */
-  LegendPlugin.prototype.addTextWidget = function (text) {
-    var widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, null, 'text');
-
-    widget.text = text;
-    widget.id = 'text' + this.textWidgetCounter++;
-    this.widgets[widget.id] = widget;
-
-    widget.build();
-
-    return widget;
-  };
-
-  /**
-   * Remove a widget.
-   * @param arg1  The widget to remove, or the type of element ('node' or 'edge')
-   * @param arg2  If the first argument was the type of element, it represents the visual variable
-   *              of the widget to remove
-   */
-  LegendPlugin.prototype.removeWidget = function (arg1, arg2) {
-    var id = arg1 instanceof LegendWidget ? arg1.id : makeWidgetId(arg1, arg2);
-    if (this.widgets[id]) {
-      this.widgets[id] = undefined;
-      this.drawLayout();
-    }
   };
 
   function LegendWidget(canvas, sigmaInstance, designPlugin, legendPlugin, elementType, visualVar) {
@@ -413,15 +315,6 @@
     this.icons = [];
   }
 
-  /**
-   * Unpin the widget. An pinned widget is not taken into account when it is positioned through
-   * automatic layout.
-   */
-  LegendWidget.prototype.unpin = function () {
-    this.pinned = false;
-    this.legendPlugin.drawLayout();
-  };
-
   LegendWidget.prototype.build = function () {
     var self = this,
         vs = this.legendPlugin.visualSettings;
@@ -437,7 +330,7 @@
           offsetY = vs.legendInnerMargin;
 
       this.svg = document.createElement('svg');
-      draw(this.svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:vs.legendBorderRadius, ry:vs.legendBorderRadius});
+      drawBackground(svg, vs);
 
       for (var i = 0; i < lines.length; ++i) {
         drawText(vs, this.svg, lines[i], vs.legendInnerMargin, offsetY, null, null, null, null, 'text-before-edge');
@@ -492,28 +385,6 @@
 
       });
     }
-  };
-
-  /**
-   * Change the position of a widget and pin it. An pinned widget is not taken into account when
-   * it is positioned through automatic layout.
-   * @param x
-   * @param y
-   */
-  LegendWidget.prototype.setPosition = function (x, y) {
-    this.pinned = true;
-    this.x = x;
-    this.y = y;
-    this.legendPlugin.drawLayout();
-  };
-
-  /**
-   * Set the text of a widget. The widget must be a text widget.
-   * @param text The text to be displayed by the widget.
-   */
-  LegendWidget.prototype.setText = function (text) {
-    this.text = text;
-    this.build();
   };
 
   function getBoundaryValues(elements, propertyName) {
@@ -571,16 +442,21 @@
 
       height = titleMargin + bigElementSize * 2 + 10;
 
-      draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:vs.legendBorderRadius, ry:vs.legendBorderRadius});
-
+      drawBackground(svg, vs);
       drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
-      drawText(vs, svg, maxValue, bigElementSize * 2 + circleBorderWidth + vs.legendInnerMargin * 2, titleMargin + vs.legendFontSize);
-      drawText(vs, svg, meanValue, bigElementSize * 2 + circleBorderWidth + vs.legendInnerMargin * 2, titleMargin + 2 * vs.legendFontSize);
-      drawText(vs, svg, minValue, bigElementSize * 2 + circleBorderWidth + vs.legendInnerMargin * 2, titleMargin + 3 * vs.legendFontSize);
 
-      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize, bigElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
-      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize * 2 - mediumElementSize, mediumElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
-      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize * 2 - smallElementSize, smallElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
+      var textOffsetX = bigElementSize * 2 + circleBorderWidth + vs.legendInnerMargin * 2;
+      drawText(vs, svg, maxValue, textOffsetX, titleMargin + vs.legendFontSize);
+      drawText(vs, svg, meanValue, textOffsetX, titleMargin + 2 * vs.legendFontSize);
+      drawText(vs, svg, minValue, textOffsetX, titleMargin + 3 * vs.legendFontSize);
+
+
+      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize, bigElementSize,
+                 vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
+      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize * 2 - mediumElementSize,
+                 mediumElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
+      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize * 2 - smallElementSize,
+                 smallElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
 
     } else if (elementType === 'edge') {
       var labelOffsetY = titleMargin + bigElementSize * 1.7,
@@ -589,12 +465,15 @@
       height = labelOffsetY + vs.legendFontSize;
 
 
-      draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:10, ry:10});
+      drawBackground(svg, vs);
       drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
 
-      draw(svg, 'rect', {x:vs.legendInnerMargin, y:titleMargin + 5, width:rectWidth, height:bigElementSize / 2, fill:vs.legendShapeColor});
-      draw(svg, 'rect', {x:vs.legendInnerMargin + rectWidth, y:titleMargin + 5 + (bigElementSize - mediumElementSize) / 4, width:rectWidth, height:mediumElementSize / 2, fill:vs.legendShapeColor});
-      draw(svg, 'rect', {x:vs.legendInnerMargin + 2 * rectWidth, y:titleMargin + 5 + (bigElementSize - smallElementSize) / 4, width:rectWidth, height:smallElementSize / 2, fill:vs.legendShapeColor});
+      draw(svg, 'rect', {x:vs.legendInnerMargin, y:titleMargin + 5, width:rectWidth, height:bigElementSize / 2,
+                         fill:vs.legendShapeColor});
+      draw(svg, 'rect', {x:vs.legendInnerMargin + rectWidth, y:titleMargin + 5 + (bigElementSize - mediumElementSize) / 4,
+                         width:rectWidth, height:mediumElementSize / 2, fill:vs.legendShapeColor});
+      draw(svg, 'rect', {x:vs.legendInnerMargin + 2 * rectWidth, y:titleMargin + 5 + (bigElementSize - smallElementSize) / 4,
+                         width:rectWidth, height:smallElementSize / 2, fill:vs.legendShapeColor});
 
       drawText(vs, svg, maxValue, vs.legendInnerMargin + rectWidth * 0.5, labelOffsetY, 'middle');
       drawText(vs, svg, meanValue, vs.legendInnerMargin + rectWidth * 1.5, labelOffsetY, 'middle');
@@ -617,13 +496,14 @@
         titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + lineHeight,
         quantitativeColorEdge = elementType === 'edge' && visualVar === 'color' && styles.color.bins,
         scheme = quantitativeColorEdge ? palette[styles.color.scheme][styles.color.bins] : palette[styles[visualVar].scheme],
-        height = lineHeight * Object.keys(scheme).length + titleMargin + (elementType === 'edge' && visualVar === 'type' ? lineHeight : 0),
+        height = lineHeight * Object.keys(scheme).length + titleMargin +
+            (elementType === 'edge' && visualVar === 'type' ? lineHeight : 0),
         leftColumnWidth = vs.legendWidth / 3,
         offsetY = titleMargin,
         textOffsetX = elementType === 'edge' ? leftColumnWidth : vs.legendFontSize * 1.5 + vs.legendInnerMargin,
         icons = {};
 
-    draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:vs.legendBorderRadius, ry:vs.legendBorderRadius});
+    drawBackground(svg, vs);
     drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
 
     /* Display additional information for the type of edge */
@@ -648,12 +528,14 @@
     iterate(scheme, function (value) {
       if (visualVar === 'color') {
         if (elementType === 'edge') {
-          draw(svg, 'rect', {x:vs.legendInnerMargin, y:offsetY - lineHeight / 8, width:leftColumnWidth - vs.legendInnerMargin * 2, height:lineHeight / 4, fill:value});
+          draw(svg, 'rect', {x:vs.legendInnerMargin, y:offsetY - lineHeight / 8,
+                             width:leftColumnWidth - vs.legendInnerMargin * 2, height:lineHeight / 4, fill:value});
         } else {
           drawCircle(svg, vs.legendInnerMargin + vs.legendFontSize / 2, offsetY, vs.legendFontSize / 2, value);
         }
       } else if (visualVar === 'icon') {
-        drawText(vs, svg, value.content, vs.legendInnerMargin, offsetY, 'left', value.color, value.font, value.scale * vs.legendFontSize, 'middle');
+        drawText(vs, svg, value.content, vs.legendInnerMargin, offsetY, 'left', value.color, value.font,
+                          value.scale * vs.legendFontSize, 'middle');
         //drawImage(svg, icons[value.content], leftColumnWidth / 2, offsetY);
       } else if (visualVar === 'type') {
         if (elementType === 'edge') {
@@ -720,6 +602,19 @@
     });
   }
 
+  function drawBackground(svg, vs) {
+    draw(svg, 'rect', {
+      x:vs.legendBorderWidth,
+      y:vs.legendBorderWidth,
+      width:vs.legendWidth,
+      height:height,
+      stroke:vs.legendBorderColor,
+      'stroke-width':vs.legendBorderWidth,
+      fill:vs.legendBackgroundColor,
+      rx:vs.legendBorderRadius,
+      ry:vs.legendBorderRadius});
+  }
+
   function drawEdge(vs, svg, type, x1, x2, y, size) {
     var triangleSize = size * 2.5,
         curveHeight = size * 3,
@@ -748,7 +643,8 @@
       }
 
       drawCurve(svg, x1, y, (x1 + x2) / 2, y - curveHeight, x2 - triangleSize / 2, y - size, vs.legendShapeColor, size);
-      drawPolygon(svg, [x2, y, x2 - offsetX, y - triangleSize / 2, x2 - offsetX, y + triangleSize / 2], vs.legendShapeColor, {angle:angle, cx:x2, cy:y});
+      drawPolygon(svg, [x2, y, x2 - offsetX, y - triangleSize / 2, x2 - offsetX, y + triangleSize / 2],
+                  vs.legendShapeColor, {angle:angle, cx:x2, cy:y});
     } else if (type === 'dashed') {
       var dashArray = '8 3';  // Same values as in sigma.renderers.linkurious/canvas/sigma.canvas.edges.dashed
       drawLine(svg, x1, y, x2, y, vs.legendShapeColor, size, dashArray);
@@ -850,11 +746,13 @@
   }
 
   function drawWidgetTitle(vs, svg, title, unit) {
-    var text = (title.length > vs.legendTitleMaxSize ? title.substring(0, vs.legendTitleMaxSize) : title) + (unit ? ' (' + unit + ')' : ''),
+    var text = (title.length > vs.legendTitleMaxSize ? title.substring(0, vs.legendTitleMaxSize) : title)
+             + (unit ? ' (' + unit + ')' : ''),
         fontSize = shrinkFontSize(text, vs.legendTitleFontFamily, vs.legendTitleFontSize, vs.legendWidth - vs.legendInnerMargin),
         offsetX = vs.legendTitleTextAlign === 'middle' ? vs.legendWidth / 2 : vs.legendInnerMargin;
 
-    drawText(vs, svg, text, offsetX, vs.legendFontSize + vs.legendInnerMargin, vs.legendTitleTextAlign, vs.legendTitleFontColor, vs.legendTitleFontFamily, fontSize);
+    drawText(vs, svg, text, offsetX, vs.legendFontSize + vs.legendInnerMargin, vs.legendTitleTextAlign,
+      vs.legendTitleFontColor, vs.legendTitleFontFamily, fontSize);
   }
 
   function prettyfy(txt) {
@@ -886,5 +784,141 @@
       return Math.round(number * 1000) / 1000;
     }
   }
+
+  /* PUBLIC FUNCTIONS */
+
+  var _legendInstances = {};
+  sigma.plugins.legend = function (s) {
+    if (!_legendInstances[s.id]) {
+      _legendInstances[s.id] = new LegendPlugin(s);
+    }
+
+    return _legendInstances[s.id];
+  };
+
+  sigma.plugins.killLegend = function (s) {
+    var legendInstance = _legendInstances[s.id];
+    if (legendInstance) {
+      iterate(legendInstance.widgets, function (value, key) {
+        legendInstance.widgets[key] = undefined;
+      });
+      _legendInstances[s.id] = undefined;
+    }
+  };
+
+  /**
+   * Build the widgets and redraw the legend.
+   * Must be called whenever the graph's design changes
+   */
+  LegendPlugin.prototype.redraw = function () {
+    this.buildWidgets();
+    this.drawLayout();
+  };
+
+  /**
+   * Toggle the visibility of the legend.
+   */
+  LegendPlugin.prototype.toggleVisibility = function () {
+    this.visible = !this.visible;
+    this.draw();
+  };
+
+  /**
+   * Change the position of the legend.
+   * @param newPlacement 'top', 'bottom', 'left' or 'right'
+   */
+  LegendPlugin.prototype.setPlacement = function (newPlacement) {
+    if (['top', 'bottom', 'right', 'left'].indexOf(newPlacement) === -1) {
+      return;
+    }
+
+    this.placement = newPlacement;
+    this.drawLayout();
+  };
+
+
+  /**
+   * Add a widget to the legend. Redraw the legend.
+   * @param elementType 'node' or 'edge'
+   * @param visualVar   'size', 'color', 'icon'
+   * @param ?unit       Optional. The unit to be displayed beside the widget's title
+   * @returns {*}       The added widget.
+   */
+  LegendPlugin.prototype.addWidget = function (elementType, visualVar, unit) {
+    var widget = this.widgets[makeWidgetId(elementType, visualVar)];
+
+    if (!widget) {
+      widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, elementType, visualVar);
+      widget.id = makeWidgetId(elementType, visualVar);
+      this.widgets[widget.id] = widget;
+    }
+    widget.unit = unit;
+    widget.build();
+
+    return widget;
+  };
+
+  /**
+   * Add a widget that only contains text. Redraw the legend.
+   * @param text              The text to be displayed inside the widget.
+   * @returns {LegendWidget}  The added widget
+   */
+  LegendPlugin.prototype.addTextWidget = function (text) {
+    var widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, null, 'text');
+
+    widget.text = text;
+    widget.id = 'text' + this.textWidgetCounter++;
+    this.widgets[widget.id] = widget;
+
+    widget.build();
+
+    return widget;
+  };
+
+  /**
+   * Remove a widget.
+   * @param arg1  The widget to remove, or the type of element ('node' or 'edge')
+   * @param arg2  If the first argument was the type of element, it represents the visual variable
+   *              of the widget to remove
+   */
+  LegendPlugin.prototype.removeWidget = function (arg1, arg2) {
+    var id = arg1 instanceof LegendWidget ? arg1.id : makeWidgetId(arg1, arg2);
+    if (this.widgets[id]) {
+      this.widgets[id] = undefined;
+      this.drawLayout();
+    }
+  };
+
+  /**
+   * Unpin the widget. An pinned widget is not taken into account when it is positioned through
+   * automatic layout.
+   */
+  LegendWidget.prototype.unpin = function () {
+    this.pinned = false;
+    this.legendPlugin.drawLayout();
+  };
+
+
+  /**
+   * Change the position of a widget and pin it. An pinned widget is not taken into account when
+   * it is positioned through automatic layout.
+   * @param x
+   * @param y
+   */
+  LegendWidget.prototype.setPosition = function (x, y) {
+    this.pinned = true;
+    this.x = x;
+    this.y = y;
+    this.legendPlugin.drawLayout();
+  };
+
+  /**
+   * Set the text of a widget. The widget must be a text widget.
+   * @param text The text to be displayed by the widget.
+   */
+  LegendWidget.prototype.setText = function (text) {
+    this.text = text;
+    this.build();
+  };
 
 }).call(this);

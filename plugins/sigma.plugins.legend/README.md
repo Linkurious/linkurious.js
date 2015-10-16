@@ -12,11 +12,13 @@ the design plugin.
 Note: the legend will not be displayed if there is not enough space (except for the widget manually set
 by the user).
 
+See the following [example code](../../examples/plugin-legend.html) for full usage.
+
 ## Usage
 
 ```js
-var legend = sigma.utils.legend(sigmaInstance, settings);
-sigma.utils.killLegend(sigmaInstance);
+var legend = sigma.plugins.legend(sigmaInstance, settings);
+sigma.plugins.killLegend(sigmaInstance);
 
 ```
 
