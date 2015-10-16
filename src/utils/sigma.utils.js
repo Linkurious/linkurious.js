@@ -225,16 +225,18 @@
   /**
    * Return the control point coordinates for a quadratic bezier curve.
    *
-   * @param  {number} x1  The X coordinate of the start point.
-   * @param  {number} y1  The Y coordinate of the start point.
-   * @param  {number} x2  The X coordinate of the end point.
-   * @param  {number} y2  The Y coordinate of the end point.
-   * @return {x,y}        The control point coordinates.
+   * @param  {number}  x1  The X coordinate of the start point.
+   * @param  {number}  y1  The Y coordinate of the start point.
+   * @param  {number}  x2  The X coordinate of the end point.
+   * @param  {number}  y2  The Y coordinate of the end point.
+   * @param  {?number} cc  The curvature coefficients.
+   * @return {x,y}         The control point coordinates.
    */
-  sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2) {
+  sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2, cc) {
+    cc = this.extend(cc, { x: 2, y: 4 });
     return {
-      x: (x1 + x2) / 2 + (y2 - y1) / 4,
-      y: (y1 + y2) / 2 + (x1 - x2) / 4
+      x: (x1 + x2) / cc.x + (y2 - y1) / cc.y,
+      y: (y1 + y2) / cc.x + (x1 - x2) / cc.y
     };
   };
 

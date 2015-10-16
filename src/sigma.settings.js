@@ -126,6 +126,13 @@
     approximateLabelWidth: true,
     // {boolean} Hide edges from nodes too far away
     edgesClippingWithNodes: true,
+    // {number} if sigma.canvas.edges.autoCurve is called, set relative
+    // distance between curved parallel edges (i.e. edges with same
+    // extremities). Smaller value increases distances.
+    autoCurveRatio: 1,
+    // {boolean} if sigma.canvas.edges.autoCurve is called, sort edges by
+    // direction.
+    autoCurveSortByDirection: true,
 
 
     /**

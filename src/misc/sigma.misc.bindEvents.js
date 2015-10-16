@@ -218,7 +218,8 @@
                   source[prefix + 'x'],
                   source[prefix + 'y'],
                   target[prefix + 'x'],
-                  target[prefix + 'y']);
+                  target[prefix + 'y'],
+                  edge.cc);
                 if (
                   sigma.utils.isPointOnQuadraticCurve(
                   modifiedX,

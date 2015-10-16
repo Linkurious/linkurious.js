@@ -32,7 +32,7 @@
         borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
-		    borderColor = settings('nodeBorderColor') === 'default'
+	    borderColor = settings('nodeBorderColor') === 'default'
           ? settings('defaultNodeBorderColor')
           : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;

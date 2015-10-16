@@ -682,6 +682,7 @@
     // Prefix
     var prefix = params.prefix || '',
         cp,
+        cc = params.curvatureCoefficients,
         source,
         target,
         i,
@@ -741,7 +742,7 @@
               this._tree);
           }
           else {
-            cp = sigma.utils.getQuadraticControlPoint(e.x1, e.y1, e.x2, e.y2);
+            cp = sigma.utils.getQuadraticControlPoint(e.x1, e.y1, e.x2, e.y2, edges[i].cc || cc);
             _quadInsert(
               edges[i],
               _geom.quadraticCurveToSquare(e, cp),

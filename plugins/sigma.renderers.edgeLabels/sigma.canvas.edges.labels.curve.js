@@ -55,7 +55,7 @@
         t, sX, sY, tX, tY, cp.x1, cp.y1, cp.x2, cp.y2
       );
     } else {
-      cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
       c = sigma.utils.getPointOnQuadraticCurve(t, sX, sY, tX, tY, cp.x, cp.y);
     }
 
