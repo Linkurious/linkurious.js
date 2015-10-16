@@ -78,6 +78,8 @@
    * to handle the special characters that are not part of Latin1.
    * http://stackoverflow.com/questions/23223718/failed-to-execute-btoa-on-window-the-string-to-be-encoded-contains-characte
    *
+   * TODO: Make that function actually work
+   *
    * @param svg
    * @param externalCSS
    * @param onload
