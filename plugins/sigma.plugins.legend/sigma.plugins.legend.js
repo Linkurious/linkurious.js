@@ -85,9 +85,7 @@
    * @param onload
    */
   function buildImageFromSvg(svg, externalCSS, onload) {
-    var str =
-      '<?xml-stylesheet type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" ?>'
-      + '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
+    var str = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
         //+ '<defs><style type="text/css"><![CDATA[' + externalCSS + ']]></style></defs>'
 
     //for (var i = 0; i < externalCSS.length; ++i) {
@@ -102,6 +100,8 @@
       img.onload = onload;
     }
     img.src = src;
+
+    console.log(str);
 
     return img;
   }
@@ -141,7 +141,6 @@
     this.textWidgetCounter = 1;
     this.enoughSpace = false;
     this.placement = 'bottom';
-    this.externalCSS = [];
 
     this.visualSettings = {
       legendWidth: settings('legendWidth') || 150,
@@ -609,7 +608,8 @@
         scheme = quantitativeColorEdge ? palette[styles.color.scheme][styles.color.bins] : palette[styles[visualVar].scheme],
         height = lineHeight * Object.keys(scheme).length + titleMargin + (elementType === 'edge' && visualVar === 'type' ? lineHeight : 0),
         leftColumnWidth = vs.legendWidth / 3,
-        offsetY = titleMargin;
+        offsetY = titleMargin,
+        icons = {};
 
     draw(svg, 'rect', {x:vs.legendBorderWidth, y:vs.legendBorderWidth, width:vs.legendWidth, height:height, stroke:vs.legendBorderColor, 'stroke-width':vs.legendBorderWidth, fill:vs.legendBackgroundColor, rx:vs.legendInnerMargin, ry:vs.legendInnerMargin});
     drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
@@ -622,6 +622,17 @@
       offsetY += lineHeight;
     }
 
+    if (elementType === 'node' && visualVar === 'icon') {
+      iterate(scheme, function (value) {
+        var icon = document.createElement('canvas'),
+            ctx = icon.getContext('2d');
+        ctx.fillStyle = value.color;
+        ctx.font = (vs.legendFontSize * value.scale) + 'px ' + value.font;
+        ctx.fillText(value.content, 0, vs.legendFontSize * value.scale);
+        icons[value.content] = icon.toDataURL();
+      });
+    }
+
     iterate(scheme, function (value) {
       if (visualVar === 'color') {
         if (elementType === 'edge') {
@@ -630,7 +641,7 @@
           drawCircle(svg, leftColumnWidth / 2, offsetY, vs.legendFontSize / 2, value);
         }
       } else if (visualVar === 'icon') {
-        drawText(vs, svg, value.content, leftColumnWidth / 2, offsetY, 'middle', value.color, value.font, vs.legendFontSize * value.scale);
+        drawImage(svg, icons[value.content], leftColumnWidth / 2, offsetY);
       } else if (visualVar === 'type') {
         if (elementType === 'edge') {
           drawEdge(vs, svg, value, vs.legendInnerMargin, leftColumnWidth - vs.legendInnerMargin, offsetY, vs.legendFontSize / 3);
@@ -663,6 +674,14 @@
     svg.height = height + (vs.legendBorderWidth + vs.legendOuterMargin) * 2;
 
     return svg;
+  }
+
+  function drawImage(svg, base64Img, x, y) {
+    var i = createAndAppend(svg, 'image',  {
+      x:x,
+      y:y,
+      'xlink:href':base64Img
+    });
   }
 
   function drawText(vs, svg, content, x, y, textAlign, color, fontFamily, fontSize, verticalAlign) {
