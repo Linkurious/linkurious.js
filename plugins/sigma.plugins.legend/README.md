@@ -9,6 +9,9 @@ For: Linkurious
 This plugin allows you to automatically generate and display a legend for a graph. It is based on
 the design plugin.
 
+Note: the legend will not be displayed if there is not enough space (except for the widget manually set
+by the user).
+
 ## Usage
 
 ```js

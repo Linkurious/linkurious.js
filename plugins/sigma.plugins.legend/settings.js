@@ -25,16 +25,22 @@
     legendTitleFontSize: 15,
     /* {string} Color of the titles */
     legendTitleFontColor: 'black',
+    /* {number} The maximum number of characters displayed when displaying a widget's title */
+    legendTitleMaxSize: '30',
+    /* {string} The text alignment of the widgets' title ('left', 'middle') */
+    legendTitleTextAlign: 'left',
     /* {string} Color of the shapes in the legend */
-    legendShapeColor: 'orange',
+    legendShapeColor: 'grey',
     /* {string} Color of the widgets' background */
     legendBackgroundColor: 'white',
     /* {string} Color of the widgets' border */
     legendBorderColor: 'black',
+    /* {number} Radius of the widgets' border */
+    legendBorderRadius: 10,
     /* {number}  Size of the widgets' border */
     legendBorderWidth: 2,
     /* {number}  Size of the margin between a widget's borders and its content */
-    legendInnerMargin: 8,
+    legendInnerMargin: 10,
     /* {number}  Size of the margin between widgets */
     legendOuterMargin: 5
   };
