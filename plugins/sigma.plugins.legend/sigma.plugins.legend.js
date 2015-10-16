@@ -101,8 +101,6 @@
     }
     img.src = src;
 
-    console.log(str);
-
     return img;
   }
 
@@ -641,7 +639,8 @@
           drawCircle(svg, leftColumnWidth / 2, offsetY, vs.legendFontSize / 2, value);
         }
       } else if (visualVar === 'icon') {
-        drawImage(svg, icons[value.content], leftColumnWidth / 2, offsetY);
+        drawText(vs, svg, value.content, leftColumnWidth / 2, offsetY, 'middle', value.color, value.font, value.scale * vs.legendFontSize);
+        //drawImage(svg, icons[value.content], leftColumnWidth / 2, offsetY);
       } else if (visualVar === 'type') {
         if (elementType === 'edge') {
           drawEdge(vs, svg, value, vs.legendInnerMargin, leftColumnWidth - vs.legendInnerMargin, offsetY, vs.legendFontSize / 3);
