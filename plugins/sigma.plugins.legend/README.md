@@ -57,6 +57,11 @@ legend.redraw();
 legend.setPlacement(newPlacement);
 
 /**
+ * Toggle the visibility of the legend.
+ */
+legend.toggleVisibility();
+
+/**
  * Change the position of a widget and pin it. An pinned widget is not taken into account when
  * it is positioned through automatic layout.
  * @param x

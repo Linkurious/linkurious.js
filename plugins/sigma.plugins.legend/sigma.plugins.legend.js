@@ -3,7 +3,7 @@
   * [legend] addWidget(elementType, visualVar, ?unit)
   * [legend] removeWidget(widget)/(elementType, visualVar)
   * [legend] setPlacement(top|bottom|right|left)
-  * [legend] refresh()
+  * [legend] redraw()
   * [legend] toggleVisibility()
   * [widget] addTextWidget(text)
   * [widget] setPosition(x, y)
@@ -614,7 +614,9 @@
 
     /* Display additional information for the type of edge */
     if (elementType === 'edge' && visualVar === 'type') {
-      drawText(vs, svg, '(source node to target node)', vs.legendWidth / 2, offsetY, 'middle');
+      var txt =  '(source node to target node)',
+          fontSize = shrinkFontSize(txt, vs.legendFontFamily, vs.legendFontSize, vs.legendWidth - vs.legendInnerMargin);
+      drawText(vs, svg, txt, vs.legendWidth / 2, offsetY, 'middle', vs.legendFontColor, vs.legendFontFamily, fontSize);
       offsetY += lineHeight;
     }
 
@@ -826,7 +828,7 @@
 
   function shrinkFontSize(text, fontFamily, fontSize, maxWidth) {
     while (getTextWidth(text, fontFamily, fontSize, false) > maxWidth) {
-      fontSize -= 2;
+      fontSize -= (fontSize > 15 ? 2 : 1);
     }
 
     return fontSize;

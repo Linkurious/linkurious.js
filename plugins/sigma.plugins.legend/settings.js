@@ -12,17 +12,17 @@
   */
   var settings = {
     /* {number} Width of the widgets */
-    legendWidth: 200,
+    legendWidth: 130,
     /* {string} Name of the font used by the widgets */
     legendFontFamily: 'Arial',
     /* {number}  Size of the text */
-    legendFontSize: 15,
+    legendFontSize: 10,
     /* {string} Color of the text */
     legendFontColor: 'black',
     /* {string} Name of the font used to display the widgets' title */
     legendTitleFontFamily: 'Arial',
     /* {number}  Size of the font used to display the titles */
-    legendTitleFontSize: 25,
+    legendTitleFontSize: 15,
     /* {string} Color of the titles */
     legendTitleFontColor: 'black',
     /* {string} Color of the shapes in the legend */
@@ -34,7 +34,7 @@
     /* {number}  Size of the widgets' border */
     legendBorderWidth: 2,
     /* {number}  Size of the margin between a widget's borders and its content */
-    legendInnerMargin: 15,
+    legendInnerMargin: 8,
     /* {number}  Size of the margin between widgets */
     legendOuterMargin: 5
   };
