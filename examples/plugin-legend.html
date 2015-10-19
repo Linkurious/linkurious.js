@@ -191,7 +191,7 @@
         properties: {
           relation_strength: Math.ceil(Math.random() * 100),
           relation_type: randomValue(['Love, Hatred']),
-          relationship_quality: randomValue(['Amazing', 'Good', 'Quite good but not that much', 'Not really good', 'Bad', 'Really bad', 'In ruins']),
+          relation_quality: randomValue(['Amazing', 'Good', 'Quite good but not that much', 'Not really good', 'Bad', 'Really bad', 'In ruins']),
           meeting_frequency: Math.ceil(Math.random() * 100000000)
         }
       }
@@ -241,7 +241,7 @@
         max: 10
       },
       type: {
-        by: 'data.properties.relation_duration',
+        by: 'data.properties.relation_quality',
         scheme: 'relationDurationScheme'
       }
     }

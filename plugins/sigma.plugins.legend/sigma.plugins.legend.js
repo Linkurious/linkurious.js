@@ -179,7 +179,10 @@
         horizontal = this.placement === 'top' || this.placement === 'bottom',
         maxHeight = this.canvas.height,
         maxWidth = this.canvas.width,
-        widgetList = getUnpinnedWidgets(this.widgets),
+        textWidgets = getUnpinnedWidgets(this.widgets, 'text'),
+        nodeWidgets = getUnpinnedWidgets(this.widgets, 'node'),
+        edgeWidgets = getUnpinnedWidgets(this.widgets, 'edge'),
+        widgetLists = [textWidgets, nodeWidgets, edgeWidgets],
         cols,
         height = horizontal ? getMaxHeight(this.widgets) + vs.legendOuterMargin * 2 : maxHeight,
         maxNbCols = horizontal ? Math.floor(maxWidth / vs.totalWidgetWidth) : 1,
@@ -198,42 +201,64 @@
         cols.push({widgets: [], height: vs.legendOuterMargin * 2});
       }
 
-      for (var i = 0; i < widgetList.length; ++i) {
-        var colFound = false;
-        for (var j = 0; j < cols.length; ++j) {
-          if (widgetList[i].svg.height + cols[j].height <= height) {
-            cols[j].widgets.push(widgetList[i]);
-            cols[j].height += widgetList[i].svg.height;
-            colFound = true;
-            break;
+      var firstCol = 0;
+      iterate(widgetLists, function (list, index) {
+        if (!layoutOk) {
+          return;
+        }
+
+        for (var i = 0; i < list.length; ++i) {
+          var colFound = false;
+          for (var j = horizontal ? firstCol : 0; j < cols.length; ++j) {
+            if (list[i].svg.height + cols[j].height <= height) {
+              cols[j].widgets.push(list[i]);
+              cols[j].height += list[i].svg.height;
+              colFound = true;
+              break;
+            }
+          }
+
+          if (!colFound) {
+            if (horizontal) {
+              height *= 1.2;
+            } else {
+              maxNbCols += 1;
+            }
+            layoutOk = false;
+            return;
           }
         }
 
-        if (!colFound) {
-          if (horizontal) {
-            height *= 1.2;
-          } else {
-            maxNbCols += 1;
-          }
+        if (horizontal && index < 2) {
           layoutOk = false;
-          break;
+          for (var i = 0; i < cols.length; ++i) {
+            if (cols[i].height === vs.legendOuterMargin * 2) {
+              layoutOk = true;
+              firstCol = i;
+              return;
+            }
+          }
+          height *= 1.2;
         }
-      }
+      });
     }
 
     if (!notEnoughSpace) {
-        cols.sort(this.placement === 'right'
-          ? function (c1, c2) { return c1.height < c2.height ?  -1 : 1; }
-          : function (c1, c2) { return c1.height > c2.height ? -1 : 1; }
-        );
+        if (this.placement === 'right') {
+          cols.sort(function (c1, c2) { return c1.height < c2.height ?  -1 : 1; });
+        }
 
       for (var i = 0; i < cols.length; ++i) {
         var h = this.placement === 'bottom' ? height - cols[i].height : 0;
         for (var j = 0; j < cols[i].widgets.length; ++j) {
           cols[i].widgets[j].x = vs.totalWidgetWidth * i +
             (this.placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendInnerMargin);
-          cols[i].widgets[j].y = h +
-            (this.placement === 'bottom' ? (maxHeight - height - vs.legendInnerMargin) : vs.legendInnerMargin);
+
+          if (this.placement === 'bottom') {
+            cols[i].widgets[j].y = maxHeight - height - vs.legendInnerMargin + h;
+          } else {
+            cols[i].widgets[j].y = h + vs.legendInnerMargin;
+          }
           h += cols[i].widgets[j].svg.height;
         }
       }
@@ -243,15 +268,16 @@
     this.enoughSpace = !notEnoughSpace;
   };
 
-  function getUnpinnedWidgets(widgets) {
-    var ordered = [];
+  function getUnpinnedWidgets(widgets, elementType) {
+    var unpinned = [];
+
     iterate(widgets, function (value) {
-      if (!value.pinned) {
-        ordered.push(value);
+      if (!value.pinned && value.elementType === elementType) {
+        unpinned.push(value);
       }
     });
 
-    return ordered;
+    return unpinned;
   }
 
   function getMaxHeight(widgets) {
@@ -321,7 +347,7 @@
 
     if (this.visualVar === 'size') {
       this.svg = drawSizeLegend(vs, this.sigmaInstance.graph, this.designPlugin, this.elementType, this.unit)
-    } else if (this.visualVar !== 'text') {
+    } else if (this.elementType !== 'text') {
       this.svg = drawNonSizeLegend(vs, this.sigmaInstance.graph, this.designPlugin, this.elementType, this.visualVar, this.unit);
     } else {
       var lines = getLines(vs, this.text, vs.legendWidth - 2 * vs.legendInnerMargin),
@@ -895,7 +921,7 @@
    * @returns {LegendWidget}  The added widget
    */
   LegendPlugin.prototype.addTextWidget = function (text) {
-    var widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, null, 'text');
+    var widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, 'text');
 
     widget.text = text;
     widget.id = 'text' + this.textWidgetCounter++;
