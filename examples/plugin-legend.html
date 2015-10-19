@@ -172,7 +172,7 @@
       data: {
         properties: {
           family_name: randomValue(['Lorem ipsum', 'Dolor', 'Sit Amet', 'Consectetur']),
-          age: Math.round(Math.random() * 70) + 15,
+          age: Math.round(Math.random() * 2000),
           interest: randomValue(['Books', 'Movies', 'Music', 'Video games', 'Nothing'])
         },
         categories: {
@@ -192,7 +192,7 @@
           relation_strength: Math.ceil(Math.random() * 100),
           relation_type: randomValue(['Love, Hatred']),
           relationship_quality: randomValue(['Amazing', 'Good', 'Quite good but not that much', 'Not really good', 'Bad', 'Really bad', 'In ruins']),
-          meeting_frequency: Math.ceil(Math.random() * 30)
+          meeting_frequency: Math.ceil(Math.random() * 100000000)
         }
       }
     });

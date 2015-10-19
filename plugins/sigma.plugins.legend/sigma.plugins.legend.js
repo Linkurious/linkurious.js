@@ -424,18 +424,13 @@
         boundaries = getBoundaryValues(elts, propName),
         minValue = boundaries.min,
         maxValue = boundaries.max,
-        meanValue,
+        isInteger = minValue % 1 === 0 && maxValue % 1 === 0,
+        meanValue = isInteger ? Math.round((minValue + maxValue) / 2) : (minValue + maxValue) / 2,
         ratio = styles.size.max / styles.size.min,
         bigElementSize = vs.legendFontSize * 1.5,
         smallElementSize = bigElementSize / ratio,
         mediumElementSize = (bigElementSize + smallElementSize) / 2,
         height;
-
-    if (minValue % 1 === 0 && maxValue % 1 === 0) {
-      meanValue = Math.round((minValue + maxValue) / 2);
-    } else {
-      meanValue = (minValue + maxValue) / 2;
-    }
 
     if (elementType === 'node') {
       var circleBorderWidth = 2;
@@ -446,9 +441,9 @@
       drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
 
       var textOffsetX = bigElementSize * 2 + circleBorderWidth + vs.legendInnerMargin * 2;
-      drawText(vs, svg, maxValue, textOffsetX, titleMargin + vs.legendFontSize);
-      drawText(vs, svg, meanValue, textOffsetX, titleMargin + 2 * vs.legendFontSize);
-      drawText(vs, svg, minValue, textOffsetX, titleMargin + 3 * vs.legendFontSize);
+      drawText(vs, svg, numberToText(maxValue, isInteger), textOffsetX, titleMargin + vs.legendFontSize);
+      drawText(vs, svg, numberToText(meanValue, isInteger), textOffsetX, titleMargin + 2 * vs.legendFontSize);
+      drawText(vs, svg, numberToText(minValue, isInteger), textOffsetX, titleMargin + 3 * vs.legendFontSize);
 
 
       drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize, bigElementSize,
@@ -554,7 +549,7 @@
           isInteger = boundaries.min % 1 == 0 && boundaries.max % 1 == 0;
 
       for (var i = 0; i < scheme.length; ++i) {
-        var txt = round(valueList[i] + (isInteger && i !== 0 ? 1 : 0), isInteger) + ' - ' + round(valueList[i+1], isInteger);
+        var txt = numberToText(valueList[i] + (isInteger && i !== 0 ? 1 : 0), isInteger) + ' - ' + numberToText(valueList[i+1], isInteger);
         drawText(vs, svg, txt, leftColumnWidth, offsetY, 'left', null, null, null, 'middle');
         offsetY += lineHeight;
       }
@@ -798,11 +793,26 @@
     }
   }
 
-  function round(number, isInteger) {
-    if (isInteger) {
+  function numberToText(number, isInteger) {
+    var units = ['K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+
+    if (number > 9999) {
+      var i = 0;
+      while (i < units.length && number > 999) {
+        number /= 1000;
+        ++i;
+      }
+      return Math.ceil(number) + units[i-1];
+    } else if (isInteger) {
       return Math.round(number);
-    } else {
+    } else if (number < 10) {
       return Math.round(number * 1000) / 1000;
+    } else if (number < 100) {
+      return Math.round(number * 100) / 100;
+    } else if (number < 1000) {
+      return Math.round(number * 10) / 10;
+    } else {
+      return Math.round(number);
     }
   }
 
