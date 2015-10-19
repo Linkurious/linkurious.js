@@ -338,7 +338,7 @@
       }
 
       this.svg.width = vs.totalWidgetWidth;
-      this.svg.height = height + 2 * vs.legendOuterMargin;
+      this.svg.height = height + 2 * (vs.legendBorderWidth + vs.legendOuterMargin);
     }
 
     this.img = buildImageFromSvg(this.svg, this.legendPlugin.externalCSS, function () {
@@ -362,7 +362,7 @@
         lines[lineIndex].words.push(words[i] + ' ');
         lines[lineIndex].width += width;
       } else {
-        lines.push({width:width-spaceWidth, words:[words[i] + ' ']});
+        lines.push({width:width - spaceWidth, words:[words[i] + ' ']});
         lineIndex++;
       }
     }
