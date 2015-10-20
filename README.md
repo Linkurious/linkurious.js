@@ -2,6 +2,7 @@
 [![Issue Stats](http://issuestats.com/github/Linkurious/linkurious.js/badge/pr?style=flat)](http://issuestats.com/github/Linkurious/linkurious.js)
 [![Issue Stats](http://issuestats.com/github/Linkurious/linkurious.js/badge/issue?style=flat)](http://issuestats.com/github/Linkurious/linkurious.js)
 [![Join the chat at https://gitter.im/Linkurious/linkurious.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Linkurious/linkurious.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Give Feedback Badge](http://gitrank.io/assets/images/giveFeedbackBadge.svg)](http://gitrank.io/github/Linkurious/linkurious.js/feedback)
 
 linkurious.js
 =================
