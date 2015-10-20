@@ -15,13 +15,13 @@ To use, include all .js files under this folder.
 
 ```js
 // Download the rendered graph as an image
-sigma.plugins.image(s, s.renderers[0], {download:true});
+sigma.exporters.image(s, s.renderers[0], {download:true});
 ```
 
 *Complex usage*
 
 ```js
-sigma.plugins.image(s, s.renderers[0], {
+sigma.exporters.image(s, s.renderers[0], {
 	download:true,
 	size: 400,
 	background: 'white',
