@@ -405,10 +405,15 @@
   }
 
   LegendWidget.prototype.draw = function () {
-    this.canvas.getContext('2d').drawImage(this.img, this.x, this.y);
+    var ctx = this.canvas.getContext('2d'),
+        self = this;
+    ctx.drawImage(this.img, this.x, this.y);
     if (this.elementType === 'node' && this.visualVar === 'icon') {
-      iterate(this.icons, function (value) {
-
+      ctx.textBaseline = 'middle';
+      iterate(this.svg.icons, function (value, content) {
+        ctx.fillStyle = value.color;
+        ctx.font = value.font;
+        ctx.fillText(content, self.x + value.x, self.y + value.y);
       });
     }
   };
@@ -507,7 +512,7 @@
     return svg;
   }
 
-  function drawNonSizeLegend(visualSettings, graph, designPluginInstance, elementType, visualVar, unit) {
+  function drawNonSizeLegend(visualSettings, graph, designPluginInstance, elementType, visualVar, unit, exports) {
     var vs = visualSettings,
         svg = document.createElement('svg'),
         elts = elementType === 'node' ? graph.nodes() : graph.edges(),
@@ -521,8 +526,9 @@
             (elementType === 'edge' && visualVar === 'type' ? lineHeight : 0),
         leftColumnWidth = vs.legendWidth / 3,
         offsetY = titleMargin,
-        textOffsetX = elementType === 'edge' ? leftColumnWidth : vs.legendFontSize * 1.5 + vs.legendInnerMargin,
-        icons = {};
+        textOffsetX = elementType === 'edge' ? leftColumnWidth : vs.legendFontSize * 1.5 + vs.legendInnerMargin;
+
+    svg.icons = {};
 
     drawBackground(svg, vs, height);
     drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
@@ -535,17 +541,6 @@
       offsetY += lineHeight;
     }
 
-    if (elementType === 'node' && visualVar === 'icon') {
-      iterate(scheme, function (value) {
-        var icon = document.createElement('canvas'),
-            ctx = icon.getContext('2d');
-        ctx.fillStyle = value.color;
-        ctx.font = (vs.legendFontSize * value.scale) + 'px ' + value.font;
-        ctx.fillText(value.content, 0, vs.legendFontSize * value.scale);
-        icons[value.content] = icon.toDataURL();
-      });
-    }
-
     iterate(scheme, function (value) {
       if (visualVar === 'color') {
         if (elementType === 'edge') {
@@ -555,9 +550,17 @@
           drawCircle(svg, vs.legendInnerMargin + vs.legendFontSize / 2, offsetY, vs.legendFontSize / 2, value);
         }
       } else if (visualVar === 'icon') {
-        drawText(vs, svg, value.content, vs.legendInnerMargin, offsetY, 'left', value.color, value.font,
-                          value.scale * vs.legendFontSize, 'middle');
-        //drawImage(svg, icons[value.content], leftColumnWidth / 2, offsetY);
+        if (exports) {
+          drawText(vs, svg, value.content, vs.legendInnerMargin, offsetY, 'left', value.color, value.font,
+            value.scale * vs.legendFontSize, 'middle');
+        } else {
+          svg.icons[value.content] = {
+            font: (vs.legendFontSize * value.scale) + 'px ' + value.font,
+            color: value.color,
+            x: vs.legendInnerMargin,
+            y: offsetY
+          };
+        }
       } else if (visualVar === 'type') {
         if (elementType === 'edge') {
           drawEdge(vs, svg, value, vs.legendInnerMargin, leftColumnWidth - vs.legendInnerMargin, offsetY, vs.legendFontSize / 3);
