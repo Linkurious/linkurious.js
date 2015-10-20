@@ -1,4 +1,4 @@
-sigma.layout.forceAtlas2
+sigma.layouts.forceAtlas2
 ========================
 
 Algorithm by [Mathieu Jacomy](https://github.com/jacomyma).

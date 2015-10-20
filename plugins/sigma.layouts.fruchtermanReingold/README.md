@@ -1,4 +1,4 @@
-sigma.layout.fruchtermanReingold
+sigma.layouts.fruchtermanReingold
 ========================
 
 Plugin developed by [Sébastien Heymann](https://github.com/sheymann) for [Linkurious](https://github.com/Linkurious) and published under the [MIT](LICENSE) license.
