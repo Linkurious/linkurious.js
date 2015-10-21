@@ -235,7 +235,6 @@
                 ++colIndex;
              }
             } else if (cols.length === maxNbCols) {
-              console.log(cols);
               notEnoughSpace = true;
               break;
             } else {
@@ -599,12 +598,24 @@
         lineHeight = vs.legendFontSize * 1.5,
         titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + lineHeight,
         quantitativeColorEdge = elementType === 'edge' && visualVar === 'color' && styles.color.bins,
+        edgeType = elementType === 'edge' && visualVar === 'type',
         scheme = quantitativeColorEdge ? palette[styles.color.scheme][styles.color.bins] : palette[styles[visualVar].scheme],
-        height = lineHeight * Object.keys(scheme).length + titleMargin +
-            (elementType === 'edge' && visualVar === 'type' ? lineHeight : 0),
+        mapping = getExistingPropertyValues(elts, styles[visualVar].by, Object.keys(scheme)),
+        height = lineHeight * Object.keys(quantitativeColorEdge ? scheme : mapping).length + titleMargin + (edgeType ? lineHeight : 0),
         leftColumnWidth = vs.legendWidth / 3,
         offsetY = titleMargin,
-        textOffsetX = elementType === 'edge' ? leftColumnWidth : vs.legendFontSize * 1.5 + vs.legendInnerMargin;
+        textOffsetX = elementType === 'edge' ? leftColumnWidth : vs.legendFontSize * 1.5 + vs.legendInnerMargin,
+        boundaries,
+        valueList,
+        isInteger,
+        txt,
+        fontSize;
+
+    if (quantitativeColorEdge) {
+        boundaries = getBoundaryValues(elts, styles.color.by);
+        valueList = extractValueList(boundaries, styles.color.bins);
+        isInteger = boundaries.min % 1 == 0 && boundaries.max % 1 == 0;
+    }
 
     svg.icons = {};
 
@@ -613,13 +624,17 @@
 
     /* Display additional information for the type of edge */
     if (elementType === 'edge' && visualVar === 'type') {
-      var txt =  'source node to target node',
+          txt =  'source node to target node',
           fontSize = shrinkFontSize(txt, vs.legendFontFamily, vs.legendFontSize, vs.legendWidth - vs.legendInnerMargin * 2);
       drawText(vs, svg, txt, vs.legendInnerMargin, offsetY, 'left', vs.legendFontColor, vs.legendFontFamily, fontSize);
       offsetY += lineHeight;
     }
 
-    iterate(scheme, function (value) {
+    iterate(scheme, function (value, key) {
+      if (!quantitativeColorEdge && !mapping[key]) {
+        return;
+      }
+
       if (visualVar === 'color') {
         if (elementType === 'edge') {
           draw(svg, 'rect', {x:vs.legendInnerMargin, y:offsetY - lineHeight / 8,
@@ -646,34 +661,34 @@
           drawShape(vs, svg, value, vs.legendInnerMargin + vs.legendFontSize / 2, offsetY, vs.legendFontSize / 2);
         }
       }
-      offsetY += lineHeight;
-    });
 
-    offsetY = titleMargin + (elementType === 'edge' && visualVar === 'type' ? lineHeight : 0);
-    if (quantitativeColorEdge) {
-      var boundaries = getBoundaryValues(elts, styles.color.by),
-          valueList = extractValueList(boundaries, styles.color.bins),
-          isInteger = boundaries.min % 1 == 0 && boundaries.max % 1 == 0;
-
-      for (var i = 0; i < scheme.length; ++i) {
-        var txt = numberToText(valueList[i] + (isInteger && i !== 0 ? 1 : 0), isInteger) + ' - ' + numberToText(valueList[i+1], isInteger);
+      if (quantitativeColorEdge) {
+        txt = numberToText(valueList[key], isInteger) + ' - ' + numberToText(valueList[parseInt(key)+1], isInteger);
         drawText(vs, svg, txt, leftColumnWidth, offsetY, 'left', null, null, null, 'middle');
-        offsetY += lineHeight;
-      }
-    } else {
-      iterate(scheme, function (value, key) {
+      } else {
         var shrinkedText = getShrinkedText(prettyfy(key), vs.legendWidth - vs.legendInnerMargin - textOffsetX,
           vs.legendFontFamily, vs.legendFontSize);
 
         drawText(vs, svg, shrinkedText, textOffsetX, offsetY, 'left', null, null, null, 'middle');
-        offsetY += lineHeight;
-      });
-    }
+      }
+
+      offsetY += lineHeight;
+    });
 
     svg.width = vs.totalWidgetWidth;
     svg.height = height + (vs.legendBorderWidth + vs.legendOuterMargin) * 2;
 
     return svg;
+  }
+
+  function getExistingPropertyValues(elts, propName, values) {
+    var mapping = {};
+    for (var i = 0; i < elts.length; ++i) {
+      var prop = strToObjectRef(elts[i], propName);
+      mapping[prop] = true;
+    }
+
+    return mapping;
   }
 
   function getShrinkedText(text, maxWidth, fontFamily, fontSize) {
