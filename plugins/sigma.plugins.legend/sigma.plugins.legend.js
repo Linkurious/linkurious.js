@@ -187,70 +187,72 @@
         nodeWidgets = getUnpinnedWidgets(this.widgets, 'node'),
         edgeWidgets = getUnpinnedWidgets(this.widgets, 'edge'),
         widgetLists = [textWidgets, nodeWidgets, edgeWidgets],
-        cols,
         height = horizontal ? getMaxHeight(this.widgets) + vs.legendOuterMargin * 2 : maxHeight,
-        maxNbCols = horizontal ? Math.floor(maxWidth / vs.totalWidgetWidth) : 1,
-        layoutOk = false,
+        maxNbCols = Math.floor(maxWidth / vs.totalWidgetWidth),
+        cols = initializeColumns(horizontal ? maxNbCols : 1, vs.legendOuterMargin * 2),
+        colIndex = 0,
+        tryAgain = true,
         notEnoughSpace = false;
 
-    while (!layoutOk) {
-      layoutOk = true;
-      if (height > maxHeight || maxNbCols * vs.totalWidgetWidth > maxWidth) {
-        notEnoughSpace = true;
-        break;
-      }
+    while (tryAgain && !notEnoughSpace) {
+      tryAgain = false;
+      colIndex = 0;
+      iterate(widgetLists, function (list) {
+        var widgetsToDisplay = [],
+            desiredHeight,
+            bestCombination;
 
-      cols = [];
-      for (var i = 0; i < maxNbCols; ++i) {
-        cols.push({widgets: [], height: vs.legendOuterMargin * 2});
-      }
-
-      var firstCol = 0;
-      iterate(widgetLists, function (list, index) {
-        if (!layoutOk) {
+        if (tryAgain || notEnoughSpace) {
           return;
         }
 
-        for (var i = 0; i < list.length; ++i) {
-          var colFound = false;
-          for (var j = horizontal ? firstCol : 0; j < cols.length; ++j) {
-            if (list[i].svg.height + cols[j].height <= height) {
-              cols[j].widgets.push(list[i]);
-              cols[j].height += list[i].svg.height;
-              colFound = true;
-              break;
-            }
+        list.forEach(function (w) {
+          widgetsToDisplay.push(w);
+        });
+
+        while (true) {
+          desiredHeight = height - cols[colIndex].height;
+          bestCombination = getOptimalWidgetCombination(widgetsToDisplay, desiredHeight);
+          bestCombination.forEach(function (index) {
+            cols[colIndex].widgets.push(widgetsToDisplay[index]);
+            cols[colIndex].height += widgetsToDisplay[index].svg.height;
+          });
+          for (var i = bestCombination.length - 1; i >= 0; --i) {
+            widgetsToDisplay.splice(bestCombination[i], 1);
           }
 
-          if (!colFound) {
+          if (widgetsToDisplay.length > 0) {
             if (horizontal) {
-              height *= 1.2;
+             if (colIndex === maxNbCols - 1) {
+               cols = initializeColumns(maxNbCols, vs.legendOuterMargin * 2);
+               height += 30;
+               tryAgain = true;
+               if (height > maxHeight) {
+                 notEnoughSpace = true;
+               }
+               break;
+             } else {
+                ++colIndex;
+             }
+            } else if (cols.length === maxNbCols) {
+              console.log(cols);
+              notEnoughSpace = true;
+              break;
             } else {
-              maxNbCols += 1;
+              cols.push({widgets: [], height: vs.legendOuterMargin * 2});
+              ++colIndex;
             }
-            layoutOk = false;
-            return;
+          } else {
+            break;
           }
-        }
-
-        if (horizontal && index < 2) {
-          layoutOk = false;
-          for (var i = 0; i < cols.length; ++i) {
-            if (cols[i].height === vs.legendOuterMargin * 2) {
-              layoutOk = true;
-              firstCol = i === 0 ? i : i - 1;
-              return;
-            }
-          }
-          height *= 1.2;
         }
       });
     }
 
     if (!notEnoughSpace) {
-        if (this.placement === 'right') {
-          cols.sort(function (c1, c2) { return c1.height < c2.height ?  -1 : 1; });
-        }
+      if (this.placement === 'right') {
+        cols.reverse();
+      }
 
       for (var i = 0; i < cols.length; ++i) {
         var h = this.placement === 'bottom' ? height - cols[i].height : 0;
@@ -271,6 +273,56 @@
     this.draw();
     this.enoughSpace = !notEnoughSpace;
   };
+
+  function initializeColumns(number, initialHeight) {
+    var columns = [];
+    for (var i = 0; i < number; ++i) {
+      columns.push({widgets:[], height:initialHeight});
+    }
+
+    return columns;
+  }
+
+  function getOptimalWidgetCombination(widgets, desiredHeight) {
+    var best = {indexes: [], height: 0},
+        combinations = getCombinations(widgets.length, 0);
+
+    combinations.forEach(function (c) {
+      var height = computeCombinedWidgetsHeight(widgets, c);
+      if (height > best.height && height <= desiredHeight) {
+        best.indexes = c;
+        best.height = height;
+      }
+    });
+
+    return best.indexes;
+  }
+
+  function getCombinations(length, startingIndex) {
+    if (startingIndex === length) {
+      return [];
+    } else {
+      var combinations = [[startingIndex]],
+          nextCombinations = getCombinations(length, startingIndex + 1);
+
+      nextCombinations.forEach(function (c) {
+        combinations.push([startingIndex].concat(c));
+      });
+
+      combinations = combinations.concat(nextCombinations);
+
+      return combinations;
+    }
+  }
+
+  function computeCombinedWidgetsHeight(widgets, indexes) {
+    var totalHeight = 0;
+    indexes.forEach(function (index) {
+      totalHeight += widgets[index].svg.height;
+    });
+
+    return totalHeight;
+  }
 
   function getUnpinnedWidgets(widgets, elementType) {
     var unpinned = [];
