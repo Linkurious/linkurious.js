@@ -136,7 +136,7 @@
       legendBorderWidth: settings('legendBorderWidth') || 1,
       legendInnerMargin: settings('legendInnerMargin') || 8,
       legendOuterMargin: settings('legendOuterMargin') || 5,
-      legendTitleMaxSize: settings('legendTitleMaxSize') || 30,
+      legendTitleMaxLength: settings('legendTitleMaxLength') || 30,
       legendTitleTextAlign: settings('legendTitleTextAlign') || 'left',
       legendBorderRadius: settings('legendBorderRadius') || 10
     };
@@ -160,6 +160,10 @@
     this.widgets = { };
   }
 
+  /**
+   * Not used right now, will be useful later.
+   * @param externalCSSList
+   */
   LegendPlugin.prototype.setExternalCSS = function (externalCSSList) {
     var self = this;
     this.externalCSS = externalCSSList;
@@ -234,7 +238,7 @@
           for (var i = 0; i < cols.length; ++i) {
             if (cols[i].height === vs.legendOuterMargin * 2) {
               layoutOk = true;
-              firstCol = i;
+              firstCol = i === 0 ? i : i - 1;
               return;
             }
           }
@@ -445,6 +449,16 @@
     return list;
   }
 
+  /**
+   * Draw a widget representing a size (node size, edge size)
+   *
+   * @param visualSettings
+   * @param graph
+   * @param designPluginInstance
+   * @param elementType           'node' or 'edge'
+   * @param unit                  Optional. Specifies a unit to display alongside the title
+   * @returns {Element}
+   */
   function drawSizeLegend(visualSettings, graph, designPluginInstance, elementType, unit) {
     var vs = visualSettings,
         svg = document.createElement('svg'),
@@ -512,6 +526,18 @@
     return svg;
   }
 
+  /**
+   * Draw a legend widget that doesn't represent a size (color, icon, etc)
+   * @param visualSettings
+   * @param graph
+   * @param designPluginInstance
+   * @param elementType             'node' or 'edge'
+   * @param visualVar               'color', 'icon', 'type'
+   * @param unit                     Optional. Unit to display alongside the title.
+   * @param exports                  Specifies if the generated svg is meant to be exported (slight change in the way
+   *                                 the icons are displayed.
+   * @returns {Element}
+   */
   function drawNonSizeLegend(visualSettings, graph, designPluginInstance, elementType, visualVar, unit, exports) {
     var vs = visualSettings,
         svg = document.createElement('svg'),
@@ -537,7 +563,7 @@
     if (elementType === 'edge' && visualVar === 'type') {
       var txt =  'source node to target node',
           fontSize = shrinkFontSize(txt, vs.legendFontFamily, vs.legendFontSize, vs.legendWidth - vs.legendInnerMargin * 2);
-      drawText(vs, svg, txt, vs.legendWidth / 2, offsetY, 'middle', vs.legendFontColor, vs.legendFontFamily, fontSize);
+      drawText(vs, svg, txt, vs.legendInnerMargin, offsetY, 'left', vs.legendFontColor, vs.legendFontFamily, fontSize);
       offsetY += lineHeight;
     }
 
@@ -791,7 +817,7 @@
   }
 
   function drawWidgetTitle(vs, svg, title, unit) {
-    var text = (title.length > vs.legendTitleMaxSize ? title.substring(0, vs.legendTitleMaxSize) : title)
+    var text = (title.length > vs.legendTitleMaxLength ? title.substring(0, vs.legendTitleMaxLength) : title)
              + (unit ? ' (' + unit + ')' : ''),
         fontSize = shrinkFontSize(text, vs.legendTitleFontFamily, vs.legendTitleFontSize, vs.legendWidth - vs.legendInnerMargin),
         offsetX = vs.legendTitleTextAlign === 'middle' ? vs.legendWidth / 2 : vs.legendInnerMargin;

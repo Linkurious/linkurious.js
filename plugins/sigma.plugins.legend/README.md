@@ -96,9 +96,11 @@ widget.setText(text);
 * **legendTitleFontFamily** *string* `'Arial'`: Font family used for widgets' title
 * **legendTitleFontSize** *number* `25`: Font size used for widgets' title
 * **legendTitleFontColor** *string* `'black'`: Font color used for widgets' title
+* **legendTitleMaxLength** *number* `'30'`: Characters in titles after that limit will not be displayed
 * **legendShapeColor** *string* `'black'`: Color used to display shapes (circles, square, etc)
 * **legendBackgroundColor** *string* `'white'`: Color of the widgets' background
 * **legendBorderColor** *string* `'black'`: Color of the widgets' border
 * **legendBorderWidth** *number* `2`: Width of the widgets' border
+* **legendBorderRadius** *number* `10`: Radius of the widgets' border
 * **legendInnerMargin** *number* `15`: Size of the widgets' inner margin
 * **legendOuterMargin** *number* `5`: Size of the widgets' outer margin

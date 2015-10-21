@@ -26,7 +26,7 @@
     /* {string} Color of the titles */
     legendTitleFontColor: 'black',
     /* {number} The maximum number of characters displayed when displaying a widget's title */
-    legendTitleMaxSize: '30',
+    legendTitleMaxLength: '30',
     /* {string} The text alignment of the widgets' title ('left', 'middle') */
     legendTitleTextAlign: 'left',
     /* {string} Color of the shapes in the legend */
