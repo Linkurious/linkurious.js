@@ -14,7 +14,7 @@ module.exports = function(grunt) {
     forceLink: {
       prod: {
         files: {
-          'build/plugins/sigma.layout.forceLink.min.js': files
+          'build/plugins/sigma.layouts.forceLink.min.js': files
         }
       }
     }
