@@ -24,7 +24,8 @@
         labelWidth,
         labelOffsetX,
         labelOffsetY,
-        alignment = settings('labelAlignment');
+        alignment = settings('labelAlignment'),
+        maxLineLength = settings('maxNodeLabelLineLength') || 0;
 
     if (size <= settings('labelThreshold'))
       return;
@@ -72,8 +73,7 @@
         labelOffsetY = - size - 2 * fontSize / 3;
         break;
       case 'inside':
-        labelWidth = sigma.utils.canvas.getTextWidth(context,
-            settings('approximateLabelWidth'), fontSize, node.label);
+        labelWidth = sigma.utils.canvas.getTextWidth(context, settings('approximateLabelWidth'), fontSize, node.label);
         if (labelWidth <= (size + fontSize / 3) * 2) {
           break;
         }
@@ -86,10 +86,41 @@
         break;
     }
 
-    context.fillText(
-      node.label,
-      Math.round(node[prefix + 'x'] + labelOffsetX),
-      Math.round(node[prefix + 'y'] + labelOffsetY)
-    );
+    var lines = getLines(node.label, maxLineLength),
+        baseX = node[prefix + 'x'] + labelOffsetX,
+        baseY = Math.round(node[prefix + 'y'] + labelOffsetY);
+
+    for (var i = 0; i < lines.length; ++i) {
+      context.fillText(lines[i], baseX, baseY + i * (fontSize + 1));
+    }
   };
+
+  function getLines(text, maxLineLength) {
+    if (maxLineLength === 0) {
+      return [text];
+    }
+
+    var words = text.split(' '),
+        lines = [[]],
+        lineLength = 0,
+        lineIndex = 0,
+        lineList = [];
+
+    for (var i = 0; i < words.length; ++i) {
+      if (lineLength + words[i].length <= maxLineLength) {
+        lines[lineIndex].push(words[i] + ' ');
+        lineLength += words[i].length + 1;
+      } else {
+        lines.push([words[i] + ' ']);
+        lineLength = 0;
+        lineIndex++;
+      }
+    }
+
+    for (i = 0; i < lines.length; ++i) {
+      lineList.push(lines[i].join(''))
+    }
+
+    return lineList;
+  }
 }).call(this);
