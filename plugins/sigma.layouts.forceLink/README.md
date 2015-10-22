@@ -1,4 +1,4 @@
-sigma.layout.forceLink
+sigma.layouts.forceLink
 ========================
 
 Algorithm by [Mathieu Jacomy](https://github.com/jacomyma).

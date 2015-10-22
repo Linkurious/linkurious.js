@@ -1556,9 +1556,9 @@
 
       _eventEmitter[self.sigInst.id].dispatchEvent('start');
 
-      // console.time('sigma.layout.dagre');
+      // console.time('sigma.layouts.dagre');
       dagre.layout(dg);
-      // console.timeEnd('sigma.layout.dagre');
+      // console.timeEnd('sigma.layouts.dagre');
 
       var edge;
       dg.edges().map(function(e) {
