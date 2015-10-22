@@ -46,7 +46,7 @@ The library is used by [Linkurious SAS](http://linkurio.us) as the main building
 
 ### Getting started
 
-For prototyping, you can direclty use `rawgit`:
+For prototyping, you can directly use `rawgit`:
 
 ```html
 <script src="https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js"></script>
