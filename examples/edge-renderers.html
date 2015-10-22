@@ -50,17 +50,47 @@
 <script src="../plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.def.js"></script>
 <script src="../plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curve.js"></script>
 <script src="../plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curvedArrow.js"></script>
+<script src="../plugins/sigma.renderers.edgeLabels/sigma.svg.edges.labels.def.js"></script>
 <div id="container">
   <style>
-    #graph-container {
+    #svg {
       top: 0;
       bottom: 0;
       left: 0;
-      right: 0;
+      right: 50%;
+      color: #000;
+      background: #fff;
       position: absolute;
+      border: 2px solid black;
+      margin: 5px;
+    }
+
+    #canvas {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: 0;
+      color: #000;
+      background: #fff;
+      position: absolute;
+      border: 2px solid black;
+      margin: 5px;
+    }
+
+    .label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1;
+      font-family: sans-serif;
     }
   </style>
-  <div id="graph-container"></div>
+  <div id="svg">
+    <div class="label">SVG renderer</div>
+  </div>
+  <div id="canvas">
+    <div class="label">Canvas renderer</div>
+  </div>
 </div>
 <script>
 /**
@@ -68,17 +98,18 @@
  * renderer.
  */
 var i,
-    s,
     N = 10,
     E = 50,
     g = {
       nodes: [],
       edges: []
-    };
+    },
+    s = new sigma(),
+    cam = s.addCamera();
 
 // Generate a random graph:
 for (i = 0; i < N; i++)
-  g.nodes.push({
+  s.graph.addNode({
     id: 'n' + i,
     label: 'Node ' + i,
     x: Math.random(),
@@ -86,20 +117,6 @@ for (i = 0; i < N; i++)
     size: Math.random(),
     color: '#666'
   });
-
-// Instantiate sigma:
-s = new sigma({
-  graph: g,
-  renderer: {
-    container: document.getElementById('graph-container'),
-    type: 'canvas'
-  },
-  settings: {
-    edgeLabelSize: 'proportional',
-    edgeLabelThreshold: 3,
-    minEdgeSize: 4
-  }
-});
 
 for (i = 0; i < E; i++) {
   var source = 'n' + (Math.random() * N | 0),
@@ -117,6 +134,38 @@ for (i = 0; i < E; i++) {
     });
   }
 }
+
+// Initialize two distinct renderers, each with its own settings:
+s.addRenderer({
+  container: document.getElementById('svg'),
+  type: 'svg',
+  camera: cam,
+  settings: {
+    hideEdgesOnMove: true,
+    defaultLabelColor: '#000',
+    defaultNodeColor: '#666',
+    defaultEdgeColor: '#999',
+    edgeColor: 'default',
+    labelThreshold: 1,
+    edgeLabelThreshold: 0
+  }
+});
+
+s.addRenderer({
+  container: document.getElementById('canvas'),
+  type: 'canvas',
+  camera: cam,
+  settings: {
+    batchEdgesDrawing: true,
+    hideEdgesOnMove: true,
+    defaultLabelColor: '#000',
+    defaultNodeColor: '#666',
+    defaultEdgeColor: '#999',
+    edgeColor: 'default',
+    labelThreshold: 1,
+    edgeLabelThreshold: 0
+  }
+});
 s.refresh();
 
 </script>
