@@ -162,13 +162,16 @@
 
   /**
    * Not used right now, will be useful later.
-   * @param externalCSSList
+   * @param externalCSSList Array<string>
    */
   LegendPlugin.prototype.setExternalCSS = function (externalCSSList) {
     var self = this;
     this.externalCSS = externalCSSList;
   };
 
+  /**
+   *  Reconstruct the legend's svg (i.e. recreate the image representation of each widget).
+   */
   LegendPlugin.prototype.buildWidgets = function () {
     var self = this;
     iterate(this.widgets, function (value) {
@@ -178,6 +181,11 @@
     });
   };
 
+  /**
+   * Apply the layout algorithm to compute the position of every widget.
+   * Does not build widgets.
+   * Draw the legend at the end.
+   */
   LegendPlugin.prototype.drawLayout = function () {
     var vs = this.visualSettings,
         horizontal = this.placement === 'top' || this.placement === 'bottom',
@@ -282,6 +290,12 @@
     return columns;
   }
 
+  /**
+   * Returns the list of widgets of which the total height is maximal but smaller than a specified limit
+   * @param widgets       {Array<LegendWidget>} Initial list of widgets
+   * @param desiredHeight {number}              Maximum desired height
+   * @returns {Array<Number>}                   List of indexes
+   */
   function getOptimalWidgetCombination(widgets, desiredHeight) {
     var best = {indexes: [], height: 0},
         combinations = getCombinations(widgets.length, 0);
@@ -297,6 +311,14 @@
     return best.indexes;
   }
 
+  /**
+   * Returns the list of combinations that are possible given a length and index.
+   * Example: getCombinations(3, 0) -> [ [0], [1], [0, 1], [1, 2], [1, 3], [2, 3], [1, 2, 3] ]
+   *          getCombinations(2, 1) -> [ [1], [2], [1, 2] ]
+   * @param length        {number}
+   * @param startingIndex {number}
+   * @returns {Array<number>}
+   */
   function getCombinations(length, startingIndex) {
     if (startingIndex === length) {
       return [];
@@ -335,10 +357,15 @@
     return unpinned;
   }
 
+  /**
+   * Returns the height of the largest widget.
+   * @param widgets {Array<LegendWidget>}
+   * @returns {number}
+   */
   function getMaxHeight(widgets) {
-    var maxWidgetHeight = undefined;
+    var maxWidgetHeight = 0;
     iterate(widgets, function (widget) {
-      if (maxWidgetHeight === undefined || widget.svg.height > maxWidgetHeight) {
+      if (widget.svg.height > maxWidgetHeight) {
         maxWidgetHeight = widget.svg.height;
       }
     });
@@ -350,12 +377,19 @@
     return elementType + '_' + visualVar;
   }
 
+  /**
+   * Clear the canvas on which the legend is displayed.
+   */
   LegendPlugin.prototype.clear = function () {
     var context = this.canvas.getContext('2d');
 
     context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   };
 
+  /**
+   * Draw each widget (unpinned before pinned, we want the user-positioned
+   * widget to be displayed on top those positioned with the layout algorithm.
+   */
   LegendPlugin.prototype.draw = function () {
     this.clear();
     if (this.visible && this.enoughSpace) {
@@ -376,6 +410,12 @@
   };
 
 
+  /**
+   * Indicates if a widget must be displayed (typically used when a widget's image has just been loaded to
+   * know if it must be displayed immediatly).
+   * @param widget
+   * @returns {boolean}
+   */
   LegendPlugin.prototype.mustDisplayWidget = function (widget) {
     return this.visible && (this.enoughSpace || widget.pinned) && this.widgets[widget.id] !== undefined;
   };
@@ -396,6 +436,9 @@
     this.icons = [];
   }
 
+  /**
+   * Create a widget's svg.
+   */
   LegendWidget.prototype.build = function () {
     var self = this,
         vs = this.legendPlugin.visualSettings;
@@ -429,6 +472,14 @@
     });
   };
 
+  /**
+   * Split a string into multiple lines. Each line's length (in pixels) won't be larger than 'maxWidth'.
+   * Words are not splited into several lines.
+   * @param vs {Object}       Visual settings
+   * @param text {string}     String to split.
+   * @param maxWidth {number} Maximum length (in pixels) of a string.
+   * @returns {Array<string>}
+   */
   function getLines(vs, text, maxWidth) {
     var approximateWidthMeasuring = false,
         spaceWidth = getTextWidth(' ', vs.legendFontFamily, vs.legendFontSize, approximateWidthMeasuring),
@@ -459,6 +510,9 @@
     return lineList;
   }
 
+  /**
+   * Draw a widget on the canvas.
+   */
   LegendWidget.prototype.draw = function () {
     var ctx = this.canvas.getContext('2d'),
         self = this;
@@ -473,6 +527,12 @@
     }
   };
 
+  /**
+   * Iterate over a list of elements and returns the minimum and maximum values for a specified property.
+   * @param elements {Array<Object>}  List of nodes or edges
+   * @param propertyName {string}     Name of the property.
+   * @returns {{min: *, max: *}}
+   */
   function getBoundaryValues(elements, propertyName) {
     var minValue = elements.length > 0 ? strToObjectRef(elements[0], propertyName) : 0,
         maxValue = minValue;
@@ -489,6 +549,13 @@
     return {min:minValue, max:maxValue};
   }
 
+  /**
+   * Returns 'number' + 1 values between a specified minimum and maximum. These values are linear.
+   * Example: extractValueList({min:1, max:5}, 4) -> [1, 2, 3, 4, 5]
+   * @param boundaries {{min:{number}, max:{number}}}
+   * @param number
+   * @returns {Array}
+   */
   function extractValueList(boundaries, number) {
     var list = [],
         dif = boundaries.max - boundaries.min;
@@ -503,11 +570,11 @@
   /**
    * Draw a widget representing a size (node size, edge size)
    *
-   * @param visualSettings
-   * @param graph
-   * @param designPluginInstance
-   * @param elementType           'node' or 'edge'
-   * @param unit                  Optional. Specifies a unit to display alongside the title
+   * @param visualSettings        {Object}
+   * @param graph                 {Object}
+   * @param designPluginInstance  {LegendPlugin}
+   * @param elementType           {string}        'node' or 'edge'
+   * @param unit                  {string}        Optional. Specifies a unit to display alongside the title
    * @returns {Element}
    */
   function drawSizeLegend(visualSettings, graph, designPluginInstance, elementType, unit) {
@@ -579,14 +646,14 @@
 
   /**
    * Draw a legend widget that doesn't represent a size (color, icon, etc)
-   * @param visualSettings
-   * @param graph
-   * @param designPluginInstance
-   * @param elementType             'node' or 'edge'
-   * @param visualVar               'color', 'icon', 'type'
-   * @param unit                     Optional. Unit to display alongside the title.
-   * @param exports                  Specifies if the generated svg is meant to be exported (slight change in the way
-   *                                 the icons are displayed.
+   * @param visualSettings  {Object}
+   * @param graph           {Object}
+   * @param designPluginInstance {LegendPlugin}
+   * @param elementType     {string} 'node' or 'edge'
+   * @param visualVar       {string} 'color', 'icon', 'type'
+   * @param unit            {string}  Optional. Unit to display alongside the title.
+   * @param exports         {boolean} OptionalSpecifies if the generated svg is meant to be exported (slight change
+   *                                  in the way the icons are displayed).
    * @returns {Element}
    */
   function drawNonSizeLegend(visualSettings, graph, designPluginInstance, elementType, visualVar, unit, exports) {
@@ -681,7 +748,13 @@
     return svg;
   }
 
-  function getExistingPropertyValues(elts, propName, values) {
+  /**
+   * Returns a map of the different values of a property.
+   * @param elts      List of elements. Edges or nodes.
+   * @param propName  Name of the property.
+   * @returns {Object}
+   */
+  function getExistingPropertyValues(elts, propName) {
     var mapping = {};
     for (var i = 0; i < elts.length; ++i) {
       var prop = strToObjectRef(elts[i], propName);
@@ -691,6 +764,15 @@
     return mapping;
   }
 
+  /**
+   * Remove every character of a string that are after a specified with limit. Add '...' at the end of the string if
+   * at least one character is removed.
+   * @param text       {string}
+   * @param maxWidth   {number}
+   * @param fontFamily {string}
+   * @param fontSize   {number}
+   * @returns {*}
+   */
   function getShrinkedText(text, maxWidth, fontFamily, fontSize) {
     var textWidth = getTextWidth(text, fontFamily, fontSize, false),
         shrinked = false;
@@ -709,6 +791,14 @@
     return text;
   }
 
+  /**
+   * Not currently used, but may be useful in the future. The idea was to display an image in base64
+   * inside a svg.
+   * @param svg
+   * @param base64Img
+   * @param x
+   * @param y
+   */
   function drawImage(svg, base64Img, x, y) {
     var i = createAndAppend(svg, 'image',  {
       x:x,
@@ -753,6 +843,7 @@
       ry:vs.legendBorderRadius});
   }
 
+  /* 'type' can be 'arrow', 'parallel', 'cuvedArrow', 'dashed', 'dotted', 'tapered' */
   function drawEdge(vs, svg, type, x1, x2, y, size) {
     var triangleSize = size * 2.5,
         curveHeight = size * 3,
@@ -853,6 +944,13 @@
     }
   }
 
+  /**
+   * Draw a polygon on a svg.
+   * @param svg     {Object}
+   * @param points  {Array<number>} Format: [x1, y1, x2, y2, ...]
+   * @param color   {string}
+   * @param rotation {Object}       Optional. Specifies a rotation to apply to the polygon.
+   */
   function drawPolygon(svg, points, color, rotation) {
     var attrPoints = points[0] + ',' + points[1];
     for (var i = 2; i < points.length; i += 2) {
@@ -883,6 +981,13 @@
     createAndAppend(svg, type, args);
   }
 
+  /**
+   * Draw the title of a widget. If the title is too large, the font size will be reduced until it fits.
+   * @param vs    {Object} Visual settings.
+   * @param svg   {Object}
+   * @param title {string} Title of the widget.
+   * @param unit  {string} Optional. The unit to be displayed alongside the title.
+   */
   function drawWidgetTitle(vs, svg, title, unit) {
     var text = (title.length > vs.legendTitleMaxLength ? title.substring(0, vs.legendTitleMaxLength) : title)
              + (unit ? ' (' + unit + ')' : ''),
@@ -893,10 +998,23 @@
       vs.legendTitleFontColor, vs.legendTitleFontFamily, fontSize);
   }
 
+  /**
+   * Convert a property name to a nice, good looking title (e.g. 'funding_year' -> 'Funding year')
+   * @param txt {string}
+   * @returns {string}
+   */
   function prettyfy(txt) {
     return txt.charAt(0).toUpperCase() + txt.slice(1).replace('_', ' ');
   }
 
+  /**
+   * Reduce the font size of until the specified text fits a specified with.
+   * @param text        {string}
+   * @param fontFamily  {string}
+   * @param fontSize    {number}
+   * @param maxWidth    {number}
+   * @returns {number}            The new size of the font.
+   */
   function shrinkFontSize(text, fontFamily, fontSize, maxWidth) {
     while (getTextWidth(text, fontFamily, fontSize, false) > maxWidth) {
       fontSize -= (fontSize > 15 ? 2 : 1);
@@ -906,6 +1024,14 @@
   }
 
   var helper = document.createElement('canvas').getContext('2d');
+  /**
+   * Compute the width in pixels of a string, given a font family and font size.
+   * @param text        {string}
+   * @param fontFamily  {string}
+   * @param fontSize    {number}
+   * @param approximate {boolean} Optional. Specifies if the computation must be approximate (faster, but not accurate).
+   * @returns {number}  Width of the text.
+   */
   function getTextWidth(text, fontFamily, fontSize, approximate) {
     if (approximate) {
       return 0.45 * fontSize * text.length;
@@ -915,6 +1041,14 @@
     }
   }
 
+  /**
+   * Convert a number N to a formatted string.
+   * If N > 9999 -> 3 most significant digits + unit (K, M, G, ...)
+   * If N <= 9999 -> 4 most significant digits (including digits after the comma)
+   * @param number {number}
+   * @param isInteger {boolean} Indicates if the number is an integer (if so, no digit after the comma will be displayed).
+   * @returns {string} The formatted number/
+   */
   function numberToText(number, isInteger) {
     var units = ['K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
 
@@ -926,21 +1060,27 @@
       }
       return Math.ceil(number) + units[i-1];
     } else if (isInteger) {
-      return Math.round(number);
+      return Math.round(number).toString();
     } else if (number < 10) {
-      return Math.round(number * 1000) / 1000;
+      return (Math.round(number * 1000) / 1000).toString();
     } else if (number < 100) {
-      return Math.round(number * 100) / 100;
+      return (Math.round(number * 100) / 100).toString();
     } else if (number < 1000) {
-      return Math.round(number * 10) / 10;
+      return (Math.round(number * 10) / 10).toString();
     } else {
-      return Math.round(number);
+      return (Math.round(number)).toString();
     }
   }
 
   /* PUBLIC FUNCTIONS */
 
   var _legendInstances = {};
+
+  /**
+   * Returns the instance of a specified sigma instance's legend plugin. Create it if it does not exist yet.
+   * @param s {Object} Sigma instance.
+   * @returns {LegendPlugin}
+   */
   sigma.plugins.legend = function (s) {
     if (!_legendInstances[s.id]) {
       _legendInstances[s.id] = new LegendPlugin(s);
@@ -949,6 +1089,10 @@
     return _legendInstances[s.id];
   };
 
+  /**
+   * Destroy a sigma instance's associated legend plugin instance.
+   * @param s {Object} Sigma instance.
+   */
   sigma.plugins.killLegend = function (s) {
     var legendInstance = _legendInstances[s.id];
     if (legendInstance) {
@@ -994,7 +1138,7 @@
    * Add a widget to the legend. Redraw the legend.
    * @param elementType 'node' or 'edge'
    * @param visualVar   'size', 'color', 'icon'
-   * @param ?unit       Optional. The unit to be displayed beside the widget's title
+   * @param unit        Optional. The unit to be displayed beside the widget's title
    * @returns {*}       The added widget.
    */
   LegendPlugin.prototype.addWidget = function (elementType, visualVar, unit) {

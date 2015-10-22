@@ -66,6 +66,8 @@ legend.setPlacement(newPlacement);
  */
 legend.toggleVisibility();
 
+### Widget API
+
 /**
  * Change the position of a widget and pin it. An pinned widget is not taken into account when
  * it is positioned through automatic layout.
