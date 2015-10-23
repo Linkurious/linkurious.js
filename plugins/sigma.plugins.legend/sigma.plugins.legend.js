@@ -1218,6 +1218,15 @@
   };
 
   /**
+   * Set the unit of a widget. The widget must represent a size.
+   * @param unit The unit to be displayed alongside the widget's title.
+   */
+  LegendWidget.prototype.setUnit = function (unit) {
+    this.unit = unit;
+    buildWidget(this);
+  };
+
+  /**
    * Not used right now, will be useful later.
    * @param externalCSSList Array<string>
    */

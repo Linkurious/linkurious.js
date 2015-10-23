@@ -87,6 +87,13 @@ widget.unpin();
  * @param text The text to be displayed by the widget.
  */
 widget.setText(text);
+
+/**
+ * Set the unit of a widget. The widget must represent a size.
+ * @param unit The unit to be displayed alongside the widget's title.
+ */
+widget.setUnit(unit);
+
 ```
 
 ### Settings
