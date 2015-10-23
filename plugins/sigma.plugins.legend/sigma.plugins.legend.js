@@ -1,16 +1,3 @@
-/*
-  API:
-  * [legend] addWidget(elementType, visualVar, ?unit)
-  * [legend] removeWidget(widget)/(elementType, visualVar)
-  * [legend] setPlacement(top|bottom|right|left)
-  * [legend] redraw()
-  * [legend] toggleVisibility()
-  * [widget] addTextWidget(text)
-  * [widget] setPosition(x, y)
-  * [widget] unpin()
-  * [widget] setText(text)
- */
-
 ;(function(undefined) {
   'use strict';
 
@@ -20,15 +7,81 @@
   // Initialize package:
   sigma.utils.pkg('sigma.plugins');
 
-  function getPropertyName(prop) {
-    var s = prop.split('.');
-    if (s.length > 2 && s[s.length - 2] === 'categories') {
-      return 'Category';
-    } else {
-      return prettyfy(s[s.length - 1]);
-    }
+  /* Definition of the main classes (LegendPlugin & LegendWidget). */
+
+  function LegendPlugin(s) {
+    var self = this,
+      settings = s.settings;
+
+    this._sigmaInstance = s;
+    this._designPlugin = sigma.plugins.design(s);
+
+    this._visualSettings = {
+      legendWidth: settings('legendWidth') || 150,
+      legendFontFamily: settings('legendFontFamily') || 'Arial',
+      legendFontSize: settings('legendFontSize') || 10,
+      legendFontColor: settings('legendFontColor') || 'black',
+      legendTitleFontFamily: settings('legendTitleFontFamily') || 'Arial',
+      legendTitleFontSize: settings('legendTitleFontSize') || 15,
+      legendTitleFontColor: settings('legendTitleFontColor') || 'black',
+      legendShapeColor: settings('legendShapeColor') || 'orange',
+      legendBackgroundColor: settings('legendBackgroundColor') || 'white',
+      legendBorderColor: settings('legendBorderColor') || 'black',
+      legendBorderWidth: settings('legendBorderWidth') || 1,
+      legendInnerMargin: settings('legendInnerMargin') || 8,
+      legendOuterMargin: settings('legendOuterMargin') || 5,
+      legendTitleMaxLength: settings('legendTitleMaxLength') || 30,
+      legendTitleTextAlign: settings('legendTitleTextAlign') || 'left',
+      legendBorderRadius: settings('legendBorderRadius') || 10
+    };
+
+    computeTotalWidth(this._visualSettings);
+
+    var renderer = s.renderers[0]; // TODO: handle several renderers?
+    this._canvas = document.createElement('canvas');
+    this._canvas.width = renderer.container.offsetWidth;
+    this._canvas.height = renderer.container.offsetHeight;
+    this._canvas.style.position = 'absolute';
+    this._canvas.style.pointerEvents = 'none';
+    renderer.container.appendChild(this._canvas);
+
+    window.addEventListener('resize', function () {
+      self._canvas.width = renderer.container.offsetWidth;
+      self._canvas.height = renderer.container.offsetHeight;
+      drawLayout(self);
+    });
+
+    this.textWidgetCounter = 1;
+    this.enoughSpace = false;
+    this.placement = 'bottom';
+    this.visible = true;
+    this.widgets = { };
   }
 
+
+  function LegendWidget(canvas, sigmaInstance, designPlugin, legendPlugin, elementType, visualVar) {
+    this._canvas = canvas;
+    this._sigmaInstance = sigmaInstance;
+    this._designPlugin = designPlugin;
+    this._legendPlugin = legendPlugin;
+    this.visualVar = visualVar;
+    this.elementType = elementType;
+    this.x = 0;
+    this.y = 0;
+    this.text = '';
+    this.unit = null;
+    this.img = null;
+    this.pinned = false;
+  }
+
+  /* Private functions */
+
+  /**
+   * Example: with obj = a and str = 'qw.er.ty', returns a.qw.er.ty
+   * @param {Object} obj
+   * @param {string} str
+   * @returns {Object}
+   */
   function strToObjectRef(obj, str) {
     if (str == null) return null;
     return str.split('.').reduce(function(obj, i) { return obj[i] }, obj);
@@ -74,15 +127,11 @@
   }
 
   /**
-   * 'btoa' converts UTF-8 to base64. The reason we use 'unescape(encodeURIComponent(...))' is
-   * to handle the special characters that are not part of Latin1.
-   * http://stackoverflow.com/questions/23223718/failed-to-execute-btoa-on-window-the-string-to-be-encoded-contains-characte
+   * Convert a SVG to a base64 encoded image url, so it can be drawn onto a canvas.
    *
-   * TODO: Make that function actually work
-   *
-   * @param svg
-   * @param externalCSS
-   * @param onload
+   * @param {Object}    svg           SVG to convert
+   * @param {Array}     externalCSS   List of external style sheets to be included
+   * @param {function}  onload        Function that will be called once the image is built
    */
   function buildImageFromSvg(svg, externalCSS, onload) {
     // <?xml-stylesheet type="text/css" href="svg-stylesheet.css" ?>
@@ -105,97 +154,40 @@
     return img;
   }
 
+  /**
+   * Returns the sum of a widget's width + its border + its outer margin
+   * @param visualSettings
+   */
   function computeTotalWidth(visualSettings) {
     visualSettings.totalWidgetWidth =
       visualSettings.legendWidth + (visualSettings.legendBorderWidth + visualSettings.legendOuterMargin) * 2
   }
 
-
-  function LegendPlugin(s) {
-    var self = this,
-        settings = s.settings;
-
-    this.visible = true;
-    this.sigmaInstance = s;
-    this.designPlugin = sigma.plugins.design(s);
-    this.textWidgetCounter = 1;
-    this.enoughSpace = false;
-    this.placement = 'bottom';
-
-    this.visualSettings = {
-      legendWidth: settings('legendWidth') || 150,
-      legendFontFamily: settings('legendFontFamily') || 'Arial',
-      legendFontSize: settings('legendFontSize') || 10,
-      legendFontColor: settings('legendFontColor') || 'black',
-      legendTitleFontFamily: settings('legendTitleFontFamily') || 'Arial',
-      legendTitleFontSize: settings('legendTitleFontSize') || 15,
-      legendTitleFontColor: settings('legendTitleFontColor') || 'black',
-      legendShapeColor: settings('legendShapeColor') || 'orange',
-      legendBackgroundColor: settings('legendBackgroundColor') || 'white',
-      legendBorderColor: settings('legendBorderColor') || 'black',
-      legendBorderWidth: settings('legendBorderWidth') || 1,
-      legendInnerMargin: settings('legendInnerMargin') || 8,
-      legendOuterMargin: settings('legendOuterMargin') || 5,
-      legendTitleMaxLength: settings('legendTitleMaxLength') || 30,
-      legendTitleTextAlign: settings('legendTitleTextAlign') || 'left',
-      legendBorderRadius: settings('legendBorderRadius') || 10
-    };
-
-    computeTotalWidth(this.visualSettings);
-
-    var renderer = s.renderers[0]; // TODO: handle several renderers?
-    this.canvas = document.createElement('canvas');
-    this.canvas.width = renderer.container.offsetWidth;
-    this.canvas.height = renderer.container.offsetHeight;
-    this.canvas.style.position = 'absolute';
-    this.canvas.style.pointerEvents = 'none';
-    renderer.container.appendChild(this.canvas);
-
-    window.addEventListener('resize', function () {
-      self.canvas.width = renderer.container.offsetWidth;
-      self.canvas.height = renderer.container.offsetHeight;
-      self.drawLayout();
-    });
-
-    this.widgets = { };
-  }
-
-  /**
-   * Not used right now, will be useful later.
-   * @param externalCSSList Array<string>
-   */
-  LegendPlugin.prototype.setExternalCSS = function (externalCSSList) {
-    var self = this;
-    this.externalCSS = externalCSSList;
-  };
-
   /**
    *  Reconstruct the legend's svg (i.e. recreate the image representation of each widget).
    */
-  LegendPlugin.prototype.buildWidgets = function () {
-    var self = this;
-    iterate(this.widgets, function (value) {
-      value.build(function () {
-        return self.enoughSpace && self.visible;
-      });
+  function buildLegendWidgets(legendPlugin) {
+    iterate(legendPlugin.widgets, function (value) {
+      buildWidget(value);
     });
-  };
+  }
 
   /**
    * Apply the layout algorithm to compute the position of every widget.
    * Does not build widgets.
    * Draw the legend at the end.
    */
-  LegendPlugin.prototype.drawLayout = function () {
-    var vs = this.visualSettings,
-        horizontal = this.placement === 'top' || this.placement === 'bottom',
-        maxHeight = this.canvas.height,
-        maxWidth = this.canvas.width,
-        textWidgets = getUnpinnedWidgets(this.widgets, 'text'),
-        nodeWidgets = getUnpinnedWidgets(this.widgets, 'node'),
-        edgeWidgets = getUnpinnedWidgets(this.widgets, 'edge'),
+  function drawLayout(legendPlugin) {
+    var vs = legendPlugin._visualSettings,
+        placement = legendPlugin.placement,
+        horizontal = placement === 'top' || placement === 'bottom',
+        maxHeight = legendPlugin._canvas.height,
+        maxWidth = legendPlugin._canvas.width,
+        textWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'text'),
+        nodeWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'node'),
+        edgeWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'edge'),
         widgetLists = [textWidgets, nodeWidgets, edgeWidgets],
-        height = horizontal ? getMaxHeight(this.widgets) + vs.legendOuterMargin * 2 : maxHeight,
+        height = horizontal ? getMaxHeight(legendPlugin.widgets) + vs.legendOuterMargin * 2 : maxHeight,
         maxNbCols = Math.floor(maxWidth / vs.totalWidgetWidth),
         cols = initializeColumns(horizontal ? maxNbCols : 1, vs.legendOuterMargin * 2),
         colIndex = 0,
@@ -257,17 +249,17 @@
     }
 
     if (!notEnoughSpace) {
-      if (this.placement === 'right') {
+      if (placement === 'right') {
         cols.reverse();
       }
 
       for (var i = 0; i < cols.length; ++i) {
-        var h = this.placement === 'bottom' ? height - cols[i].height : 0;
+        var h = placement === 'bottom' ? height - cols[i].height : 0;
         for (var j = 0; j < cols[i].widgets.length; ++j) {
           cols[i].widgets[j].x = vs.totalWidgetWidth * i +
-            (this.placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendInnerMargin);
+            (placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendInnerMargin);
 
-          if (this.placement === 'bottom') {
+          if (placement === 'bottom') {
             cols[i].widgets[j].y = maxHeight - height - vs.legendInnerMargin + h;
           } else {
             cols[i].widgets[j].y = h + vs.legendInnerMargin;
@@ -277,9 +269,9 @@
       }
     }
 
-    this.draw();
-    this.enoughSpace = !notEnoughSpace;
-  };
+    drawLegend(legendPlugin);
+    legendPlugin.enoughSpace = !notEnoughSpace;
+  }
 
   function initializeColumns(number, initialHeight) {
     var columns = [];
@@ -313,8 +305,9 @@
 
   /**
    * Returns the list of combinations that are possible given a length and index.
-   * Example: getCombinations(3, 0) -> [ [0], [1], [0, 1], [1, 2], [1, 3], [2, 3], [1, 2, 3] ]
-   *          getCombinations(2, 1) -> [ [1], [2], [1, 2] ]
+   * Warning: complexity O(2^n) (should not be a problem since we usually won't have high values)
+   * Example: getCombinations(3, 0) -> [ [0], [1], [2], [0, 1], [0, 2], [1, 2], [0, 1, 2] ]
+   *          getCombinations(3, 1) -> [ [1], [2], [1, 2] ]
    * @param length        {number}
    * @param startingIndex {number}
    * @returns {Array<number>}
@@ -336,6 +329,12 @@
     }
   }
 
+  /**
+   * Returns the total height of widgets with their index contained in the specified array
+   * @param {Array<LegendWidget>} widgets
+   * @param {Array<number>}       indexes
+   * @returns {number}
+   */
   function computeCombinedWidgetsHeight(widgets, indexes) {
     var totalHeight = 0;
     indexes.forEach(function (index) {
@@ -345,6 +344,12 @@
     return totalHeight;
   }
 
+  /**
+   * Returns every widget that is not pinned (the widgets that are taken care of by the layout algorithm)
+   * @param widgets
+   * @param elementType
+   * @returns {Array}
+   */
   function getUnpinnedWidgets(widgets, elementType) {
     var unpinned = [];
 
@@ -380,97 +385,80 @@
   /**
    * Clear the canvas on which the legend is displayed.
    */
-  LegendPlugin.prototype.clear = function () {
-    var context = this.canvas.getContext('2d');
-
-    context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  };
+  function clearLegend(legendPlugin) {
+    var context = legendPlugin._canvas.getContext('2d');
+    context.clearRect(0, 0, legendPlugin._canvas.width, legendPlugin._canvas.height);
+  }
 
   /**
    * Draw each widget (unpinned before pinned, we want the user-positioned
    * widget to be displayed on top those positioned with the layout algorithm.
    */
-  LegendPlugin.prototype.draw = function () {
-    this.clear();
-    if (this.visible && this.enoughSpace) {
-      iterate(this.widgets, function (value) {
+  function drawLegend(legendPlugin) {
+    clearLegend(legendPlugin);
+    if (legendPlugin.visible && legendPlugin.enoughSpace) {
+      iterate(legendPlugin.widgets, function (value) {
         if (!value.pinned) {
-          value.draw();
+          drawWidget(value);
         }
       });
     }
 
-    if (this.visible) {
-      iterate(this.widgets, function (value) {
+    if (legendPlugin.visible) {
+      iterate(legendPlugin.widgets, function (value) {
         if (value.pinned) {
-          value.draw();
+          drawWidget(value);
         }
       });
     }
-  };
+  }
 
 
   /**
    * Indicates if a widget must be displayed (typically used when a widget's image has just been loaded to
    * know if it must be displayed immediatly).
+   * @param legendPlugin
    * @param widget
    * @returns {boolean}
    */
-  LegendPlugin.prototype.mustDisplayWidget = function (widget) {
-    return this.visible && (this.enoughSpace || widget.pinned) && this.widgets[widget.id] !== undefined;
-  };
-
-  function LegendWidget(canvas, sigmaInstance, designPlugin, legendPlugin, elementType, visualVar) {
-    this.canvas = canvas;
-    this.sigmaInstance = sigmaInstance;
-    this.designPlugin = designPlugin;
-    this.legendPlugin = legendPlugin;
-    this.visualVar = visualVar;
-    this.elementType = elementType;
-    this.x = 0;
-    this.y = 0;
-    this.text = '';
-    this.unit = null;
-    this.img = null;
-    this.pinned = false;
-    this.icons = [];
+  function mustDisplayWidget(legendPlugin, widget) {
+    return legendPlugin.visible && (legendPlugin.enoughSpace || widget.pinned) && legendPlugin.widgets[widget.id] !== undefined;
   }
 
   /**
    * Create a widget's svg.
    */
-  LegendWidget.prototype.build = function () {
-    var self = this,
-        vs = this.legendPlugin.visualSettings;
+  function buildWidget(widget, exports) {
+    var vs = widget._legendPlugin._visualSettings;
 
-    if (this.visualVar === 'size') {
-      this.svg = drawSizeLegend(vs, this.sigmaInstance.graph, this.designPlugin, this.elementType, this.unit)
-    } else if (this.elementType !== 'text') {
-      this.svg = drawNonSizeLegend(vs, this.sigmaInstance.graph, this.designPlugin, this.elementType, this.visualVar, this.unit);
+    if (widget.visualVar === 'size') {
+      widget.svg = drawSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.unit)
+    } else if (widget.elementType !== 'text') {
+      widget.svg = drawNonSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.visualVar, widget.unit, exports);
     } else {
-      var lines = getLines(vs, this.text, vs.legendWidth - 2 * vs.legendInnerMargin),
-          lineHeight = vs.legendFontSize + 2,
+      var lines = getLines(vs, widget.text, vs.legendWidth - 2 * vs.legendInnerMargin),
+          lineHeight = vs.legendFontSize + 1,
           height = lines.length * lineHeight + vs.legendInnerMargin * 2,
-          offsetY = vs.legendInnerMargin;
+          offsetY = vs.legendInnerMargin + lineHeight;
 
-      this.svg = document.createElement('svg');
-      drawBackground(this.svg, vs, height);
+      widget.svg = document.createElement('svg');
+      drawBackground(widget.svg, vs, height);
 
       for (var i = 0; i < lines.length; ++i) {
-        drawText(vs, this.svg, lines[i], vs.legendInnerMargin, offsetY, null, null, null, null, 'text-before-edge');
+        drawText(vs, widget.svg, lines[i], vs.legendInnerMargin, offsetY);
         offsetY += lineHeight;
       }
 
-      this.svg.width = vs.totalWidgetWidth;
-      this.svg.height = height + 2 * (vs.legendBorderWidth + vs.legendOuterMargin);
+      widget.svg.width = vs.totalWidgetWidth;
+      widget.svg.height = height + 2 * (vs.legendBorderWidth + vs.legendOuterMargin);
     }
 
-    this.img = buildImageFromSvg(this.svg, this.legendPlugin.externalCSS, function () {
-      if (self.legendPlugin.mustDisplayWidget(self)) {
-        self.legendPlugin.drawLayout();
+    widget.img = buildImageFromSvg(widget.svg, widget._legendPlugin.externalCSS, function () {
+      if (mustDisplayWidget(widget._legendPlugin, widget)) {
+        drawLayout(widget._legendPlugin);
       }
     });
-  };
+  }
 
   /**
    * Split a string into multiple lines. Each line's length (in pixels) won't be larger than 'maxWidth'.
@@ -510,22 +498,31 @@
     return lineList;
   }
 
+  function getPropertyName(prop) {
+    var s = prop.split('.');
+    if (s.length > 2 && s[s.length - 2] === 'categories') {
+      return 'Category';
+    } else {
+      return prettyfy(s[s.length - 1]);
+    }
+  }
+
   /**
    * Draw a widget on the canvas.
    */
-  LegendWidget.prototype.draw = function () {
-    var ctx = this.canvas.getContext('2d'),
-        self = this;
-    ctx.drawImage(this.img, this.x, this.y);
-    if (this.elementType === 'node' && this.visualVar === 'icon') {
+  function drawWidget(widget) {
+    var ctx = widget._canvas.getContext('2d');
+
+    ctx.drawImage(widget.img, widget.x, widget.y);
+    if (widget.elementType === 'node' && widget.visualVar === 'icon') {
       ctx.textBaseline = 'middle';
-      iterate(this.svg.icons, function (value, content) {
+      iterate(widget.svg.icons, function (value, content) {
         ctx.fillStyle = value.color;
         ctx.font = value.font;
-        ctx.fillText(content, self.x + value.x, self.y + value.y);
+        ctx.fillText(content, widget.x + value.x, widget.y + value.y);
       });
     }
-  };
+  }
 
   /**
    * Iterate over a list of elements and returns the minimum and maximum values for a specified property.
@@ -1072,7 +1069,9 @@
     }
   }
 
-  /* PUBLIC FUNCTIONS */
+  /* ============================ */
+  /* ===== PUBLIC FUNCTIONS ===== */
+  /* ============================ */
 
   var _legendInstances = {};
 
@@ -1108,8 +1107,8 @@
    * Must be called whenever the graph's design changes
    */
   LegendPlugin.prototype.redraw = function () {
-    this.buildWidgets();
-    this.drawLayout();
+    buildLegendWidgets(this);
+    drawLayout(this);
   };
 
   /**
@@ -1117,7 +1116,7 @@
    */
   LegendPlugin.prototype.toggleVisibility = function () {
     this.visible = !this.visible;
-    this.draw();
+    drawLegend(this);
   };
 
   /**
@@ -1130,7 +1129,7 @@
     }
 
     this.placement = newPlacement;
-    this.drawLayout();
+    drawLayout(this);
   };
 
 
@@ -1145,12 +1144,12 @@
     var widget = this.widgets[makeWidgetId(elementType, visualVar)];
 
     if (!widget) {
-      widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, elementType, visualVar);
+      widget = new LegendWidget(this._canvas, this._sigmaInstance, this._designPlugin, this, elementType, visualVar);
       widget.id = makeWidgetId(elementType, visualVar);
       this.widgets[widget.id] = widget;
     }
     widget.unit = unit;
-    widget.build();
+    buildWidget(widget);
 
     return widget;
   };
@@ -1161,13 +1160,13 @@
    * @returns {LegendWidget}  The added widget
    */
   LegendPlugin.prototype.addTextWidget = function (text) {
-    var widget = new LegendWidget(this.canvas, this.sigmaInstance, this.designPlugin, this, 'text');
+    var widget = new LegendWidget(this._canvas, this._sigmaInstance, this._designPlugin, this, 'text');
 
     widget.text = text;
     widget.id = 'text' + this.textWidgetCounter++;
     this.widgets[widget.id] = widget;
 
-    widget.build();
+    buildWidget(widget);
 
     return widget;
   };
@@ -1182,7 +1181,7 @@
     var id = arg1 instanceof LegendWidget ? arg1.id : makeWidgetId(arg1, arg2);
     if (this.widgets[id]) {
       this.widgets[id] = undefined;
-      this.drawLayout();
+      drawLayout(this);
     }
   };
 
@@ -1192,7 +1191,7 @@
    */
   LegendWidget.prototype.unpin = function () {
     this.pinned = false;
-    this.legendPlugin.drawLayout();
+    drawLayout(this._legendPlugin);
   };
 
 
@@ -1206,7 +1205,7 @@
     this.pinned = true;
     this.x = x;
     this.y = y;
-    this.legendPlugin.drawLayout();
+    drawLayout(this._legendPlugin);
   };
 
   /**
@@ -1215,7 +1214,16 @@
    */
   LegendWidget.prototype.setText = function (text) {
     this.text = text;
-    this.build();
+    buildWidget(this);
+  };
+
+  /**
+   * Not used right now, will be useful later.
+   * @param externalCSSList Array<string>
+   */
+  LegendPlugin.prototype.setExternalCSS = function (externalCSSList) {
+    var self = this;
+    this.externalCSS = externalCSSList;
   };
 
 }).call(this);
