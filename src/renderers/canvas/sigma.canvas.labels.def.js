@@ -96,24 +96,38 @@
   };
 
   function getLines(text, maxLineLength) {
-    if (maxLineLength === 0) {
+    if (maxLineLength <= 1) {
       return [text];
     }
 
     var words = text.split(' '),
-        lines = [[]],
+        lines = [],
         lineLength = 0,
-        lineIndex = 0,
-        lineList = [];
+        lineIndex = -1,
+        lineList = [],
+        lineFull = true;
 
     for (var i = 0; i < words.length; ++i) {
-      if (lineLength + words[i].length <= maxLineLength) {
+      if (lineFull) {
+        if (words[i].length > maxLineLength) {
+          var parts = splitWord(words[i], maxLineLength);
+          for (var j = 0; j < parts.length; ++j) {
+            lines.push([parts[j]]);
+            ++lineIndex;
+          }
+          lineLength = parts[parts.length - 1].length;
+        } else {
+          lines.push([words[i] + ' ']);
+          ++lineIndex;
+          lineLength = words[i].length + 1;
+        }
+        lineFull = false;
+      } else if (lineLength + words[i].length <= maxLineLength) {
         lines[lineIndex].push(words[i] + ' ');
         lineLength += words[i].length + 1;
       } else {
-        lines.push([words[i] + ' ']);
-        lineLength = 0;
-        lineIndex++;
+        lineFull = true;
+        --i;
       }
     }
 
@@ -122,5 +136,18 @@
     }
 
     return lineList;
+  }
+
+  function splitWord(word, maxLength) {
+    var parts = [];
+
+    for (var i = 0; i < word.length; i += maxLength - 1) {
+      parts.push(word.substr(i, maxLength - 1) + '-');
+    }
+
+    var lastPartLen = parts[parts.length - 1].length;
+    parts[parts.length - 1] = parts[parts.length - 1].substr(0, lastPartLen - 1) + ' ';
+
+    return parts;
   }
 }).call(this);
