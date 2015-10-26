@@ -9,7 +9,7 @@
 
   /* Definition of the main classes (LegendPlugin & LegendWidget). */
 
-  function LegendPlugin(s) {
+  function LegendPlugin(s, initAll) {
     var self = this,
       settings = s.settings;
 
@@ -52,10 +52,20 @@
     });
 
     this.textWidgetCounter = 1;
-    this.enoughSpace = false;
+    this.enoughSpace = true;
     this.placement = 'bottom';
     this.visible = true;
     this.widgets = { };
+
+    if (initAll) {
+      this.addWidget('node', 'size');
+      this.addWidget('node', 'color');
+      this.addWidget('node', 'icon');
+      this.addWidget('node', 'type');
+      this.addWidget('edge', 'size');
+      this.addWidget('edge', 'color');
+      this.addWidget('edge', 'type');
+    }
   }
 
 
@@ -134,6 +144,10 @@
    * @param {function}  onload        Function that will be called once the image is built
    */
   function buildImageFromSvg(svg, externalCSS, onload) {
+    if (!svg) {
+      return null;
+    }
+
     // <?xml-stylesheet type="text/css" href="svg-stylesheet.css" ?>
     var str = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
         //+ '<defs><style type="text/css"><![CDATA[' + externalCSS + ']]></style></defs>'
@@ -354,7 +368,7 @@
     var unpinned = [];
 
     iterate(widgets, function (value) {
-      if (!value.pinned && value.elementType === elementType) {
+      if (value.svg && !value.pinned && value.elementType === elementType) {
         unpinned.push(value);
       }
     });
@@ -370,7 +384,7 @@
   function getMaxHeight(widgets) {
     var maxWidgetHeight = 0;
     iterate(widgets, function (widget) {
-      if (widget.svg.height > maxWidgetHeight) {
+      if (widget.svg && widget.svg.height > maxWidgetHeight) {
         maxWidgetHeight = widget.svg.height;
       }
     });
@@ -511,11 +525,15 @@
    * Draw a widget on the canvas.
    */
   function drawWidget(widget) {
+    if (!widget.img) {
+      return;
+    }
+
     var ctx = widget._canvas.getContext('2d');
 
     ctx.drawImage(widget.img, widget.x, widget.y);
     if (widget.elementType === 'node' && widget.visualVar === 'icon') {
-      ctx.textBaseline = 'middle';
+      ctx.textBaseline = 'alphabetic';
       iterate(widget.svg.icons, function (value, content) {
         ctx.fillStyle = value.color;
         ctx.font = value.font;
@@ -531,19 +549,24 @@
    * @returns {{min: *, max: *}}
    */
   function getBoundaryValues(elements, propertyName) {
-    var minValue = elements.length > 0 ? strToObjectRef(elements[0], propertyName) : 0,
-        maxValue = minValue;
+    var minValue = null,
+        maxValue = null;
 
     for (var i = 1; i < elements.length; ++i) {
       var value = strToObjectRef(elements[i], propertyName);
-      if (value < minValue) {
+      if (typeof value !== 'number') {
+        continue;
+      }
+
+      if (!minValue || value < minValue) {
         minValue = value;
-      } else if (value > maxValue) {
+      }
+      if (!maxValue || value > maxValue) {
         maxValue = value;
       }
     }
 
-    return {min:minValue, max:maxValue};
+    return {min: minValue ? minValue : 0, max: maxValue ? maxValue : 0};
   }
 
   /**
@@ -579,8 +602,13 @@
         svg = document.createElement('svg'),
         elts = elementType === 'node' ? graph.nodes() : graph.edges(),
         styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges,
-        titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + vs.legendFontSize * 1.5,
-        propName = styles.size.by,
+        titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + vs.legendFontSize * 1.5;
+
+    if (!styles.size) {
+      return null;
+    }
+
+    var propName = styles.size.by,
         boundaries = getBoundaryValues(elts, propName),
         minValue = boundaries.min,
         maxValue = boundaries.max,
@@ -657,15 +685,21 @@
     var vs = visualSettings,
         svg = document.createElement('svg'),
         elts = elementType === 'node' ? graph.nodes() : graph.edges(),
-        styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges,
-        palette = designPluginInstance.palette,
+        styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges;
+
+    if (!styles[visualVar]) {
+      return null;
+    }
+
+    var palette = designPluginInstance.palette,
         lineHeight = vs.legendFontSize * 1.5,
         titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + lineHeight,
         quantitativeColorEdge = elementType === 'edge' && visualVar === 'color' && styles.color.bins,
         edgeType = elementType === 'edge' && visualVar === 'type',
-        scheme = quantitativeColorEdge ? palette[styles.color.scheme][styles.color.bins] : palette[styles[visualVar].scheme],
-        mapping = getExistingPropertyValues(elts, styles[visualVar].by, Object.keys(scheme)),
-        height = lineHeight * Object.keys(quantitativeColorEdge ? scheme : mapping).length + titleMargin + (edgeType ? lineHeight : 0),
+        scheme = quantitativeColorEdge ? strToObjectRef(palette, styles.color.scheme)[styles.color.bins] : strToObjectRef(palette, styles[visualVar].scheme),
+        existingValues = getExistingPropertyValues(elts, styles[visualVar].by),
+        nbElements = quantitativeColorEdge ?  Object.keys(scheme).length : getNbElements(scheme, existingValues),
+        height = lineHeight * nbElements + titleMargin + (edgeType ? lineHeight : 0),
         leftColumnWidth = vs.legendWidth / 3,
         offsetY = titleMargin,
         textOffsetX = elementType === 'edge' ? leftColumnWidth : vs.legendFontSize * 1.5 + vs.legendInnerMargin,
@@ -688,14 +722,14 @@
 
     /* Display additional information for the type of edge */
     if (elementType === 'edge' && visualVar === 'type') {
-          txt =  'source node to target node',
-          fontSize = shrinkFontSize(txt, vs.legendFontFamily, vs.legendFontSize, vs.legendWidth - vs.legendInnerMargin * 2);
+      txt =  'source node to target node';
+      fontSize = shrinkFontSize(txt, vs.legendFontFamily, vs.legendFontSize, vs.legendWidth - vs.legendInnerMargin * 2);
       drawText(vs, svg, txt, vs.legendInnerMargin, offsetY, 'left', vs.legendFontColor, vs.legendFontFamily, fontSize);
       offsetY += lineHeight;
     }
 
     iterate(scheme, function (value, key) {
-      if (!quantitativeColorEdge && !mapping[key]) {
+      if (!quantitativeColorEdge && !existingValues[key]) {
         return;
       }
 
@@ -708,12 +742,13 @@
         }
       } else if (visualVar === 'icon') {
         if (exports) {
-          drawText(vs, svg, value.content, vs.legendInnerMargin, offsetY, 'left', value.color, value.font,
-            value.scale * vs.legendFontSize, 'middle');
+          drawText(vs, svg, value.content, vs.legendInnerMargin, offsetY, 'left', vs.legendFontColor, value.font,
+            vs.legendFontSize, 'middle');
         } else {
           svg.icons[value.content] = {
-            font: (vs.legendFontSize * value.scale) + 'px ' + value.font,
-            color: value.color,
+            font: vs.legendFontSize + 'px ' + value.font,
+            //color: value.color,
+            color: vs.legendFontColor,
             x: vs.legendInnerMargin,
             y: offsetY
           };
@@ -752,13 +787,30 @@
    * @returns {Object}
    */
   function getExistingPropertyValues(elts, propName) {
-    var mapping = {};
+    var existingValues = {};
     for (var i = 0; i < elts.length; ++i) {
       var prop = strToObjectRef(elts[i], propName);
-      mapping[prop] = true;
+      if (prop && typeof prop === 'object') {
+        iterate(prop, function (value) {
+          existingValues[value] = true;
+        });
+      } else {
+        existingValues[prop] = true;
+      }
     }
 
-    return mapping;
+    return existingValues;
+  }
+
+  function getNbElements(scheme, existingValues) {
+    var nb = 0;
+    iterate(scheme, function (val, key) {
+      if (existingValues[key]) {
+        ++nb;
+      }
+    });
+
+    return nb;
   }
 
   /**
@@ -1080,9 +1132,9 @@
    * @param s {Object} Sigma instance.
    * @returns {LegendPlugin}
    */
-  sigma.plugins.legend = function (s) {
+  sigma.plugins.legend = function (s, initAll) {
     if (!_legendInstances[s.id]) {
-      _legendInstances[s.id] = new LegendPlugin(s);
+      _legendInstances[s.id] = new LegendPlugin(s, initAll);
     }
 
     return _legendInstances[s.id];
@@ -1112,11 +1164,11 @@
   };
 
   /**
-   * Toggle the visibility of the legend.
+   * Set the visibility of the legend.
    */
-  LegendPlugin.prototype.toggleVisibility = function () {
-    this.visible = !this.visible;
-    drawLegend(this);
+  LegendPlugin.prototype.setVisibility = function (visible) {
+    this.visible = visible;
+    drawLayout(this);
   };
 
   /**

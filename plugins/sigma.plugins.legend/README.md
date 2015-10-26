@@ -17,7 +17,11 @@ See the following [example code](../../examples/plugin-legend.html) for full usa
 ## Usage
 
 ```js
-var legend = sigma.plugins.legend(sigmaInstance, settings);
+/**
+  @param sigmaInstance
+  @param initAll        Is true, initialize every "basic" widget
+*/
+var legend = sigma.plugins.legend(sigmaInstance, initAll);
 sigma.plugins.killLegend(sigmaInstance);
 
 ```
@@ -62,9 +66,10 @@ legend.redraw();
 legend.setPlacement(newPlacement);
 
 /**
- * Toggle the visibility of the legend.
+ * Set the visibility of the legend.
+ * @param visible
  */
-legend.toggleVisibility();
+legend.setVisibility(visible);
 
 ### Widget API
 

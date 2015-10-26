@@ -93,62 +93,64 @@
 <script>
   // Create a custom color palette:
   var myPalette = {
-    categoryScheme: {
-      'Man': '#7fc97f',
-      'Woman': '#fdc086',
-      'Martian': '#798345',
-      'Thing': '#925647',
-      'Unknown': '#1188AA'
-    },
-    nameScheme: {
-      'Lorem ipsum': {
-        font: 'FontAwesome',
-        scale: 1.0,
-        color: '#000',
-        content: "\uF11a"
+    schemes: {
+      categoryScheme: {
+        'Man': '#7fc97f',
+        'Woman': '#fdc086',
+        'Martian': '#798345',
+        'Thing': '#925647',
+        'Unknown': '#1188AA'
       },
-      'Dolor': {
-        font: 'FontAwesome',
-        scale: 1.0,
-        color: '#d22',
-        content: "\uF11b"
+      nameScheme: {
+        'Lorem ipsum': {
+          font: 'FontAwesome',
+          scale: 1.0,
+          color: '#000',
+          content: "\uF11a"
+        },
+        'Dolor': {
+          font: 'FontAwesome',
+          scale: 1.0,
+          color: '#d22',
+          content: "\uF11b"
+        },
+        'Sit Amet': {
+          font: 'FontAwesome',
+          scale: 1.0,
+          color: '#2d2',
+          content: "\uF11c"
+        },
+        'Consectetur': {
+          font: 'FontAwesome',
+          scale: 1.0,
+          color: '#22d',
+          content: "\uF11d"
+        }
       },
-      'Sit Amet': {
-        font: 'FontAwesome',
-        scale: 1.0,
-        color: '#2d2',
-        content: "\uF11c"
+      relationTypeScheme: {
+        'Love': '#81A4E3',
+        'Hatred': '#CC2323'
       },
-      'Consectetur': {
-        font: 'FontAwesome',
-        scale: 1.0,
-        color: '#22d',
-        content: "\uF11d"
+      interestScheme: {
+        'Books': 'equilateral',
+        'Movies': 'star',
+        'Music': 'square',
+        'Video games': 'diamond',
+        'Nothing': 'cross',
+        'BDSM': 'cross'
+      },
+      relationDurationScheme: {
+        'Amazing': 'parallel',
+        'Good': 'arrow',
+        'Quite good but not that much': 'curve',
+        'Not really good': 'curvedArrow',
+        'Bad': 'dashed',
+        'Really bad': 'dotted',
+        'In ruins': 'tapered'
+      },
+      meetingFrequencyScheme: {
+        7: ['#132b43', '#1d3f5d', '#27547a', '#326896', '#3d7fb5', '#4897d4', '#54aef3']
       }
-    },
-    relationTypeScheme: {
-      'Love': '#81A4E3',
-      'Hatred': '#CC2323'
-    },
-    interestScheme: {
-      'Books':'equilateral',
-      'Movies':'star',
-      'Music':'square',
-      'Video games':'diamond',
-      'Nothing':'cross',
-      'BDSM':'cross'
-    },
-    relationDurationScheme: {
-      'Amazing': 'parallel',
-      'Good': 'arrow',
-      'Quite good but not that much': 'curve',
-      'Not really good': 'curvedArrow',
-      'Bad': 'dashed',
-      'Really bad': 'dotted',
-      'In ruins': 'tapered'
-    },
-    meetingFrequencyScheme: {
-      7: ['#132b43','#1d3f5d','#27547a','#326896','#3d7fb5','#4897d4','#54aef3']
     }
   };
 
@@ -216,15 +218,15 @@
       },
       color: {
         by: 'data.categories.0',
-        scheme: 'categoryScheme'
+        scheme: 'schemes.categoryScheme'
       },
       icon: {
         by: 'data.properties.family_name',
-        scheme: 'nameScheme'
+        scheme: 'schemes.nameScheme'
       },
       type: {
         by: 'data.properties.interest',
-        scheme: 'interestScheme'
+        scheme: 'schemes.interestScheme'
       }
     },
     edges: {
@@ -234,7 +236,7 @@
 //      },
       color: {
         by: 'data.properties.meeting_frequency',
-        scheme: 'meetingFrequencyScheme',
+        scheme: 'schemes.meetingFrequencyScheme',
         bins: 7
       },
       size: {
@@ -245,7 +247,7 @@
       },
       type: {
         by: 'data.properties.relation_quality',
-        scheme: 'relationDurationScheme'
+        scheme: 'schemes.relationDurationScheme'
       }
     }
   };
@@ -273,17 +275,17 @@
   var legendPlugin, textWidget, nodeIconWidget;
 
   function init() {
-    legendPlugin = sigma.plugins.legend(s);
+    legendPlugin = sigma.plugins.legend(s, true);
     legendPlugin.setExternalCSS(['http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css']);
-    legendPlugin.setPlacement('left');
-    legendPlugin.addWidget('node', 'size');
-    legendPlugin.addWidget('edge', 'size', '%');
-    legendPlugin.addWidget('node', 'color');
-    legendPlugin.addWidget('edge', 'color', 'days');
-    legendPlugin.addWidget('node', 'type');
-    legendPlugin.addWidget('edge', 'type');
+//    legendPlugin.setPlacement('left');
+//    legendPlugin.addWidget('node', 'size');
+//    legendPlugin.addWidget('edge', 'size', '%');
+//    legendPlugin.addWidget('node', 'color');
+//    legendPlugin.addWidget('edge', 'color', 'days');
+//    legendPlugin.addWidget('node', 'type');
+//    legendPlugin.addWidget('edge', 'type');
+//    nodeIconWidget = legendPlugin.addWidget('node', 'icon');
     textWidget = legendPlugin.addTextWidget('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.')
-    nodeIconWidget = legendPlugin.addWidget('node', 'icon');
   }
 
   // In case the WebGL renderer is used, we must wait for FontAwesome to be loaded.
