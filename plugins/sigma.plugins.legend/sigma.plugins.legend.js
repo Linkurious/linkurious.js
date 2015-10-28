@@ -39,11 +39,13 @@
 
     var renderer = s.renderers[0]; // TODO: handle several renderers?
     this._canvas = document.createElement('canvas');
+    renderer.container.appendChild(this._canvas);
+    //renderer.initDOM('canvas', 'legend');
+    //this._canvas = renderer.domElements['legend'];
     this._canvas.width = renderer.container.offsetWidth;
     this._canvas.height = renderer.container.offsetHeight;
     this._canvas.style.position = 'absolute';
     this._canvas.style.pointerEvents = 'none';
-    renderer.container.appendChild(this._canvas);
 
     window.addEventListener('resize', function () {
       self._canvas.width = renderer.container.offsetWidth;
@@ -56,6 +58,7 @@
     this.placement = 'bottom';
     this.visible = true;
     this.widgets = { };
+    this.boundingBox = {x:0, y:0, w:0, h:0};
 
     if (initAll) {
       this.addWidget('node', 'size');
@@ -95,6 +98,70 @@
   function strToObjectRef(obj, str) {
     if (str == null) return null;
     return str.split('.').reduce(function(obj, i) { return obj[i] }, obj);
+  }
+
+  function dataURLToBlob(dataURL) {
+    var BASE64_MARKER = ';base64,';
+    if (dataURL.indexOf(BASE64_MARKER) == -1) {
+      var parts = dataURL.split(',');
+      var contentType = parts[0].split(':')[1];
+      var raw = decodeURIComponent(parts[1]);
+
+      return new Blob([raw], {type: contentType});
+    }
+
+    var parts = dataURL.split(BASE64_MARKER);
+    var contentType = parts[0].split(':')[1];
+    var raw = window.atob(parts[1]);
+    var rawLength = raw.length;
+
+    var uInt8Array = new Uint8Array(rawLength);
+
+    for (var i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], {type: contentType});
+  }
+
+  function download(fileEntry, filename, isDataUrl) {
+    var blob = null,
+        objectUrl = null,
+        dataUrl = null;
+
+    if (window.Blob){
+      // use Blob if available
+      blob = isDataUrl ? dataURLToBlob(fileEntry) : new Blob([fileEntry], {type: 'text/xml'});
+      objectUrl = window.URL.createObjectURL(blob);
+    }
+    else {
+      // else use dataURI
+      dataUrl = 'data:text/xml;charset=UTF-8,' +
+        encodeURIComponent('<?xml version="1.0" encoding="UTF-8"?>') +
+        encodeURIComponent(fileEntry);
+    }
+
+    if (navigator.msSaveBlob) { // IE11+ : (has Blob, but not a[download])
+      navigator.msSaveBlob(blob, filename);
+    } else if (navigator.msSaveOrOpenBlob) { // IE10+ : (has Blob, but not a[download])
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      // A-download
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', (window.Blob) ? objectUrl : dataUrl);
+      anchor.setAttribute('download', filename);
+
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
+
+    if (objectUrl) {
+      setTimeout(function() { // Firefox needs a timeout
+        window.URL.revokeObjectURL(objectUrl);
+      }, 0);
+    }
   }
 
   function iterate(obj, func) {
@@ -143,18 +210,14 @@
    * @param {Array}     externalCSS   List of external style sheets to be included
    * @param {function}  onload        Function that will be called once the image is built
    */
-  function buildImageFromSvg(svg, externalCSS, onload) {
+  function buildImageFromSvg(svg, onload) {
     if (!svg) {
       return null;
     }
 
-    // <?xml-stylesheet type="text/css" href="svg-stylesheet.css" ?>
-    var str = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
-        //+ '<defs><style type="text/css"><![CDATA[' + externalCSS + ']]></style></defs>'
+    var str = '';
 
-    //for (var i = 0; i < externalCSS.length; ++i) {
-    //  str += '<use xlink:href="' + externalCSS[i] + '"></use>';
-    //}
+    str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
 
     str += svg.innerHTML + '</svg>';
     var src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str))),
@@ -271,16 +334,28 @@
         var h = placement === 'bottom' ? height - cols[i].height : 0;
         for (var j = 0; j < cols[i].widgets.length; ++j) {
           cols[i].widgets[j].x = vs.totalWidgetWidth * i +
-            (placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendInnerMargin);
+            (placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendOuterMargin);
 
           if (placement === 'bottom') {
-            cols[i].widgets[j].y = maxHeight - height - vs.legendInnerMargin + h;
+            cols[i].widgets[j].y = maxHeight - height + h + vs.legendOuterMargin * 2;
           } else {
-            cols[i].widgets[j].y = h + vs.legendInnerMargin;
+            cols[i].widgets[j].y = h + vs.legendOuterMargin;
           }
           h += cols[i].widgets[j].svg.height;
         }
       }
+
+      var legendWidth = cols.length * (vs.totalWidgetWidth + vs.legendOuterMargin) + vs.legendOuterMargin,
+          legendHeight = cols.reduce(function (previous, value) { return ( previous > value.height ? previous : value.height ); }, 0);
+
+      legendPlugin.boundingBox = {
+        w: legendWidth,
+        h: legendHeight,
+        x: legendPlugin.placement === 'right' ? maxWidth - legendWidth : 0,
+        y: legendPlugin.placement === 'bottom' ? maxHeight - legendHeight : 0
+      };
+    } else {
+      legendPlugin.boundingBox = {x:0, y:0, w:0, h:0};
     }
 
     drawLegend(legendPlugin);
@@ -442,13 +517,13 @@
   /**
    * Create a widget's svg.
    */
-  function buildWidget(widget, exports) {
+  function buildWidget(widget) {
     var vs = widget._legendPlugin._visualSettings;
 
     if (widget.visualVar === 'size') {
       widget.svg = drawSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.unit)
     } else if (widget.elementType !== 'text') {
-      widget.svg = drawNonSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.visualVar, widget.unit, exports);
+      widget.svg = drawNonSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.visualVar, widget.unit);
     } else {
       var lines = getLines(vs, widget.text, vs.legendWidth - 2 * vs.legendInnerMargin),
           lineHeight = vs.legendFontSize + 1,
@@ -467,7 +542,7 @@
       widget.svg.height = height + 2 * (vs.legendBorderWidth + vs.legendOuterMargin);
     }
 
-    widget.img = buildImageFromSvg(widget.svg, widget._legendPlugin.externalCSS, function () {
+    widget.img = buildImageFromSvg(widget.svg, function () {
       if (mustDisplayWidget(widget._legendPlugin, widget)) {
         drawLayout(widget._legendPlugin);
       }
@@ -514,7 +589,7 @@
 
   function getPropertyName(prop) {
     var s = prop.split('.');
-    if (s.length > 2 && s[s.length - 2] === 'categories') {
+    if ((s.length > 2 && s[s.length - 2] === 'categories') || (s.length >= 1 && s[1] === 'categories')) {
       return 'Category';
     } else {
       return prettyfy(s[s.length - 1]);
@@ -533,10 +608,10 @@
 
     ctx.drawImage(widget.img, widget.x, widget.y);
     if (widget.elementType === 'node' && widget.visualVar === 'icon') {
-      ctx.textBaseline = 'alphabetic';
+      ctx.textBaseline = 'middle';
       iterate(widget.svg.icons, function (value, content) {
         ctx.fillStyle = value.color;
-        ctx.font = value.font;
+        ctx.font = value.fontSize + 'px ' + value.font;
         ctx.fillText(content, widget.x + value.x, widget.y + value.y);
       });
     }
@@ -677,11 +752,10 @@
    * @param elementType     {string} 'node' or 'edge'
    * @param visualVar       {string} 'color', 'icon', 'type'
    * @param unit            {string}  Optional. Unit to display alongside the title.
-   * @param exports         {boolean} OptionalSpecifies if the generated svg is meant to be exported (slight change
    *                                  in the way the icons are displayed).
    * @returns {Element}
    */
-  function drawNonSizeLegend(visualSettings, graph, designPluginInstance, elementType, visualVar, unit, exports) {
+  function drawNonSizeLegend(visualSettings, graph, designPluginInstance, elementType, visualVar, unit) {
     var vs = visualSettings,
         svg = document.createElement('svg'),
         elts = elementType === 'node' ? graph.nodes() : graph.edges(),
@@ -693,7 +767,7 @@
 
     var palette = designPluginInstance.palette,
         lineHeight = vs.legendFontSize * 1.5,
-        titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + lineHeight,
+        titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + lineHeight * 0.8,
         quantitativeColorEdge = elementType === 'edge' && visualVar === 'color' && styles.color.bins,
         edgeType = elementType === 'edge' && visualVar === 'type',
         scheme = quantitativeColorEdge ? strToObjectRef(palette, styles.color.scheme)[styles.color.bins] : strToObjectRef(palette, styles[visualVar].scheme),
@@ -741,18 +815,14 @@
           drawCircle(svg, vs.legendInnerMargin + vs.legendFontSize / 2, offsetY, vs.legendFontSize / 2, value);
         }
       } else if (visualVar === 'icon') {
-        if (exports) {
-          drawText(vs, svg, value.content, vs.legendInnerMargin, offsetY, 'left', vs.legendFontColor, value.font,
-            vs.legendFontSize, 'middle');
-        } else {
-          svg.icons[value.content] = {
-            font: vs.legendFontSize + 'px ' + value.font,
-            //color: value.color,
-            color: vs.legendFontColor,
-            x: vs.legendInnerMargin,
-            y: offsetY
-          };
-        }
+        svg.icons[value.content] = {
+          font: value.font,
+          fontSize: vs.legendFontSize,
+          //color: value.color,
+          color: vs.legendFontColor,
+          x: vs.legendInnerMargin,
+          y: offsetY
+        };
       } else if (visualVar === 'type') {
         if (elementType === 'edge') {
           drawEdge(vs, svg, value, vs.legendInnerMargin, leftColumnWidth - vs.legendInnerMargin, offsetY, vs.legendFontSize / 3);
@@ -761,14 +831,15 @@
         }
       }
 
+      var textYAdjustment = 2;
       if (quantitativeColorEdge) {
         txt = numberToText(valueList[key], isInteger) + ' - ' + numberToText(valueList[parseInt(key)+1], isInteger);
-        drawText(vs, svg, txt, leftColumnWidth, offsetY, 'left', null, null, null, 'middle');
+        drawText(vs, svg, txt, leftColumnWidth, offsetY + textYAdjustment, 'left', null, null, null, 'middle');
       } else {
         var shrinkedText = getShrinkedText(prettyfy(key), vs.legendWidth - vs.legendInnerMargin - textOffsetX,
           vs.legendFontFamily, vs.legendFontSize);
 
-        drawText(vs, svg, shrinkedText, textOffsetX, offsetY, 'left', null, null, null, 'middle');
+        drawText(vs, svg, shrinkedText, textOffsetX, offsetY + textYAdjustment, 'left', null, null, null, 'middle');
       }
 
       offsetY += lineHeight;
@@ -1279,12 +1350,61 @@
   };
 
   /**
-   * Not used right now, will be useful later.
-   * @param externalCSSList Array<string>
+   * Specify the list of external css files that must be included within the svg.
+   * @param externalCSSList {Array<string>}
    */
   LegendPlugin.prototype.setExternalCSS = function (externalCSSList) {
-    var self = this;
     this.externalCSS = externalCSSList;
+  };
+
+  /**
+   * Download the legend (PNG format).
+   * @param [filename] {string} Optional. Default: 'legend.png'
+   */
+  LegendPlugin.prototype.exportPng = function (filename) {
+    var tmpCanvas = document.createElement('canvas'),
+        ctx = tmpCanvas.getContext('2d'),
+        box = this.boundingBox;
+
+    tmpCanvas.width = box.w;
+    tmpCanvas.height = box.h;
+
+    ctx.drawImage(this._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+    ctx.drawImage(this._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+    download(tmpCanvas.toDataURL(), filename ? filename : 'legend.png', true);
+  };
+
+  /**
+   * Download the legend (SVG format).
+   * 'setExternalCSS' needs to be called before (if there is any external CSS file needed).
+   * @param [filename] {string} Optional. Default: 'legend.svg'
+   */
+  LegendPlugin.prototype.exportSvg = function (filename) {
+    var vs = this._visualSettings,
+        box = this.boundingBox,
+        str = '';
+
+    this.externalCSS.forEach(function (url) {
+      str += '<?xml-stylesheet type="text/css" href="' + url + '" ?>\n';
+    });
+
+    str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + box.w + 'px" height="' + box.h + 'px">';
+    iterate(this.widgets, function (widget) {
+      str += '<g transform="translate(' + (widget.x + - box.x) + ' ' + (widget.y - box.y) + ')">';
+      str += widget.svg.innerHTML;
+      if (widget.visualVar === 'icon') {
+        var tmpSvg = document.createElement('svg');
+        iterate(widget.svg.icons, function (value, content) {
+          drawText(vs, tmpSvg, content, value.x, value.y, 'left', vs.legendFontColor, value.font,
+            vs.legendFontSize, 'central');
+        });
+        str += tmpSvg.innerHTML;
+      }
+      str += '</g>';
+    });
+    str += '</svg>';
+
+    download(str, filename ? filename : 'legend.svg');
   };
 
 }).call(this);

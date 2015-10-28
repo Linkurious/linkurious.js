@@ -71,6 +71,18 @@ legend.setPlacement(newPlacement);
  */
 legend.setVisibility(visible);
 
+/**
+ * Download the legend (PNG format).
+ * @param [fileName] {string} Optional. Default: 'legend.png'
+ */
+legend.exportPng(fileName);
+
+/**
+ * Download the legend (SVG format).
+ * @param [fileName] {string} Optional. Default: 'legend.svg'
+ */
+legend.exportSvg(fileName);
+
 ### Widget API
 
 /**
