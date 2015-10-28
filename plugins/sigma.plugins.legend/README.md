@@ -37,6 +37,7 @@ sigma.plugins.killLegend(sigmaInstance);
 ```js
 /**
  * Add a widget to the legend. Redraw the legend.
+ * Note: if a widget is not used (no corresponding design mapping), it won't be displayed.
  * @param elementType 'node' or 'edge'
  * @param visualVar   'size', 'color', 'icon'
  * @param ?unit       Optional. The unit to be displayed alongside the widget's title
