@@ -68,7 +68,7 @@
         copy[i] = o[i];
     }
     return copy;
-  };
+  }
 
   /**
    * This method will put the values in different bins using a linear scale,
@@ -246,7 +246,7 @@
           isArray = true;
 
       byFn = function(item, key) { return strToObjectRef(item, key); };
-      schemeFn = function(palette, key) { return strToObjectRef(palette, key); }
+      schemeFn = function(palette, key) { return strToObjectRef(palette, key); };
 
       function insertItem(val, item) {
         if (self.idx[key][val] === undefined) {
@@ -262,7 +262,7 @@
           isSequential = (typeof val === 'number');
           // TODO: throw error if is number AND (is NaN or is Infinity)
         }
-      };
+        }
 
       // Index the collection:
       this.idx[key] = {};
