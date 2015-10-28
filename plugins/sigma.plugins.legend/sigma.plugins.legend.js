@@ -11,7 +11,7 @@
   /* ===== MAIN CLASSES ===== */
   /* ======================== */
 
-  function LegendPlugin(s, initAll) {
+  function LegendPlugin(s) {
     var self = this,
       settings = s.settings;
 
@@ -62,15 +62,13 @@
     this.widgets = { };
     this.boundingBox = {x:0, y:0, w:0, h:0};
 
-    if (initAll) {
-      this.addWidget('node', 'size');
-      this.addWidget('node', 'color');
-      this.addWidget('node', 'icon');
-      this.addWidget('node', 'type');
-      this.addWidget('edge', 'size');
-      this.addWidget('edge', 'color');
-      this.addWidget('edge', 'type');
-    }
+    this.addWidget('node', 'size');
+    this.addWidget('node', 'color');
+    this.addWidget('node', 'icon');
+    this.addWidget('node', 'type');
+    this.addWidget('edge', 'size');
+    this.addWidget('edge', 'color');
+    this.addWidget('edge', 'type');
   }
 
 
@@ -1229,12 +1227,11 @@
   /**
    * Returns the instance of a specified sigma instance's legend plugin. Create it if it does not exist yet.
    * @param s {Object}        Sigma instance.
-   * @param initAll {boolean} If true, initialize all "basic" plugins (does nothing if the plugin was already initialized).
    * @returns {LegendPlugin}
    */
-  sigma.plugins.legend = function (s, initAll) {
+  sigma.plugins.legend = function (s) {
     if (!_legendInstances[s.id]) {
-      _legendInstances[s.id] = new LegendPlugin(s, initAll);
+      _legendInstances[s.id] = new LegendPlugin(s);
     }
 
     return _legendInstances[s.id];
