@@ -1200,7 +1200,8 @@
 
   /**
    * Returns the instance of a specified sigma instance's legend plugin. Create it if it does not exist yet.
-   * @param s {Object} Sigma instance.
+   * @param s {Object}        Sigma instance.
+   * @param initAll {boolean} If true, initialize all "basic" plugins (does nothing if the plugin was already initialized).
    * @returns {LegendPlugin}
    */
   sigma.plugins.legend = function (s, initAll) {
@@ -1236,6 +1237,7 @@
 
   /**
    * Set the visibility of the legend.
+   * @param visible {boolean}
    */
   LegendPlugin.prototype.setVisibility = function (visible) {
     this.visible = visible;

@@ -18,10 +18,16 @@ See the following [example code](../../examples/plugin-legend.html) for full usa
 
 ```js
 /**
-  @param sigmaInstance
-  @param initAll        Is true, initialize every "basic" widget
+  Returns the legend plugin associated with a specified sigma instance. If it does not exist, intialize it.
+  @param {Object}   sigmaInstance
+  @param {boolean}  initAll        Is true, initialize every "basic" widget (does nothing if the plugin was already
+                                   initialized).
 */
 var legend = sigma.plugins.legend(sigmaInstance, initAll);
+
+/**
+  Kills the legend plugin associated with a sigma instance.
+*/
 sigma.plugins.killLegend(sigmaInstance);
 
 ```
