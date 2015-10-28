@@ -1252,10 +1252,10 @@
   };
 
   /**
-   * Build the widgets and redraw the legend.
-   * Must be called whenever the graph's design changes
+   * Build the widgets, compute the layout and draw the legend.
+   * Must be called whenever the graph's design changes.
    */
-  LegendPlugin.prototype.redraw = function () {
+  LegendPlugin.prototype.draw = function () {
     buildLegendWidgets(this);
     drawLayout(this);
   };

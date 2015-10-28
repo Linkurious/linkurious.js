@@ -66,10 +66,10 @@ legend.removeWidget(arg1, arg2);
 legend.getWidget(elementType, visualVar);
 
 /**
- * Build the widgets and redraw the legend.
- * Must be called whenever the graph's design changes
+ * Build the widgets, compute the layout and draw the legend.
+ * Must be called whenever the graph's design changes.
  */
-legend.redraw();
+legend.draw();
 
 /**
  * Change the position of the legend and redraw it.
