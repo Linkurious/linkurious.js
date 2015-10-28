@@ -1306,6 +1306,15 @@
   };
 
   /**
+   * @param elementType {string} 'node' or 'edge'
+   * @param visualVar   {string} 'color', 'icon', 'size', 'type'
+   * @returns {LegendWidget}
+   */
+  LegendPlugin.prototype.getWidget = function (elementType, visualVar) {
+    return this.widgets[makeWidgetId(elementType, visualVar)];
+  };
+
+  /**
    * Add a widget that only contains text. Redraw the legend.
    * @param text              The text to be displayed inside the widget.
    * @returns {LegendWidget}  The added widget

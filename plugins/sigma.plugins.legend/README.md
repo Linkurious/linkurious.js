@@ -59,6 +59,13 @@ legend.addTextWidget(text);
 legend.removeWidget(arg1, arg2);
 
 /**
+ * @param elementType {string} 'node' or 'edge'
+ * @param visualVar   {string} 'color', 'icon', 'size', 'type'
+ * @returns {LegendWidget}
+ */
+legend.getWidget(elementType, visualVar);
+
+/**
  * Build the widgets and redraw the legend.
  * Must be called whenever the graph's design changes
  */
