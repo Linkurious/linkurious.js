@@ -95,6 +95,12 @@
     }
   };
 
+  /**
+   * Split a text into several lines. Each line won't be longer than the specified maximum length.
+   * @param {string}  text            Text to split
+   * @param {number}  maxLineLength   Maximum length of a line. A value <= 1 will be treated as "infinity".
+   * @returns {Array<string>}         List of lines
+   */
   function getLines(text, maxLineLength) {
     if (maxLineLength <= 1) {
       return [text];
@@ -117,13 +123,14 @@
           }
           lineLength = parts[parts.length - 1].length;
         } else {
-          lines.push([words[i] + ' ']);
+          lines.push([words[i]
+          ]);
           ++lineIndex;
           lineLength = words[i].length + 1;
         }
         lineFull = false;
       } else if (lineLength + words[i].length <= maxLineLength) {
-        lines[lineIndex].push(words[i] + ' ');
+        lines[lineIndex].push(words[i]);
         lineLength += words[i].length + 1;
       } else {
         lineFull = true;
@@ -132,12 +139,18 @@
     }
 
     for (i = 0; i < lines.length; ++i) {
-      lineList.push(lines[i].join(''))
+      lineList.push(lines[i].join(' '))
     }
 
     return lineList;
   }
 
+  /**
+   * Split a word into several lines (with a '-' at the end of each line but the last).
+   * @param {string} word       Word to split
+   * @param {number} maxLength  Maximum length of a line
+   * @returns {Array<string>}   List of lines
+   */
   function splitWord(word, maxLength) {
     var parts = [];
 
