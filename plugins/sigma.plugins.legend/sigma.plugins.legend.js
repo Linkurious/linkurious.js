@@ -7,7 +7,9 @@
   // Initialize package:
   sigma.utils.pkg('sigma.plugins');
 
-  /* Definition of the main classes (LegendPlugin & LegendWidget). */
+  /* ======================== */
+  /* ===== MAIN CLASSES ===== */
+  /* ======================== */
 
   function LegendPlugin(s, initAll) {
     var self = this,
@@ -87,7 +89,9 @@
     this.pinned = false;
   }
 
-  /* Private functions */
+  /* ============================= */
+  /* ===== UTILITY FUNCTIONS ===== */
+  /* ============================= */
 
   /**
    * Example: with obj = a and str = 'qw.er.ty', returns a.qw.er.ty
@@ -164,6 +168,11 @@
     }
   }
 
+  /**
+   * Iterate over an array or object and call a specified function on each value
+   * @param obj {Array|Object}
+   * @param func {function}   function (value, key) { ... }
+   */
   function iterate(obj, func) {
     for (var k in obj) {
       if (!obj.hasOwnProperty(k) || obj[k] === undefined) {
@@ -174,6 +183,15 @@
     }
   }
 
+  /**
+   * Create a DOM element and append it to another element.
+   * @param parentElement   {DOMElement} Parent element
+   * @param typeToCreate    {string}  Type of the element to create
+   * @param attributes      {object}  Attributes of the element to create
+   * @param [elementValue]  {*}       Value to put inside the element
+   * @param [force]         {boolean} If true, put 'elementValue' inside the element even if it's null or undefiened
+   * @returns {Element}     {DOMElement} Appended object
+   */
   function createAndAppend(parentElement, typeToCreate, attributes, elementValue, force) {
     attributes = attributes || {};
 
@@ -207,8 +225,7 @@
    * Convert a SVG to a base64 encoded image url, so it can be drawn onto a canvas.
    *
    * @param {Object}    svg           SVG to convert
-   * @param {Array}     externalCSS   List of external style sheets to be included
-   * @param {function}  onload        Function that will be called once the image is built
+   * @param {function}  [onload]      Function that will be called once the image is built
    */
   function buildImageFromSvg(svg, onload) {
     if (!svg) {
@@ -662,6 +679,50 @@
     return list;
   }
 
+
+  /**
+   * Returns a map of the different values of a property.
+   * @param elts      List of elements. Edges or nodes.
+   * @param propName  Name of the property.
+   * @returns {Object}
+   */
+  function getExistingPropertyValues(elts, propName) {
+    var existingValues = {};
+    for (var i = 0; i < elts.length; ++i) {
+      var prop = strToObjectRef(elts[i], propName);
+      if (prop && typeof prop === 'object') {
+        iterate(prop, function (value) {
+          existingValues[value] = true;
+        });
+      } else {
+        existingValues[prop] = true;
+      }
+    }
+
+    return existingValues;
+  }
+
+  /**
+   * Returns the number of keys that exists in both a specified object and a scheme.
+   * @param scheme
+   * @param existingValues
+   * @returns {number}
+   */
+  function getNbElements(scheme, existingValues) {
+    var nb = 0;
+    iterate(scheme, function (val, key) {
+      if (existingValues[key]) {
+        ++nb;
+      }
+    });
+
+    return nb;
+  }
+
+  /* ============================= */
+  /* ===== DRAWING FUNCTIONS ===== */
+  /* ============================= */
+
   /**
    * Draw a widget representing a size (node size, edge size)
    *
@@ -849,39 +910,6 @@
     svg.height = height + (vs.legendBorderWidth + vs.legendOuterMargin) * 2;
 
     return svg;
-  }
-
-  /**
-   * Returns a map of the different values of a property.
-   * @param elts      List of elements. Edges or nodes.
-   * @param propName  Name of the property.
-   * @returns {Object}
-   */
-  function getExistingPropertyValues(elts, propName) {
-    var existingValues = {};
-    for (var i = 0; i < elts.length; ++i) {
-      var prop = strToObjectRef(elts[i], propName);
-      if (prop && typeof prop === 'object') {
-        iterate(prop, function (value) {
-          existingValues[value] = true;
-        });
-      } else {
-        existingValues[prop] = true;
-      }
-    }
-
-    return existingValues;
-  }
-
-  function getNbElements(scheme, existingValues) {
-    var nb = 0;
-    iterate(scheme, function (val, key) {
-      if (existingValues[key]) {
-        ++nb;
-      }
-    });
-
-    return nb;
   }
 
   /**
