@@ -19,22 +19,22 @@
     this._designPlugin = sigma.plugins.design(s);
 
     this._visualSettings = {
-      legendWidth: settings('legendWidth') || 150,
-      legendFontFamily: settings('legendFontFamily') || 'Arial',
-      legendFontSize: settings('legendFontSize') || 10,
-      legendFontColor: settings('legendFontColor') || 'black',
-      legendTitleFontFamily: settings('legendTitleFontFamily') || 'Arial',
-      legendTitleFontSize: settings('legendTitleFontSize') || 15,
-      legendTitleFontColor: settings('legendTitleFontColor') || 'black',
-      legendShapeColor: settings('legendShapeColor') || 'orange',
-      legendBackgroundColor: settings('legendBackgroundColor') || 'white',
-      legendBorderColor: settings('legendBorderColor') || 'black',
-      legendBorderWidth: settings('legendBorderWidth') || 1,
-      legendInnerMargin: settings('legendInnerMargin') || 8,
-      legendOuterMargin: settings('legendOuterMargin') || 5,
-      legendTitleMaxLength: settings('legendTitleMaxLength') || 30,
-      legendTitleTextAlign: settings('legendTitleTextAlign') || 'left',
-      legendBorderRadius: settings('legendBorderRadius') || 10
+      legendWidth: settings('legendWidth'),
+      legendFontFamily: settings('legendFontFamily'),
+      legendFontSize: settings('legendFontSize'),
+      legendFontColor: settings('legendFontColor'),
+      legendTitleFontFamily: settings('legendTitleFontFamily'),
+      legendTitleFontSize: settings('legendTitleFontSize'),
+      legendTitleFontColor: settings('legendTitleFontColor'),
+      legendShapeColor: settings('legendShapeColor'),
+      legendBackgroundColor: settings('legendBackgroundColor'),
+      legendBorderColor: settings('legendBorderColor'),
+      legendBorderWidth: settings('legendBorderWidth'),
+      legendInnerMargin: settings('legendInnerMargin'),
+      legendOuterMargin: settings('legendOuterMargin'),
+      legendTitleMaxLength: settings('legendTitleMaxLength'),
+      legendTitleTextAlign: settings('legendTitleTextAlign'),
+      legendBorderRadius: settings('legendBorderRadius')
     };
 
     computeTotalWidth(this._visualSettings);
