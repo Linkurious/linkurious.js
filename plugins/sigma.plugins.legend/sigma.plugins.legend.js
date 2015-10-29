@@ -794,9 +794,9 @@
       draw(svg, 'rect', {x:vs.legendInnerMargin + 2 * rectWidth, y:titleMargin + 5 + (bigElementSize - smallElementSize) / 4,
                          width:rectWidth, height:smallElementSize / 2, fill:vs.legendShapeColor});
 
-      drawText(vs, svg, maxValue, vs.legendInnerMargin + rectWidth * 0.5, labelOffsetY, 'middle');
-      drawText(vs, svg, meanValue, vs.legendInnerMargin + rectWidth * 1.5, labelOffsetY, 'middle');
-      drawText(vs, svg, minValue, vs.legendInnerMargin + rectWidth * 2.5, labelOffsetY, 'middle');
+      drawText(vs, svg, numberToText(maxValue, isInteger), vs.legendInnerMargin + rectWidth * 0.5, labelOffsetY, 'middle');
+      drawText(vs, svg, numberToText(meanValue, isInteger), vs.legendInnerMargin + rectWidth * 1.5, labelOffsetY, 'middle');
+      drawText(vs, svg, numberToText(minValue, isInteger), vs.legendInnerMargin + rectWidth * 2.5, labelOffsetY, 'middle');
     }
 
     svg.width = vs.totalWidgetWidth;
