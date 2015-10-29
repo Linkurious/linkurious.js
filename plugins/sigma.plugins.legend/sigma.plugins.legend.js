@@ -304,7 +304,7 @@
         });
 
         while (true) {
-          desiredHeight = height - (cols[colIndex].height ? cols[colIndex].height : 0);
+          desiredHeight = height - (cols[colIndex] ? cols[colIndex].height : 0);
           bestCombination = getOptimalWidgetCombination(widgetsToDisplay, desiredHeight);
           bestCombination.forEach(function (index) {
             cols[colIndex].widgets.push(widgetsToDisplay[index]);
