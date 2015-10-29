@@ -14,6 +14,24 @@ See the following [example code](../../examples/plugin-legend.html) for full usa
 
 ![design](https://github.com/Linkurious/linkurious.js/wiki/media/legend.png)
 
+
+## Example
+
+```js
+/* Initialize the legend and display all the widgets that have a mapping */
+var legend = sigma.plugins.legend(sigmaInstance);
+
+legend.getWidget('node', 'size').setUnit('$'); // Add '($)' to the widget representing the node size
+legend.setPlacement('left'); // Position the legend on the left (default: bottom)
+legend.addTextWidget('This is an example legend'); // Add a widget that will display some text
+legend.exportSvg('myLegend.svg'); // Prompt the user a modal to download the legend in SVG format
+ 
+/* Some code that change the mappings */
+
+legend.draw(); // Redraw the widgets based on the new mappings 
+
+```
+
 ## Usage
 
 ```js
@@ -37,10 +55,10 @@ sigma.plugins.killLegend(sigmaInstance);
 /**
  * Add a widget to the legend. Redraw the legend.
  * Note: if a widget is not used (no corresponding design mapping), it won't be displayed.
- * @param elementType 'node' or 'edge'
- * @param visualVar   'size', 'color', 'icon'
- * @param ?unit       Optional. The unit to be displayed alongside the widget's title
- * @returns {*}       The added widget.
+ * @param elementType       'node' or 'edge'
+ * @param visualVar         'size', 'color', 'icon'
+ * @param ?unit             Optional. The unit to be displayed alongside the widget's title
+ * @returns {LegendWidget}  The added widget.
  */
 legend.addWidget(elementType, visualVar, ?unit);
   
@@ -53,11 +71,16 @@ legend.addTextWidget(text);
  
 /**
  * Remove a widget.
- * @param arg1  The widget to remove, or the type of element ('node' or 'edge')
- * @param arg2  If the first argument was the type of element, it represents the visual variable
- *              of the widget to remove
+ * @param {LegendWidget} widget The widget to remove
  */
-legend.removeWidget(arg1, arg2);
+legend.removeWidget(widget);
+
+/**
+ * Remove a widget.
+ * @param elementType  'node' or 'edge'
+ * @param visualVar    'color', 'icon', 'size', 'type'
+ */
+legend.removeWidget(elementType, visualVar);
 
 /**
  * Remove all widgets from the legend.
@@ -102,6 +125,8 @@ legend.exportPng(fileName);
 legend.exportSvg(fileName);
 
 ### Widget API
+
+var widget = legend.getWidget('node', 'size');
 
 /**
  * Change the position of a widget and pin it. An pinned widget is not taken into account when
