@@ -1444,7 +1444,7 @@
         box = this.boundingBox,
         str = '';
 
-    this.externalCSS.forEach(function (url) {
+    (this.externalCSS || []).forEach(function (url) {
       str += '<?xml-stylesheet type="text/css" href="' + url + '" ?>\n';
     });
 
