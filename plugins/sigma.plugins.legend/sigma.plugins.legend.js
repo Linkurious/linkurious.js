@@ -360,7 +360,8 @@
         }
       }
 
-      var legendWidth = cols.length * (vs.totalWidgetWidth + vs.legendOuterMargin) + vs.legendOuterMargin,
+      var nbCols = cols.reduce(function (prev, value) { return prev + (value.height > vs.legendOuterMargin * 2 ? 1 : 0); }, 0),
+          legendWidth = nbCols * (vs.totalWidgetWidth + vs.legendOuterMargin) + vs.legendOuterMargin,
           legendHeight = cols.reduce(function (previous, value) { return ( previous > value.height ? previous : value.height ); }, 0);
 
       legendPlugin.boundingBox = {
@@ -1346,6 +1347,14 @@
   };
 
   /**
+   * Remove all widgets from the legend.
+   */
+  LegendPlugin.prototype.removeAllWidgets = function () {
+    this.widgets = {};
+    drawLayout(this);
+  };
+
+  /**
    * Unpin the widget. An pinned widget is not taken into account when it is positioned through
    * automatic layout.
    */
@@ -1401,13 +1410,18 @@
   LegendPlugin.prototype.exportPng = function (filename) {
     var tmpCanvas = document.createElement('canvas'),
         ctx = tmpCanvas.getContext('2d'),
-        box = this.boundingBox;
+        box = this.boundingBox,
+        visibility = this.visibility;
 
     tmpCanvas.width = box.w;
     tmpCanvas.height = box.h;
 
+    // We set the legend to visible so it draws the legend in the canvas
+    this.visible = true;
+    this.draw();
     ctx.drawImage(this._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
-    ctx.drawImage(this._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+    this.setVisibility(visibility);
+
     download(tmpCanvas.toDataURL(), filename ? filename : 'legend.png', true);
   };
 
