@@ -60,6 +60,11 @@ legend.addTextWidget(text);
 legend.removeWidget(arg1, arg2);
 
 /**
+ * Remove all widgets from the legend.
+ */
+legend.removeAllWidgets();
+
+/**
  * @param elementType {string} 'node' or 'edge'
  * @param visualVar   {string} 'color', 'icon', 'size', 'type'
  * @returns {LegendWidget}
