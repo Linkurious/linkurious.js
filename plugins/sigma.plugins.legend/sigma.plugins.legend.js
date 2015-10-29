@@ -1421,12 +1421,14 @@
         box = this.boundingBox,
         str = '';
 
-    this.externalCSS.forEach(function (url) {
+    (this.externalCSS || []).forEach(function (url) {
       str += '<?xml-stylesheet type="text/css" href="' + url + '" ?>\n';
     });
 
     str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + box.w + 'px" height="' + box.h + 'px">';
     iterate(this.widgets, function (widget) {
+      if (!widget.svg) return;
+
       str += '<g transform="translate(' + (widget.x + - box.x) + ' ' + (widget.y - box.y) + ')">';
       str += widget.svg.innerHTML;
       if (widget.visualVar === 'icon') {
