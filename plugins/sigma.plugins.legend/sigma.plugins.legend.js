@@ -829,11 +829,11 @@
     var palette = designPluginInstance.palette,
         lineHeight = vs.legendFontSize * 1.5,
         titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + lineHeight * 0.8,
-        quantitativeColorEdge = elementType === 'edge' && visualVar === 'color' && styles.color.bins,
+        quantitativeColor = visualVar === 'color' && styles.color.bins,
         edgeType = elementType === 'edge' && visualVar === 'type',
-        scheme = quantitativeColorEdge ? strToObjectRef(palette, styles.color.scheme)[styles.color.bins] : strToObjectRef(palette, styles[visualVar].scheme),
+        scheme = quantitativeColor ? strToObjectRef(palette, styles.color.scheme)[styles.color.bins] : strToObjectRef(palette, styles[visualVar].scheme),
         existingValues = getExistingPropertyValues(elts, styles[visualVar].by),
-        nbElements = quantitativeColorEdge ?  Object.keys(scheme).length : getNbElements(scheme, existingValues),
+        nbElements = quantitativeColor ?  Object.keys(scheme).length : getNbElements(scheme, existingValues),
         height = lineHeight * nbElements + titleMargin + (edgeType ? lineHeight : 0),
         leftColumnWidth = vs.legendWidth / 3,
         offsetY = titleMargin,
@@ -844,7 +844,7 @@
         txt,
         fontSize;
 
-    if (quantitativeColorEdge) {
+    if (quantitativeColor) {
         boundaries = getBoundaryValues(elts, styles.color.by);
         valueList = extractValueList(boundaries, styles.color.bins);
         isInteger = boundaries.min % 1 == 0 && boundaries.max % 1 == 0;
@@ -864,7 +864,7 @@
     }
 
     iterate(scheme, function (value, key) {
-      if (!quantitativeColorEdge && !existingValues[key]) {
+      if (!quantitativeColor && !existingValues[key]) {
         return;
       }
 
@@ -893,8 +893,8 @@
       }
 
       var textYAdjustment = 2;
-      if (quantitativeColorEdge) {
-        txt = numberToText(valueList[key], isInteger) + ' - ' + numberToText(valueList[parseInt(key)+1], isInteger);
+      if (quantitativeColor) {
+        txt = numberToText(valueList[nbElements - key - 1], isInteger) + ' - ' + numberToText(valueList[nbElements - parseInt(key)], isInteger);
         drawText(vs, svg, txt, leftColumnWidth, offsetY + textYAdjustment, 'left', null, null, null, 'middle');
       } else {
         var shrinkedText = getShrinkedText(prettyfy(key), vs.legendWidth - vs.legendInnerMargin - textOffsetX,
