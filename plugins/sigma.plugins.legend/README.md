@@ -8,7 +8,7 @@ Contact: sylvain@linkurio.us
 
 This plugin automatically generates a legend for a graph based on the mapping between data properties and visual variables set in [plugins.design](../sigma.plugins.design). The legend can be displayed on screen of downloaded as SVG or PNG file.
 
-Notice that the legend will not be displayed if there is not enough space, unless the widget position is manually set.
+Notice that the legend will not be displayed if there is not enough space, unless the widget position is manually set with the `setPosition` method.
 
 See the following [example code](../../examples/plugin-legend.html) for full usage.
 
