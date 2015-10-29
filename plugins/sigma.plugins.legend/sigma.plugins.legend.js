@@ -304,7 +304,7 @@
         });
 
         while (true) {
-          desiredHeight = height - cols[colIndex].height;
+          desiredHeight = height - (cols[colIndex].height ? cols[colIndex].height : 0);
           bestCombination = getOptimalWidgetCombination(widgetsToDisplay, desiredHeight);
           bestCombination.forEach(function (index) {
             cols[colIndex].widgets.push(widgetsToDisplay[index]);
@@ -869,6 +869,10 @@
       }
 
       if (visualVar === 'color') {
+        if (quantitativeColor) {
+          value = scheme[scheme.length - key - 1];
+        }
+
         if (elementType === 'edge') {
           draw(svg, 'rect', {x:vs.legendInnerMargin, y:offsetY - lineHeight / 8,
                              width:leftColumnWidth - vs.legendInnerMargin * 2, height:lineHeight / 4, fill:value});
