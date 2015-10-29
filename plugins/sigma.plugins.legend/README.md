@@ -18,7 +18,8 @@ See the following [example code](../../examples/plugin-legend.html) for full usa
 
 ```js
 /**
-  Returns the legend plugin associated with a specified sigma instance. If it does not exist, intialize it.
+  Returns the legend plugin associated with a specified sigma instance. If it does not exist, initialize it.
+  The legend is positioned at the bottom (can be changed later on).
   @param {Object}   sigmaInstance
 */
 var legend = sigma.plugins.legend(sigmaInstance);
@@ -72,7 +73,7 @@ legend.getWidget(elementType, visualVar);
 legend.draw();
 
 /**
- * Change the position of the legend and redraw it.
+ * Change the position of the legend and redraw it. When the legend is initialized, it is positioned at the bottom.
  * @param newPlacement 'top', 'bottom', 'left' or 'right'
  */
 legend.setPlacement(newPlacement);
