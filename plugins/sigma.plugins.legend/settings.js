@@ -38,7 +38,7 @@
     /* {number} Radius of the widgets' border */
     legendBorderRadius: 10,
     /* {number}  Size of the widgets' border */
-    legendBorderWidth: 0,
+    legendBorderWidth: 1,
     /* {number}  Size of the margin between a widget's borders and its content */
     legendInnerMargin: 10,
     /* {number}  Size of the margin between widgets */
