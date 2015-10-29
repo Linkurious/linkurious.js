@@ -61,6 +61,7 @@
     this.visible = true;
     this.widgets = { };
     this.boundingBox = {x:0, y:0, w:0, h:0};
+    this.externalCSS = [];
 
     this.addWidget('node', 'size');
     this.addWidget('node', 'color');
@@ -1233,6 +1234,10 @@
   sigma.plugins.legend = function (s) {
     if (!_legendInstances[s.id]) {
       _legendInstances[s.id] = new LegendPlugin(s);
+
+      s.bind('kill', function() {
+        sigma.plugins.killLegend(s);
+      });
     }
 
     return _legendInstances[s.id];
@@ -1408,17 +1413,19 @@
    * @param [filename] {string} Optional. Default: 'legend.png'
    */
   LegendPlugin.prototype.exportPng = function (filename) {
+    var visibility = this.visible;
+
+    // We set the legend to visible so it draws the legend in the canvas
+    this.visible = true;
+    drawLayout(this);
+
     var tmpCanvas = document.createElement('canvas'),
         ctx = tmpCanvas.getContext('2d'),
-        box = this.boundingBox,
-        visibility = this.visibility;
+        box = this.boundingBox;
 
     tmpCanvas.width = box.w;
     tmpCanvas.height = box.h;
 
-    // We set the legend to visible so it draws the legend in the canvas
-    this.visible = true;
-    this.draw();
     ctx.drawImage(this._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
     this.setVisibility(visibility);
 
@@ -1431,6 +1438,8 @@
    * @param [filename] {string} Optional. Default: 'legend.svg'
    */
   LegendPlugin.prototype.exportSvg = function (filename) {
+    drawLayout(this);
+
     var vs = this._visualSettings,
         box = this.boundingBox,
         str = '';
@@ -1441,6 +1450,10 @@
 
     str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + box.w + 'px" height="' + box.h + 'px">';
     iterate(this.widgets, function (widget) {
+      if (widget.svg === null) {
+        return;
+      }
+
       str += '<g transform="translate(' + (widget.x + - box.x) + ' ' + (widget.y - box.y) + ')">';
       str += widget.svg.innerHTML;
       if (widget.visualVar === 'icon') {
