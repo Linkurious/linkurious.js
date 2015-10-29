@@ -62,6 +62,9 @@
     labelSizeRatio: 1,
     // {number} The minimum size a node must have to see its label displayed.
     labelThreshold: 8,
+    // {number} Maximum length of a node's label (in characters). Displays the label on several lines. 0 disables it
+    // (the whole label is displayed on one line)
+    maxNodeLabelLineLength: 0,
     // {number} The oversampling factor used in WebGL renderer.
     webglOversamplingRatio: 2,
     // {number} The size of the border of nodes.

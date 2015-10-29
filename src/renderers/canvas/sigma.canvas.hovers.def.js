@@ -22,11 +22,15 @@
         e,
         labelX,
         labelY,
+        lines,
+        baseX,
+        baseY,
         borderSize = settings('borderSize'),
         alignment = settings('labelAlignment'),
         fontStyle = settings('hoverFontStyle') || settings('fontStyle'),
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'],
+        maxLineLength = settings('maxNodeLabelLineLength') || 0,
         fontSize = (settings('labelSize') === 'fixed') ?
           settings('defaultLabelSize') :
           settings('labelSizeRatio') * size;
@@ -48,7 +52,8 @@
       context.shadowColor = settings('labelHoverShadowColor');
     }
 
-    drawHoverBorder(alignment, context, fontSize, node);
+    lines = getLines(node.label, maxLineLength);
+    drawHoverBorder(alignment, context, fontSize, node, lines, maxLineLength);
 
     // Node border:
     if (borderSize > 0) {
@@ -106,20 +111,20 @@
           break;
       }
 
-      context.fillText(
-        node.label,
-        Math.round(node[prefix + 'x'] + labelOffsetX),
-        Math.round(node[prefix + 'y'] + labelOffsetY)
-      );
+      baseX = node[prefix + 'x'] + labelOffsetX;
+      baseY = Math.round(node[prefix + 'y'] + labelOffsetY);
+
+      for (var i = 0; i < lines.length; ++i) {
+        context.fillText(lines[i], baseX, baseY + i * (fontSize + 1));
+      }
     }
 
-    function drawHoverBorder(alignment, context, fontSize, node) {
+    function drawHoverBorder(alignment, context, fontSize, node, lines, maxLineLength) {
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
-          h = fontSize + 4,
+          h = ((fontSize + 1) * lines.length) + 4,
           e = Math.round(size + fontSize / 4),
-          labelWidth = sigma.utils.canvas.getTextWidth(context,
-              settings('approximateLabelWidth'), fontSize, node.label),
+          labelWidth = 0.6 * (maxLineLength > 1 ? maxLineLength : lines[0].length) * fontSize,
           w = Math.round(labelWidth + size + 1.5 + fontSize / 3);
 
       if (node.label && typeof node.label === 'string') {
@@ -175,6 +180,75 @@
       context.shadowOffsetX = 0;
       context.shadowOffsetY = 0;
       context.shadowBlur = 0;
+    }
+
+    /**
+     * Split a text into several lines. Each line won't be longer than the specified maximum length.
+     * @param {string}  text            Text to split
+     * @param {number}  maxLineLength   Maximum length of a line. A value <= 1 will be treated as "infinity".
+     * @returns {Array<string>}         List of lines
+     */
+    function getLines(text, maxLineLength) {
+      if (maxLineLength <= 1) {
+        return [text];
+      }
+
+      var words = text.split(' '),
+        lines = [],
+        lineLength = 0,
+        lineIndex = -1,
+        lineList = [],
+        lineFull = true;
+
+      for (var i = 0; i < words.length; ++i) {
+        if (lineFull) {
+          if (words[i].length > maxLineLength) {
+            var parts = splitWord(words[i], maxLineLength);
+            for (var j = 0; j < parts.length; ++j) {
+              lines.push([parts[j]]);
+              ++lineIndex;
+            }
+            lineLength = parts[parts.length - 1].length;
+          } else {
+            lines.push([words[i]
+            ]);
+            ++lineIndex;
+            lineLength = words[i].length + 1;
+          }
+          lineFull = false;
+        } else if (lineLength + words[i].length <= maxLineLength) {
+          lines[lineIndex].push(words[i]);
+          lineLength += words[i].length + 1;
+        } else {
+          lineFull = true;
+          --i;
+        }
+      }
+
+      for (i = 0; i < lines.length; ++i) {
+        lineList.push(lines[i].join(' '))
+      }
+
+      return lineList;
+    }
+
+    /**
+     * Split a word into several lines (with a '-' at the end of each line but the last).
+     * @param {string} word       Word to split
+     * @param {number} maxLength  Maximum length of a line
+     * @returns {Array<string>}   List of lines
+     */
+    function splitWord(word, maxLength) {
+      var parts = [];
+
+      for (var i = 0; i < word.length; i += maxLength - 1) {
+        parts.push(word.substr(i, maxLength - 1) + '-');
+      }
+
+      var lastPartLen = parts[parts.length - 1].length;
+      parts[parts.length - 1] = parts[parts.length - 1].substr(0, lastPartLen - 1) + ' ';
+
+      return parts;
     }
   };
 }).call(this);
