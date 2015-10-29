@@ -1152,7 +1152,7 @@
    * @returns {string}
    */
   function prettyfy(txt) {
-    return txt.charAt(0).toUpperCase() + txt.slice(1).replace('_', ' ');
+    return txt.charAt(0).toUpperCase() + txt.slice(1).replace(/_/g, ' ');
   }
 
   /**
