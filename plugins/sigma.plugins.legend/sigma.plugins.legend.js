@@ -61,6 +61,7 @@
     this.visible = true;
     this.widgets = { };
     this.boundingBox = {x:0, y:0, w:0, h:0};
+    this.externalCSS = [];
 
     this.addWidget('node', 'size');
     this.addWidget('node', 'color');
@@ -360,7 +361,8 @@
         }
       }
 
-      var legendWidth = cols.length * (vs.totalWidgetWidth + vs.legendOuterMargin) + vs.legendOuterMargin,
+      var nbCols = cols.reduce(function (prev, value) { return prev + (value.height > vs.legendOuterMargin * 2 ? 1 : 0); }, 0),
+          legendWidth = nbCols * (vs.totalWidgetWidth + vs.legendOuterMargin) + vs.legendOuterMargin,
           legendHeight = cols.reduce(function (previous, value) { return ( previous > value.height ? previous : value.height ); }, 0);
 
       legendPlugin.boundingBox = {
@@ -1232,6 +1234,10 @@
   sigma.plugins.legend = function (s) {
     if (!_legendInstances[s.id]) {
       _legendInstances[s.id] = new LegendPlugin(s);
+
+      s.bind('kill', function() {
+        sigma.plugins.killLegend(s);
+      });
     }
 
     return _legendInstances[s.id];
@@ -1346,6 +1352,14 @@
   };
 
   /**
+   * Remove all widgets from the legend.
+   */
+  LegendPlugin.prototype.removeAllWidgets = function () {
+    this.widgets = {};
+    drawLayout(this);
+  };
+
+  /**
    * Unpin the widget. An pinned widget is not taken into account when it is positioned through
    * automatic layout.
    */
@@ -1399,6 +1413,12 @@
    * @param [filename] {string} Optional. Default: 'legend.png'
    */
   LegendPlugin.prototype.exportPng = function (filename) {
+    var visibility = this.visible;
+
+    // We set the legend to visible so it draws the legend in the canvas
+    this.visible = true;
+    drawLayout(this);
+
     var tmpCanvas = document.createElement('canvas'),
         ctx = tmpCanvas.getContext('2d'),
         box = this.boundingBox;
@@ -1407,7 +1427,8 @@
     tmpCanvas.height = box.h;
 
     ctx.drawImage(this._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
-    ctx.drawImage(this._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+    this.setVisibility(visibility);
+
     download(tmpCanvas.toDataURL(), filename ? filename : 'legend.png', true);
   };
 
@@ -1417,6 +1438,8 @@
    * @param [filename] {string} Optional. Default: 'legend.svg'
    */
   LegendPlugin.prototype.exportSvg = function (filename) {
+    drawLayout(this);
+
     var vs = this._visualSettings,
         box = this.boundingBox,
         str = '';
@@ -1427,7 +1450,9 @@
 
     str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + box.w + 'px" height="' + box.h + 'px">';
     iterate(this.widgets, function (widget) {
-      if (!widget.svg) return;
+      if (widget.svg === null) {
+        return;
+      }
 
       str += '<g transform="translate(' + (widget.x + - box.x) + ' ' + (widget.y - box.y) + ')">';
       str += widget.svg.innerHTML;

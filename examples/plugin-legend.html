@@ -277,11 +277,14 @@
 
   function init() {
     legendPlugin = sigma.plugins.legend(s, true);
+    legendPlugin.removeAllWidgets();
     legendPlugin.setExternalCSS(['http://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css']);
-    legendPlugin.setPlacement('right');
-    legendPlugin.getWidget('edge', 'size').setUnit('%');
+    //legendPlugin.setPlacement('right');
+    legendPlugin.addWidget('edge', 'size').setUnit('%');
     textWidget = legendPlugin.addTextWidget('some text');
     textWidget.setText('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.');
+    legendPlugin.setVisibility(false);
+    legendPlugin.exportSvg();
 
 //    setTimeout(function () { legendPlugin.exportSvg(); }, 500);
   }
