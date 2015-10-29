@@ -1,18 +1,18 @@
 # sigma.plugins.legend
 
-Author: Sylvain Milan
-Date: 15/10/2015
-For: Linkurious
+Plugin developed by [Sylvain Milan](https://github.com/Ytawo) for [Linkurious](https://github.com/Linkurious) and published under the license [GNU GPLv3](LICENSE) unless otherwise noticed by Linkurious.
+
+Contact: sylvain@linkurio.us
 
 ## General
 
-This plugin allows you to automatically generate and display a legend for a graph. It is based on
-the design plugin.
+This plugin automatically generates a legend for a graph based on the mapping between data properties and visual variables set in [plugins.design](../sigma.plugins.design). The legend can be displayed on screen of downloaded as SVG or PNG file.
 
-Note: the legend will not be displayed if there is not enough space (except for the widget manually set
-by the user).
+Notice that the legend will not be displayed if there is not enough space, unless the widget position is manually set.
 
 See the following [example code](../../examples/plugin-legend.html) for full usage.
+
+![design](https://github.com/Linkurious/linkurious.js/wiki/media/legend.png)
 
 ## Usage
 
