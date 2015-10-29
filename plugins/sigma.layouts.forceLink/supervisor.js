@@ -132,13 +132,15 @@
 
     // Moving nodes
     for (var i = 0, l = this.nodesByteArray.length; i < l; i += this.ppn) {
-      if (prefixed) {
-        nodes[j].fa2_x = this.nodesByteArray[i];
-        nodes[j].fa2_y = this.nodesByteArray[i + 1];
+      if (!nodes[j].fixed) {
+        if (prefixed) {
+          nodes[j].fa2_x = this.nodesByteArray[i];
+          nodes[j].fa2_y = this.nodesByteArray[i + 1];
 
-      } else {
-        nodes[j].x = this.nodesByteArray[i];
-        nodes[j].y = this.nodesByteArray[i + 1];
+        } else {
+          nodes[j].x = this.nodesByteArray[i];
+          nodes[j].y = this.nodesByteArray[i + 1];
+        }
       }
       j++;
     }
