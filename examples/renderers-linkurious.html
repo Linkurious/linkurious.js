@@ -112,11 +112,19 @@ var i,
       edges: []
     };
 
+var labels = [
+  'Proin non mauris subdermatoglyphic. Morbi subdermatoglyphic velit in subdermatoglyphic vehicula, vitae blandit neque cursus. Nunc et enim ipsum. Pellentesque suscipit maximus nunc, non molestie tellus rutrum ut. Integer ac lacinia arcu, sit amet elementum eros. In et interdum massa. Duis imperdiet nisl in turpis bibendum egestas.',
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nec mauris at ex venenatis auctor. Nulla volutpat posuere turpis suscipit scelerisque. Mauris a justo quis odio imperdiet hendrerit.',
+  'Morbi consectetur sapien vitae quam eleifend porta. Proin eget urna tempor, tempus velit eget, aliquam neque. Nulla non aliquet elit. Nam id risus ante. Nam gravida, risus id rhoncus rhoncus, massa ante pharetra dui, et egestas elit ex eu dui. Vestibulum lacus mauris, condimentum porttitor mattis sit amet, imperdiet id neque. Cras id varius turpis, id porttitor ex.',
+  'Pellentesque congue consectetur odio id aliquam.',
+  'Small.'
+];
+
 // Generate a random graph:
 for (i = 0; i < N; i++)
   g.nodes.push({
     id: 'n' + i,
-    label: 'Node ' + i,
+    label: labels[(Math.random() * labels.length) | 0],
     x: Math.random(),
     y: Math.random(),
     size: Math.random(),
@@ -143,6 +151,7 @@ var settings = {
   defaultNodeBorderColor: '#fff',
   nodeBorderColor: 'default',
   defaultNodeOuterBorderColor: 'rgb(236, 81, 72)',
+  maxNodeLabelLineLength: 10,
 
   zoomMin: 0.001,
   zoomMax: 3,
