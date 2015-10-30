@@ -1275,14 +1275,16 @@
           Object.keys(parallelNodes).forEach(function(key) {
             setSource = parallelNodes[key].shift();
             setTarget = parallelNodes[key].shift();
-            setNodes = parallelNodes[key];
+            setNodes = parallelNodes[key].filter(function(setNode) {
+              return !NodeMatrix[np(setNode, 'fixed')];
+            });
+
+            if (setNodes.length == 1) return;
 
             sX = NodeMatrix[np(setSource, 'x')];
             sY = NodeMatrix[np(setSource, 'y')];
             tX = NodeMatrix[np(setTarget, 'x')];
             tY = NodeMatrix[np(setTarget, 'y')];
-
-            if (setNodes.length == 1) return;
 
             // the extremity of lowest degree attracts the nodes
             // up to 1/4 of the distance:

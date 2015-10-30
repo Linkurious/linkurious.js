@@ -246,6 +246,15 @@
         if (_this.runOnBackground && _this.easing) {
           _this.applyLayoutChanges(true);
           eventEmitter.dispatchEvent('interpolate');
+
+          // reset fa_x/y in case a pinned node was previously layed out
+          _this.graph.nodes()
+            .filter(function(node) { return node.fixed; })
+            .forEach(function(node) {
+              node.fa2_x = node.x;
+              node.fa2_y = node.y;
+            });
+
           sigma.plugins.animate(
             _this.sigInst,
             {
