@@ -53,7 +53,7 @@ sigma.plugins.killLegend(sigmaInstance);
 
 ```js
 /**
- * Add a widget to the legend. Redraw the legend.
+ * Add a widget to the legend.  Draw the legend.
  * Note: if a widget is not used (no corresponding design mapping), it won't be displayed.
  * @param elementType       'node' or 'edge'
  * @param visualVar         'size', 'color', 'icon'
@@ -63,7 +63,7 @@ sigma.plugins.killLegend(sigmaInstance);
 legend.addWidget(elementType, visualVar, ?unit);
   
 /**
- * Add a widget that only contains text. Redraw the legend.
+ * Add a widget that only contains text.  Draw the legend.
  * @param text              The text to be displayed inside the widget.
  * @returns {LegendWidget}  The added widget
  */

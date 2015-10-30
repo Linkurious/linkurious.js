@@ -14,12 +14,13 @@
   function LegendPlugin(s) {
     var self = this,
       settings = s.settings,
-      pixelRatio = window.devicePixelRatio;
+      pixelRatio = window.devicePixelRatio || 1;
 
     this._sigmaInstance = s;
     this._designPlugin = sigma.plugins.design(s);
 
     this._visualSettings = {
+      pixelRatio: pixelRatio,
       legendWidth: settings('legendWidth'),
       legendFontFamily: settings('legendFontFamily'),
       legendFontSize: settings('legendFontSize'),
@@ -48,19 +49,15 @@
 
     var renderer = s.renderers[0]; // TODO: handle several renderers?
     this._canvas = document.createElement('canvas');
-    renderer.container.appendChild(this._canvas);
     //renderer.initDOM('canvas', 'legend');
     //this._canvas = renderer.domElements['legend'];
-    this._canvas.width = renderer.container.offsetWidth * pixelRatio;
-    this._canvas.height = renderer.container.offsetHeight * pixelRatio;
     this._canvas.style.position = 'absolute';
     this._canvas.style.pointerEvents = 'none';
-    this._canvas.style.width = renderer.container.offsetWidth;
-    this._canvas.style.height = renderer.container.offsetHeight;
+    setupCanvas(this._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
+    renderer.container.appendChild(this._canvas);
 
     window.addEventListener('resize', function () {
-      self._canvas.width = renderer.container.offsetWidth;
-      self._canvas.height = renderer.container.offsetHeight;
+      setupCanvas(self._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
       drawLayout(self);
     });
 
@@ -79,6 +76,8 @@
     this.addWidget('edge', 'size');
     this.addWidget('edge', 'color');
     this.addWidget('edge', 'type');
+
+    this.draw();
   }
 
 
@@ -100,6 +99,13 @@
   /* ============================= */
   /* ===== UTILITY FUNCTIONS ===== */
   /* ============================= */
+
+  function setupCanvas(canvas, width, height, pixelRatio) {
+    canvas.setAttribute('width', (width * pixelRatio));
+    canvas.setAttribute('height', (height * pixelRatio));
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+  }
 
   /**
    * Example: with obj = a and str = 'qw.er.ty', returns a.qw.er.ty
@@ -1279,17 +1285,16 @@
    * Must be called whenever the graph's design changes.
    */
   LegendPlugin.prototype.draw = function (callback) {
-    var self = this;
+    var self = this,
+        pixelRatio = this._visualSettings.pixelRatio;
 
-    if (typeof callback !== 'function') {
-      buildLegendWidgets(self);
+    //setupCanvas(this._canvas, this._canvas.width / pixelRatio, this._canvas.height / pixelRatio, this._visualSettings.pixelRatio);
+    buildLegendWidgets(this, function () {
       drawLayout(self);
-    } else {
-      buildLegendWidgets(self, function () {
-        drawLayout(self);
+      if (callback) {
         callback();
-      })
-    }
+      }
+    });
   };
 
   /**
@@ -1316,7 +1321,7 @@
 
 
   /**
-   * Add a widget to the legend. Redraw the legend.
+   * Add a widget to the legend. Draw the legend.
    * Note: if a widget is not used (no corresponding design mapping), it won't be displayed.
    * @param elementType 'node' or 'edge'
    * @param visualVar   'size', 'color', 'icon'
@@ -1332,7 +1337,7 @@
       this.widgets[widget.id] = widget;
     }
     widget.unit = unit;
-    buildWidget(widget, function () { drawLayout(widget._legendPlugin); });
+    buildWidgetAndDrawLayout(widget);
 
     return widget;
   };
@@ -1347,7 +1352,7 @@
   };
 
   /**
-   * Add a widget that only contains text. Redraw the legend.
+   * Add a widget that only contains text.  Draw the legend.
    * @param text              The text to be displayed inside the widget.
    * @returns {LegendWidget}  The added widget
    */
