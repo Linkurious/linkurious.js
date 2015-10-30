@@ -84,7 +84,7 @@
     this.y = 0;
     this.text = '';
     this.unit = null;
-    this.img = null;
+    this.img = new Image();
     this.pinned = false;
   }
 
@@ -224,27 +224,26 @@
    * Convert a SVG to a base64 encoded image url, so it can be drawn onto a canvas.
    *
    * @param {Object}    svg           SVG to convert
-   * @param {function}  [onload]      Function that will be called once the image is built
+   * @param {function}  onload        Function that will be called once the image is built
    */
-  function buildImageFromSvg(svg, onload) {
-    if (!svg) {
+  function buildImageFromSvg(widget, onload) {
+    if (!widget.svg) {
       return null;
     }
 
     var str = '';
 
-    str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + svg.width + 'px" height="' + svg.height + 'px">';
+    str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + widget.svg.width + 'px" height="' + widget.svg.height + 'px">';
 
-    str += svg.innerHTML + '</svg>';
-    var src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str))),
-        img = new Image();
+    str += widget.svg.innerHTML + '</svg>';
+    var src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str)));
 
-    if (typeof onload === 'function') {
-      img.onload = onload;
+    if (widget.img.src !== src) {
+      widget.img.onload = onload;
+      widget.img.src = src;
+    } else {
+      onload();
     }
-    img.src = src;
-
-    return img;
   }
 
   /**
@@ -256,12 +255,32 @@
       visualSettings.legendWidth + (visualSettings.legendBorderWidth + visualSettings.legendOuterMargin) * 2
   }
 
+
+  function getNonNullWidgetsNumber(legendPlugin) {
+    var nb = 0;
+    iterate(legendPlugin.widgets, function (widget) {
+      if (widget) {
+        ++nb;
+      }
+    });
+
+    return nb;
+  }
+
   /**
    *  Reconstruct the legend's svg (i.e. recreate the image representation of each widget).
    */
-  function buildLegendWidgets(legendPlugin) {
+  function buildLegendWidgets(legendPlugin, callback) {
+    var nbWidgetBuilt = 0,
+        nbWidgets = getNonNullWidgetsNumber(legendPlugin);
+
     iterate(legendPlugin.widgets, function (value) {
-      buildWidget(value);
+      buildWidget(value, function () {
+        ++nbWidgetBuilt;
+        if (callback && nbWidgetBuilt === nbWidgets) {
+          callback();
+        }
+      });
     });
   }
 
@@ -502,21 +521,11 @@
    */
   function drawLegend(legendPlugin) {
     clearLegend(legendPlugin);
-    if (legendPlugin.visible && legendPlugin.enoughSpace) {
-      iterate(legendPlugin.widgets, function (value) {
-        if (!value.pinned) {
-          drawWidget(value);
-        }
-      });
-    }
-
-    if (legendPlugin.visible) {
-      iterate(legendPlugin.widgets, function (value) {
-        if (value.pinned) {
-          drawWidget(value);
-        }
-      });
-    }
+    iterate(legendPlugin.widgets, function (widget) {
+      if (mustDisplayWidget(legendPlugin, widget)) {
+        drawWidget(widget);
+      }
+    });
   }
 
 
@@ -528,13 +537,13 @@
    * @returns {boolean}
    */
   function mustDisplayWidget(legendPlugin, widget) {
-    return legendPlugin.visible && (legendPlugin.enoughSpace || widget.pinned) && legendPlugin.widgets[widget.id] !== undefined;
+    return legendPlugin.visible && (legendPlugin.enoughSpace || widget.pinned) && legendPlugin.widgets[widget.id] !== undefined && widget.svg !== null;
   }
 
   /**
    * Create a widget's svg.
    */
-  function buildWidget(widget) {
+  function buildWidget(widget, callback) {
     var vs = widget._legendPlugin._visualSettings;
 
     if (widget.visualVar === 'size') {
@@ -559,11 +568,15 @@
       widget.svg.height = height + 2 * (vs.legendBorderWidth + vs.legendOuterMargin);
     }
 
-    widget.img = buildImageFromSvg(widget.svg, function () {
-      if (mustDisplayWidget(widget._legendPlugin, widget)) {
-        drawLayout(widget._legendPlugin);
-      }
-    });
+     buildImageFromSvg(widget, callback);
+  }
+
+  /**
+   * Build a widget a redraw the layout
+   * @param widget
+   */
+  function buildWidgetAndDrawLayout(widget) {
+    buildWidget(widget, function () { drawLayout(widget._legendPlugin); });
   }
 
   /**
@@ -1265,9 +1278,18 @@
    * Build the widgets, compute the layout and draw the legend.
    * Must be called whenever the graph's design changes.
    */
-  LegendPlugin.prototype.draw = function () {
-    buildLegendWidgets(this);
-    drawLayout(this);
+  LegendPlugin.prototype.draw = function (callback) {
+    var self = this;
+
+    if (typeof callback !== 'function') {
+      buildLegendWidgets(self);
+      drawLayout(self);
+    } else {
+      buildLegendWidgets(self, function () {
+        drawLayout(self);
+        callback();
+      })
+    }
   };
 
   /**
@@ -1310,7 +1332,7 @@
       this.widgets[widget.id] = widget;
     }
     widget.unit = unit;
-    buildWidget(widget);
+    buildWidget(widget, function () { drawLayout(widget._legendPlugin); });
 
     return widget;
   };
@@ -1336,7 +1358,7 @@
     widget.id = 'text' + this.textWidgetCounter++;
     this.widgets[widget.id] = widget;
 
-    buildWidget(widget);
+    buildWidgetAndDrawLayout(widget);
 
     return widget;
   };
@@ -1392,7 +1414,7 @@
    */
   LegendWidget.prototype.setText = function (text) {
     this.text = text;
-    buildWidget(this);
+    buildWidgetAndDrawLayout(this);
   };
 
   /**
@@ -1401,7 +1423,7 @@
    */
   LegendWidget.prototype.setUnit = function (unit) {
     this.unit = unit;
-    buildWidget(this);
+    buildWidgetAndDrawLayout(this);
   };
 
   /**
@@ -1417,23 +1439,24 @@
    * @param [filename] {string} Optional. Default: 'legend.png'
    */
   LegendPlugin.prototype.exportPng = function (filename) {
-    var visibility = this.visible;
+    var visibility = this.visible,
+        self = this;
 
     // We set the legend to visible so it draws the legend in the canvas
-    this.visible = true;
-    drawLayout(this);
-
-    var tmpCanvas = document.createElement('canvas'),
+    self.visible = true;
+    self.draw(function () {
+      var tmpCanvas = document.createElement('canvas'),
         ctx = tmpCanvas.getContext('2d'),
-        box = this.boundingBox;
+        box = self.boundingBox;
 
-    tmpCanvas.width = box.w;
-    tmpCanvas.height = box.h;
+      tmpCanvas.width = box.w;
+      tmpCanvas.height = box.h;
 
-    ctx.drawImage(this._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
-    this.setVisibility(visibility);
+      ctx.drawImage(self._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+      self.setVisibility(visibility);
 
-    download(tmpCanvas.toDataURL(), filename ? filename : 'legend.png', true);
+      download(tmpCanvas.toDataURL(), filename ? filename : 'legend.png', true);
+    });
   };
 
   /**
@@ -1442,37 +1465,38 @@
    * @param [filename] {string} Optional. Default: 'legend.svg'
    */
   LegendPlugin.prototype.exportSvg = function (filename) {
-    drawLayout(this);
-
-    var vs = this._visualSettings,
-        box = this.boundingBox,
+    var self = this;
+    this.draw(function () {
+      var vs = self._visualSettings,
+        box = self.boundingBox,
         str = '';
 
-    (this.externalCSS || []).forEach(function (url) {
-      str += '<?xml-stylesheet type="text/css" href="' + url + '" ?>\n';
+      (self.externalCSS || []).forEach(function (url) {
+        str += '<?xml-stylesheet type="text/css" href="' + url + '" ?>\n';
+      });
+
+      str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + box.w + 'px" height="' + box.h + 'px">';
+      iterate(self.widgets, function (widget) {
+        if (widget.svg === null) {
+          return;
+        }
+
+        str += '<g transform="translate(' + (widget.x + - box.x) + ' ' + (widget.y - box.y) + ')">';
+        str += widget.svg.innerHTML;
+        if (widget.visualVar === 'icon') {
+          var tmpSvg = document.createElement('svg');
+          iterate(widget.svg.icons, function (value, content) {
+            drawText(vs, tmpSvg, content, value.x, value.y, 'left', vs.legendFontColor, value.font,
+              vs.legendFontSize, 'central');
+          });
+          str += tmpSvg.innerHTML;
+        }
+        str += '</g>';
+      });
+      str += '</svg>';
+
+      download(str, filename ? filename : 'legend.svg');
     });
-
-    str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + box.w + 'px" height="' + box.h + 'px">';
-    iterate(this.widgets, function (widget) {
-      if (widget.svg === null) {
-        return;
-      }
-
-      str += '<g transform="translate(' + (widget.x + - box.x) + ' ' + (widget.y - box.y) + ')">';
-      str += widget.svg.innerHTML;
-      if (widget.visualVar === 'icon') {
-        var tmpSvg = document.createElement('svg');
-        iterate(widget.svg.icons, function (value, content) {
-          drawText(vs, tmpSvg, content, value.x, value.y, 'left', vs.legendFontColor, value.font,
-            vs.legendFontSize, 'central');
-        });
-        str += tmpSvg.innerHTML;
-      }
-      str += '</g>';
-    });
-    str += '</svg>';
-
-    download(str, filename ? filename : 'legend.svg');
   };
 
 }).call(this);
