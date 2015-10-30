@@ -519,7 +519,7 @@
         );
 
         // Refresh quadtree:
-        c.quadtree.index(this.graph.nodes(), {
+        c.quadtree.index(this.graph, {
           prefix: c.readPrefix,
           maxLevel: c.settings('nodeQuadtreeMaxLevel'),
           bounds: {
@@ -1712,10 +1712,10 @@ sigma.conrad = conrad;
 
 // Dirty polyfills to permit sigma usage in node
 if (HTMLElement === undefined)
-  var HTMLElement = function() {};
+  HTMLElement = function() {};
 
 if (window === undefined)
-  var window = {
+  window = {
     addEventListener: function() {}
   };
 
@@ -1952,16 +1952,18 @@ if (typeof exports !== 'undefined') {
   /**
    * Return the control point coordinates for a quadratic bezier curve.
    *
-   * @param  {number} x1  The X coordinate of the start point.
-   * @param  {number} y1  The Y coordinate of the start point.
-   * @param  {number} x2  The X coordinate of the end point.
-   * @param  {number} y2  The Y coordinate of the end point.
-   * @return {x,y}        The control point coordinates.
+   * @param  {number}  x1  The X coordinate of the start point.
+   * @param  {number}  y1  The Y coordinate of the start point.
+   * @param  {number}  x2  The X coordinate of the end point.
+   * @param  {number}  y2  The Y coordinate of the end point.
+   * @param  {?number} cc  The curvature coefficients.
+   * @return {x,y}         The control point coordinates.
    */
-  sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2) {
+  sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2, cc) {
+    cc = this.extend(cc, { x: 2, y: 4 });
     return {
-      x: (x1 + x2) / 2 + (y2 - y1) / 4,
-      y: (y1 + y2) / 2 + (x1 - x2) / 4
+      x: (x1 + x2) / cc.x + (y2 - y1) / cc.y,
+      y: (y1 + y2) / cc.x + (x1 - x2) / cc.y
     };
   };
 
@@ -2129,14 +2131,50 @@ if (typeof exports !== 'undefined') {
     *                          segment, false otherwise.
   */
   sigma.utils.isPointOnSegment = function(x, y, x1, y1, x2, y2, epsilon) {
-    // http://stackoverflow.com/a/328122
-    var crossProduct = Math.abs((y - y1) * (x2 - x1) - (x - x1) * (y2 - y1)),
-        d = sigma.utils.getDistance(x1, y1, x2, y2),
-        nCrossProduct = crossProduct / d; // normalized cross product
+    return sigma.utils.distancePointToSegment(x, y, x1, y1, x2, y2) < epsilon;
+  };
 
-    return (nCrossProduct < epsilon &&
-     Math.min(x1, x2) <= x && x <= Math.max(x1, x2) &&
-     Math.min(y1, y2) <= y && y <= Math.max(y1, y2));
+  /**
+    * Compute the distance of a point to a line segment.
+    *
+    * @param  {number} x       The X coordinate of the point to check.
+    * @param  {number} y       The Y coordinate of the point to check.
+    * @param  {number} x1      The X coordinate of the line start point.
+    * @param  {number} y1      The Y coordinate of the line start point.
+    * @param  {number} x2      The X coordinate of the line end point.
+    * @param  {number} y2      The Y coordinate of the line end point.
+    * @return {number}         Distance to the segment
+  */
+  sigma.utils.distancePointToSegment = function(x, y, x1, y1, x2, y2) {
+    // http://stackoverflow.com/a/6853926/1075195
+    var A = x - x1,
+        B = y - y1,
+        C = x2 - x1,
+        D = y2 - y1,
+        dot = A * C + B * D,
+        len_sq = C * C + D * D,
+        param = -1,
+        xx, yy;
+
+    if (len_sq !== 0) //in case of 0 length line
+        param = dot / len_sq;
+
+    if (param < 0) {
+      xx = x1;
+      yy = y1;
+    }
+    else if (param > 1) {
+      xx = x2;
+      yy = y2;
+    }
+    else {
+      xx = x1 + param * C;
+      yy = y1 + param * D;
+    }
+
+    var dx = x - xx;
+    var dy = y - yy;
+    return Math.sqrt(dx * dx + dy * dy);
   };
 
   /**
@@ -2359,7 +2397,7 @@ if (typeof exports !== 'undefined') {
    * @return {object}   The center of the event's target.
    */
   sigma.utils.getCenter = function(e) {
-    var ratio = e.target.getAttribute('class') == 'sigma-svg' ? 1 :
+    var ratio = e.target.namespaceURI.indexOf('svg') !== -1 ? 1 :
         sigma.utils.getPixelRatio();
     return {
       x: sigma.utils.getWidth(e) / (2 * ratio),
@@ -2760,7 +2798,7 @@ if (typeof exports !== 'undefined') {
    * Calculate the width of the text either approximated via the font size or
    * via the more expensive but accurate context.measureText.
    *
-   * @param  {context2D}   ctx           The canvas context.
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
    * @param  {boolean}     approximate   Approximate or not.
    * @param  {integer}     fontSize      Font size of the text.
    * @param  {string}      text          The text to use.
@@ -2769,11 +2807,171 @@ if (typeof exports !== 'undefined') {
    */
    sigma.utils.canvas = {};
    sigma.utils.canvas.getTextWidth =
-        function(ctx, approximate, fontSize, text) {
+        function(context, approximate, fontSize, text) {
+
     if (!text) return 0;
+
     return approximate ? 0.6 * text.length * fontSize :
-      ctx.measureText(text).width;
+      context.measureText(text).width;
   };
+
+  /**
+   * Set the shadow values of the specified context according to the level
+   * to create visual depth.
+   *
+   * @param  {number}     level     The level (from 1 to 5).
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
+   */
+  sigma.utils.canvas.setLevel = function(level, context) {
+    if (level) {
+      context.shadowOffsetX = 0;
+      // inspired by Material Design shadows, level from 1 to 5:
+      switch(level) {
+        case 1:
+          context.shadowOffsetY = 1.5;
+          context.shadowBlur = 4;
+          context.shadowColor = 'rgba(0,0,0,0.36)';
+          break;
+        case 2:
+          context.shadowOffsetY = 3;
+          context.shadowBlur = 12;
+          context.shadowColor = 'rgba(0,0,0,0.39)';
+          break;
+        case 3:
+          context.shadowOffsetY = 6;
+          context.shadowBlur = 12;
+          context.shadowColor = 'rgba(0,0,0,0.42)';
+          break;
+        case 4:
+          context.shadowOffsetY = 10;
+          context.shadowBlur = 20;
+          context.shadowColor = 'rgba(0,0,0,0.47)';
+          break;
+        case 5:
+          context.shadowOffsetY = 15;
+          context.shadowBlur = 24;
+          context.shadowColor = 'rgba(0,0,0,0.52)';
+          break;
+      }
+    }
+  };
+
+  /**
+   * Reset the shadow values.
+   *
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
+   */
+  sigma.utils.canvas.resetLevel = function(context) {
+    context.shadowOffsetY = 0;
+    context.shadowBlur = 0;
+    context.shadowColor = '#000000';
+  };
+
+  // incrementally scaled, not automatically resized for now
+  // (ie. possible memory leak if there are many graph load / unload)
+  var imgCache = {};
+
+  /**
+   * Draw an image inside the specified node on the canvas.
+   *
+   * @param  {object}                   node     The node object.
+   * @param  {number}                   x        The node x coordinate.
+   * @param  {number}                   y        The node y coordinate.
+   * @param  {number}                   size     The node size.
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
+   * @param  {string}                   imgCrossOrigin Cross-origin URL or '*'.
+   * @param  {number}                  threshold Display if node size is larger
+   * @param  {function}                 clipFn    The clipping shape function.
+   */
+  sigma.utils.canvas.drawImage =
+    function(node, x, y, size, context, imgCrossOrigin, threshold, clipFn) {
+
+    if(!node.image || !node.image.url || size < threshold) return;
+
+    var url = node.image.url;
+    var ih = node.image.h || 1; // 1 is arbitrary, anyway only the ratio counts
+    var iw = node.image.w || 1;
+    var scale = node.image.scale || 1;
+    var clip = node.image.clip || 1;
+
+    // create new IMG or get from imgCache
+    var image = imgCache[url];
+    if(!image) {
+      image = document.createElement('IMG');
+      image.setAttribute('crossOrigin', imgCrossOrigin);
+      image.src = url;
+      image.onload = function() {
+        window.dispatchEvent(new Event('resize'));
+      };
+      imgCache[url] = image;
+    }
+
+    // calculate position and draw
+    var xratio = (iw < ih) ? (iw / ih) : 1;
+    var yratio = (ih < iw) ? (ih / iw) : 1;
+    var r = size * scale;
+
+    context.save(); // enter clipping mode
+      context.beginPath();
+    if (typeof clipFn === 'function') {
+      clipFn(node, x, y, size, context, clip);
+    }
+    else {
+      // Draw the clipping disc:
+      context.arc(x, y, size * clip, 0, Math. PI * 2, true);
+    }
+    context.closePath();
+    context.clip();
+
+    // Draw the actual image
+    context.drawImage(
+      image,
+      x + Math.sin(-3.142 / 4) * r * xratio,
+      y - Math.cos(-3.142 / 4) * r * yratio,
+      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
+      r * yratio * 2 * Math.cos(-3.142 / 4)
+    );
+    context.restore(); // exit clipping mode
+  };
+
+  /**
+   * Draw an icon inside the specified node on the canvas.
+   *
+   * @param  {object}                   node     The node object.
+   * @param  {number}                   x        The node x coordinate.
+   * @param  {number}                   y        The node y coordinate.
+   * @param  {number}                   size     The node size.
+   * @param  {CanvasRenderingContext2D} context  The canvas context.
+   * @param  {number}                  threshold Display if node size is larger
+   */
+  sigma.utils.canvas.drawIcon = function(node, x, y, size, context, threshold){
+    if(!node.icon || size < threshold) return;
+
+    var font = node.icon.font || 'Arial',
+        fgColor = node.icon.color || '#F00',
+        text = node.icon.content || '?',
+        px = node.icon.x || 0.5,
+        py = node.icon.y || 0.5,
+        height = size,
+        width = size;
+
+    var fontSizeRatio = 0.70;
+    if (typeof node.icon.scale === "number") {
+      fontSizeRatio = Math.abs(Math.max(0.01, node.icon.scale));
+    }
+
+    var fontSize = Math.round(fontSizeRatio * height);
+
+    context.save();
+    context.fillStyle = fgColor;
+
+    context.font = '' + fontSize + 'px ' + font;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, x, y);
+    context.restore();
+  };
+
 }).call(this);
 
 ;(function(global) {
@@ -2918,9 +3116,12 @@ if (typeof exports !== 'undefined') {
     labelSizeRatio: 1,
     // {number} The minimum size a node must have to see its label displayed.
     labelThreshold: 8,
+    // {number} Maximum length of a node's label (in characters). Displays the label on several lines. 0 disables it
+    // (the whole label is displayed on one line)
+    maxNodeLabelLineLength: 0,
     // {number} The oversampling factor used in WebGL renderer.
     webglOversamplingRatio: 2,
-    // {number} The size of the border of hovered nodes.
+    // {number} The size of the border of nodes.
     borderSize: 0,
     // {number} The default hovered node border's color.
     defaultNodeBorderColor: '#000',
@@ -2982,6 +3183,13 @@ if (typeof exports !== 'undefined') {
     approximateLabelWidth: true,
     // {boolean} Hide edges from nodes too far away
     edgesClippingWithNodes: true,
+    // {number} if sigma.canvas.edges.autoCurve is called, set relative
+    // distance between curved parallel edges (i.e. edges with same
+    // extremities). Smaller value increases distances.
+    autoCurveRatio: 1,
+    // {boolean} if sigma.canvas.edges.autoCurve is called, sort edges by
+    // direction.
+    autoCurveSortByDirection: true,
 
 
     /**
@@ -4551,8 +4759,7 @@ if (typeof exports !== 'undefined') {
    * Sigma Quadtree Module
    * =====================
    *
-   * Author: Guillaume Plique (Yomguithereal)
-   * Version: 0.2
+   * Author: Guillaume Plique (Yomguithereal), Sébastien Heymann, Damien Marié
    */
 
 
@@ -4583,681 +4790,6 @@ if (typeof exports !== 'undefined') {
       };
     },
 
-    /**
-     * Checks whether a rectangle is axis-aligned.
-     *
-     * @param  {object}  A rectangle defined by two points
-     *                   (x1, y1) and (x2, y2).
-     * @return {boolean} True if the rectangle is axis-aligned.
-     */
-    isAxisAligned: function(r) {
-      return r.x1 === r.x2 || r.y1 === r.y2;
-    },
-
-    /**
-     * Compute top points of an axis-aligned rectangle. This is useful in
-     * cases when the rectangle has been rotated (left, right or bottom up) and
-     * later operations need to know the top points.
-     *
-     * @param  {object} An axis-aligned rectangle defined by two points
-     *                  (x1, y1), (x2, y2) and height.
-     * @return {object} A rectangle: two points (x1, y1), (x2, y2) and height.
-     */
-    axisAlignedTopPoints: function(r) {
-
-      // Basic
-      if (r.y1 === r.y2 && r.x1 < r.x2)
-        return r;
-
-      // Rotated to right
-      if (r.x1 === r.x2 && r.y2 > r.y1)
-        return {
-          x1: r.x1 - r.height, y1: r.y1,
-          x2: r.x1, y2: r.y1,
-          height: r.height
-        };
-
-      // Rotated to left
-      if (r.x1 === r.x2 && r.y2 < r.y1)
-        return {
-          x1: r.x1, y1: r.y2,
-          x2: r.x2 + r.height, y2: r.y2,
-          height: r.height
-        };
-
-      // Bottom's up
-      return {
-        x1: r.x2, y1: r.y1 - r.height,
-        x2: r.x1, y2: r.y1 - r.height,
-        height: r.height
-      };
-    },
-
-    /**
-     * Get coordinates of a rectangle's lower left corner from its top points.
-     *
-     * @param  {object} A rectangle defined by two points (x1, y1) and (x2, y2).
-     * @return {object} Coordinates of the corner (x, y).
-     */
-    lowerLeftCoor: function(r) {
-      var width = (
-        Math.sqrt(
-          (r.x2 - r.x1) * (r.x2 - r.x1) +
-          (r.y2 - r.y1) * (r.y2 - r.y1)
-        )
-      );
-
-      return {
-        x: r.x1 - (r.y2 - r.y1) * r.height / width,
-        y: r.y1 + (r.x2 - r.x1) * r.height / width
-      };
-    },
-
-    /**
-     * Get coordinates of a rectangle's lower right corner from its top points
-     * and its lower left corner.
-     *
-     * @param  {object} A rectangle defined by two points (x1, y1) and (x2, y2).
-     * @param  {object} A corner's coordinates (x, y).
-     * @return {object} Coordinates of the corner (x, y).
-     */
-    lowerRightCoor: function(r, llc) {
-      return {
-        x: llc.x - r.x1 + r.x2,
-        y: llc.y - r.y1 + r.y2
-      };
-    },
-
-    /**
-     * Get the coordinates of all the corners of a rectangle from its top point.
-     *
-     * @param  {object} A rectangle defined by two points (x1, y1) and (x2, y2).
-     * @return {array}  An array of the four corners' coordinates (x, y).
-     */
-    rectangleCorners: function(r) {
-      var llc = this.lowerLeftCoor(r),
-          lrc = this.lowerRightCoor(r, llc);
-
-      return [
-        {x: r.x1, y: r.y1},
-        {x: r.x2, y: r.y2},
-        {x: llc.x, y: llc.y},
-        {x: lrc.x, y: lrc.y}
-      ];
-    },
-
-    /**
-     * Split a square defined by its boundaries into four.
-     *
-     * @param  {object} Boundaries of the square (x, y, width, height).
-     * @return {array}  An array containing the four new squares, themselves
-     *                  defined by an array of their four corners (x, y).
-     */
-    splitSquare: function(b) {
-      return [
-        [
-          {x: b.x, y: b.y},
-          {x: b.x + b.width / 2, y: b.y},
-          {x: b.x, y: b.y + b.height / 2},
-          {x: b.x + b.width / 2, y: b.y + b.height / 2}
-        ],
-        [
-          {x: b.x + b.width / 2, y: b.y},
-          {x: b.x + b.width, y: b.y},
-          {x: b.x + b.width / 2, y: b.y + b.height / 2},
-          {x: b.x + b.width, y: b.y + b.height / 2}
-        ],
-        [
-          {x: b.x, y: b.y + b.height / 2},
-          {x: b.x + b.width / 2, y: b.y + b.height / 2},
-          {x: b.x, y: b.y + b.height},
-          {x: b.x + b.width / 2, y: b.y + b.height}
-        ],
-        [
-          {x: b.x + b.width / 2, y: b.y + b.height / 2},
-          {x: b.x + b.width, y: b.y + b.height / 2},
-          {x: b.x + b.width / 2, y: b.y + b.height},
-          {x: b.x + b.width, y: b.y + b.height}
-        ]
-      ];
-    },
-
-    /**
-     * Compute the four axis between corners of rectangle A and corners of
-     * rectangle B. This is needed later to check an eventual collision.
-     *
-     * @param  {array} An array of rectangle A's four corners (x, y).
-     * @param  {array} An array of rectangle B's four corners (x, y).
-     * @return {array} An array of four axis defined by their coordinates (x,y).
-     */
-    axis: function(c1, c2) {
-      return [
-        {x: c1[1].x - c1[0].x, y: c1[1].y - c1[0].y},
-        {x: c1[1].x - c1[3].x, y: c1[1].y - c1[3].y},
-        {x: c2[0].x - c2[2].x, y: c2[0].y - c2[2].y},
-        {x: c2[0].x - c2[1].x, y: c2[0].y - c2[1].y}
-      ];
-    },
-
-    /**
-     * Project a rectangle's corner on an axis.
-     *
-     * @param  {object} Coordinates of a corner (x, y).
-     * @param  {object} Coordinates of an axis (x, y).
-     * @return {object} The projection defined by coordinates (x, y).
-     */
-    projection: function(c, a) {
-      var l = (
-        (c.x * a.x + c.y * a.y) /
-        (a.x * a.x + a.y * a.y)
-      );
-
-      return {
-        x: l * a.x,
-        y: l * a.y
-      };
-    },
-
-    /**
-     * Check whether two rectangles collide on one particular axis.
-     *
-     * @param  {object}   An axis' coordinates (x, y).
-     * @param  {array}    Rectangle A's corners.
-     * @param  {array}    Rectangle B's corners.
-     * @return {boolean}  True if the rectangles collide on the axis.
-     */
-    axisCollision: function(a, c1, c2) {
-      var sc1 = [],
-          sc2 = [];
-
-      for (var ci = 0; ci < 4; ci++) {
-        var p1 = this.projection(c1[ci], a),
-            p2 = this.projection(c2[ci], a);
-
-        sc1.push(p1.x * a.x + p1.y * a.y);
-        sc2.push(p2.x * a.x + p2.y * a.y);
-      }
-
-      var maxc1 = Math.max.apply(Math, sc1),
-          maxc2 = Math.max.apply(Math, sc2),
-          minc1 = Math.min.apply(Math, sc1),
-          minc2 = Math.min.apply(Math, sc2);
-
-      return (minc2 <= maxc1 && maxc2 >= minc1);
-    },
-
-    /**
-     * Check whether two rectangles collide on each one of their four axis. If
-     * all axis collide, then the two rectangles do collide on the plane.
-     *
-     * @param  {array}    Rectangle A's corners.
-     * @param  {array}    Rectangle B's corners.
-     * @return {boolean}  True if the rectangles collide.
-     */
-    collision: function(c1, c2) {
-      var axis = this.axis(c1, c2),
-          col = true;
-
-      for (var i = 0; i < 4; i++)
-        col = col && this.axisCollision(axis[i], c1, c2);
-
-      return col;
-    }
-  };
-
-
-  /**
-   * Quad Functions
-   * ------------
-   *
-   * The Quadtree functions themselves.
-   * For each of those functions, we consider that in a splitted quad, the
-   * index of each node is the following:
-   * 0: top left
-   * 1: top right
-   * 2: bottom left
-   * 3: bottom right
-   *
-   * Moreover, the hereafter quad's philosophy is to consider that if an element
-   * collides with more than one nodes, this element belongs to each of the
-   * nodes it collides with where other would let it lie on a higher node.
-   */
-
-  /**
-   * Get the index of the node containing the point in the quad
-   *
-   * @param  {object}  point      A point defined by coordinates (x, y).
-   * @param  {object}  quadBounds Boundaries of the quad (x, y, width, heigth).
-   * @return {integer}            The index of the node containing the point.
-   */
-  function _quadIndex(point, quadBounds) {
-    var xmp = quadBounds.x + quadBounds.width / 2,
-        ymp = quadBounds.y + quadBounds.height / 2,
-        top = (point.y < ymp),
-        left = (point.x < xmp);
-
-    if (top) {
-      if (left)
-        return 0;
-      else
-        return 1;
-    }
-    else {
-      if (left)
-        return 2;
-      else
-        return 3;
-    }
-  }
-
-  /**
-   * Get a list of indexes of nodes containing an axis-aligned rectangle
-   *
-   * @param  {object}  rectangle   A rectangle defined by two points (x1, y1),
-   *                               (x2, y2) and height.
-   * @param  {array}   quadCorners An array of the quad nodes' corners.
-   * @return {array}               An array of indexes containing one to
-   *                               four integers.
-   */
-  function _quadIndexes(rectangle, quadCorners) {
-    var indexes = [];
-
-    // Iterating through quads
-    for (var i = 0; i < 4; i++)
-      if ((rectangle.x2 >= quadCorners[i][0].x) &&
-          (rectangle.x1 <= quadCorners[i][1].x) &&
-          (rectangle.y1 + rectangle.height >= quadCorners[i][0].y) &&
-          (rectangle.y1 <= quadCorners[i][2].y))
-        indexes.push(i);
-
-    return indexes;
-  }
-
-  /**
-   * Get a list of indexes of nodes containing a non-axis-aligned rectangle
-   *
-   * @param  {array}  corners      An array containing each corner of the
-   *                               rectangle defined by its coordinates (x, y).
-   * @param  {array}  quadCorners  An array of the quad nodes' corners.
-   * @return {array}               An array of indexes containing one to
-   *                               four integers.
-   */
-  function _quadCollision(corners, quadCorners) {
-    var indexes = [];
-
-    // Iterating through quads
-    for (var i = 0; i < 4; i++)
-      if (_geom.collision(corners, quadCorners[i]))
-        indexes.push(i);
-
-    return indexes;
-  }
-
-  /**
-   * Subdivide a quad by creating a node at a precise index. The function does
-   * not generate all four nodes not to potentially create unused nodes.
-   *
-   * @param  {integer}  index The index of the node to create.
-   * @param  {object}   quad  The quad object to subdivide.
-   * @return {object}         A new quad representing the node created.
-   */
-  function _quadSubdivide(index, quad) {
-    var next = quad.level + 1,
-        subw = Math.round(quad.bounds.width / 2),
-        subh = Math.round(quad.bounds.height / 2),
-        qx = Math.round(quad.bounds.x),
-        qy = Math.round(quad.bounds.y),
-        x,
-        y;
-
-    switch (index) {
-      case 0:
-        x = qx;
-        y = qy;
-        break;
-      case 1:
-        x = qx + subw;
-        y = qy;
-        break;
-      case 2:
-        x = qx;
-        y = qy + subh;
-        break;
-      case 3:
-        x = qx + subw;
-        y = qy + subh;
-        break;
-    }
-
-    return _quadTree(
-      {x: x, y: y, width: subw, height: subh},
-      next,
-      quad.maxElements,
-      quad.maxLevel
-    );
-  }
-
-  /**
-   * Recursively insert an element into the quadtree. Only points
-   * with size, i.e. axis-aligned squares, may be inserted with this
-   * method.
-   *
-   * @param  {object}  el         The element to insert in the quadtree.
-   * @param  {object}  sizedPoint A sized point defined by two top points
-   *                              (x1, y1), (x2, y2) and height.
-   * @param  {object}  quad       The quad in which to insert the element.
-   * @return {undefined}          The function does not return anything.
-   */
-  function _quadInsert(el, sizedPoint, quad) {
-    if (quad.level < quad.maxLevel) {
-
-      // Searching appropriate quads
-      var indexes = _quadIndexes(sizedPoint, quad.corners);
-
-      // Iterating
-      for (var i = 0, l = indexes.length; i < l; i++) {
-
-        // Subdividing if necessary
-        if (quad.nodes[indexes[i]] === undefined)
-          quad.nodes[indexes[i]] = _quadSubdivide(indexes[i], quad);
-
-        // Recursion
-        _quadInsert(el, sizedPoint, quad.nodes[indexes[i]]);
-      }
-    }
-    else {
-
-      // Pushing the element in a leaf node
-      quad.elements.push(el);
-    }
-  }
-
-  /**
-   * Recursively retrieve every elements held by the node containing the
-   * searched point.
-   *
-   * @param  {object}  point The searched point (x, y).
-   * @param  {object}  quad  The searched quad.
-   * @return {array}         An array of elements contained in the relevant
-   *                         node.
-   */
-  function _quadRetrievePoint(point, quad) {
-    if (quad.level < quad.maxLevel) {
-      var index = _quadIndex(point, quad.bounds);
-
-      // If node does not exist we return an empty list
-      if (quad.nodes[index] !== undefined) {
-        return _quadRetrievePoint(point, quad.nodes[index]);
-      }
-      else {
-        return [];
-      }
-    }
-    else {
-      return quad.elements;
-    }
-  }
-
-  /**
-   * Recursively retrieve every elements contained within an rectangular area
-   * that may or may not be axis-aligned.
-   *
-   * @param  {object|array} rectData       The searched area defined either by
-   *                                       an array of four corners (x, y) in
-   *                                       the case of a non-axis-aligned
-   *                                       rectangle or an object with two top
-   *                                       points (x1, y1), (x2, y2) and height.
-   * @param  {object}       quad           The searched quad.
-   * @param  {function}     collisionFunc  The collision function used to search
-   *                                       for node indexes.
-   * @param  {array?}       els            The retrieved elements.
-   * @return {array}                       An array of elements contained in the
-   *                                       area.
-   */
-  function _quadRetrieveArea(rectData, quad, collisionFunc, els) {
-    els = els || {};
-
-    if (quad.level < quad.maxLevel) {
-      var indexes = collisionFunc(rectData, quad.corners);
-
-      for (var i = 0, l = indexes.length; i < l; i++)
-        if (quad.nodes[indexes[i]] !== undefined)
-          _quadRetrieveArea(
-            rectData,
-            quad.nodes[indexes[i]],
-            collisionFunc,
-            els
-          );
-    } else
-      for (var j = 0, m = quad.elements.length; j < m; j++)
-        if (els[quad.elements[j].id] === undefined)
-          els[quad.elements[j].id] = quad.elements[j];
-
-    return els;
-  }
-
-  /**
-   * Creates the quadtree object itself.
-   *
-   * @param  {object}   bounds       The boundaries of the quad defined by an
-   *                                 origin (x, y), width and heigth.
-   * @param  {integer}  level        The level of the quad in the tree.
-   * @param  {integer}  maxElements  The max number of element in a leaf node.
-   * @param  {integer}  maxLevel     The max recursion level of the tree.
-   * @return {object}                The quadtree object.
-   */
-  function _quadTree(bounds, level, maxElements, maxLevel) {
-    return {
-      level: level || 0,
-      bounds: bounds,
-      corners: _geom.splitSquare(bounds),
-      maxElements: maxElements || 20,
-      maxLevel: maxLevel || 4,
-      elements: [],
-      nodes: []
-    };
-  }
-
-
-  /**
-   * Sigma Quad Constructor
-   * ----------------------
-   *
-   * The quad API as exposed to sigma.
-   */
-
-  /**
-   * The quad core that will become the sigma interface with the quadtree.
-   *
-   * property {object} _tree  Property holding the quadtree object.
-   * property {object} _geom  Exposition of the _geom namespace for testing.
-   * property {object} _cache Cache for the area method.
-   */
-  var quad = function() {
-    this._geom = _geom;
-    this._tree = null;
-    this._cache = {
-      query: false,
-      result: false
-    };
-  };
-
-  /**
-   * Index a graph by inserting its nodes into the quadtree.
-   *
-   * @param  {array}  nodes   An array of nodes to index.
-   * @param  {object} params  An object of parameters with at least the quad
-   *                          bounds.
-   * @return {object}         The quadtree object.
-   *
-   * Parameters:
-   * ----------
-   * bounds:      {object}   boundaries of the quad defined by its origin (x, y)
-   *                         width and heigth.
-   * prefix:      {string?}  a prefix for node geometric attributes.
-   * maxElements: {integer?} the max number of elements in a leaf node.
-   * maxLevel:    {integer?} the max recursion level of the tree.
-   */
-  quad.prototype.index = function(nodes, params) {
-
-    // Enforcing presence of boundaries
-    if (!params.bounds)
-      throw 'sigma.classes.quad.index: bounds information not given.';
-
-    // Prefix
-    var prefix = params.prefix || '';
-
-    // Building the tree
-    this._tree = _quadTree(
-      params.bounds,
-      0,
-      params.maxElements,
-      params.maxLevel
-    );
-
-    // Inserting graph nodes into the tree
-    for (var i = 0, l = nodes.length; i < l; i++) {
-
-      // Inserting node
-      _quadInsert(
-        nodes[i],
-        _geom.pointToSquare({
-          x: nodes[i][prefix + 'x'],
-          y: nodes[i][prefix + 'y'],
-          size: nodes[i][prefix + 'size']
-        }),
-        this._tree
-      );
-    }
-
-    // Reset cache:
-    this._cache = {
-      query: false,
-      result: false
-    };
-
-    // remove?
-    return this._tree;
-  };
-
-  /**
-   * Retrieve every graph nodes held by the quadtree node containing the
-   * searched point.
-   *
-   * @param  {number} x of the point.
-   * @param  {number} y of the point.
-   * @return {array}  An array of nodes retrieved.
-   */
-  quad.prototype.point = function(x, y) {
-    return this._tree ?
-      _quadRetrievePoint({x: x, y: y}, this._tree) || [] :
-      [];
-  };
-
-  /**
-   * Retrieve every graph nodes within a rectangular area. The methods keep the
-   * last area queried in cache for optimization reason and will act differently
-   * for the same reason if the area is axis-aligned or not.
-   *
-   * @param  {object} A rectangle defined by two top points (x1, y1), (x2, y2)
-   *                  and height.
-   * @return {array}  An array of nodes retrieved.
-   */
-  quad.prototype.area = function(rect) {
-    var serialized = JSON.stringify(rect),
-        collisionFunc,
-        rectData;
-
-    // Returning cache?
-    if (this._cache.query === serialized)
-      return this._cache.result;
-
-    // Axis aligned ?
-    if (_geom.isAxisAligned(rect)) {
-      collisionFunc = _quadIndexes;
-      rectData = _geom.axisAlignedTopPoints(rect);
-    }
-    else {
-      collisionFunc = _quadCollision;
-      rectData = _geom.rectangleCorners(rect);
-    }
-
-    // Retrieving nodes
-    var nodes = this._tree ?
-      _quadRetrieveArea(
-        rectData,
-        this._tree,
-        collisionFunc
-      ) :
-      [];
-
-    // Object to array
-    var nodesArray = [];
-    for (var i in nodes)
-      nodesArray.push(nodes[i]);
-
-    // Caching
-    this._cache.query = serialized;
-    this._cache.result = nodesArray;
-
-    return nodesArray;
-  };
-
-
-  /**
-   * EXPORT:
-   * *******
-   */
-  if (typeof this.sigma !== 'undefined') {
-    this.sigma.classes = this.sigma.classes || {};
-    this.sigma.classes.quad = quad;
-  } else if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports)
-      exports = module.exports = quad;
-    exports.quad = quad;
-  } else
-    this.quad = quad;
-}).call(this);
-
-;(function(undefined) {
-  'use strict';
-
-  /**
-   * Sigma Quadtree Module for edges
-   * ===============================
-   *
-   * Author: Sébastien Heymann,
-   *   from the quad of Guillaume Plique (Yomguithereal)
-   * Version: 0.2
-   */
-
-
-
-  /**
-   * Quad Geometric Operations
-   * -------------------------
-   *
-   * A useful batch of geometric operations used by the quadtree.
-   */
-
-  var _geom = {
-
-    /**
-     * Transforms a graph node with x, y and size into an
-     * axis-aligned square.
-     *
-     * @param  {object} A graph node with at least a point (x, y) and a size.
-     * @return {object} A square: two points (x1, y1), (x2, y2) and height.
-     */
-    pointToSquare: function(n) {
-      return {
-        x1: n.x - n.size,
-        y1: n.y - n.size,
-        x2: n.x + n.size,
-        y2: n.y - n.size,
-        height: n.size * 2
-      };
-    },
 
     /**
      * Transforms a graph edge with x1, y1, x2, y2 and size into an
@@ -5841,8 +5373,8 @@ if (typeof exports !== 'undefined') {
       level: level || 0,
       bounds: bounds,
       corners: _geom.splitSquare(bounds),
-      maxElements: maxElements || 40,
-      maxLevel: maxLevel || 8,
+      maxElements: maxElements || 20,
+      maxLevel: maxLevel || 4,
       elements: [],
       nodes: []
     };
@@ -5853,18 +5385,19 @@ if (typeof exports !== 'undefined') {
    * Sigma Quad Constructor
    * ----------------------
    *
-   * The edgequad API as exposed to sigma.
+   * The quad API as exposed to sigma.
    */
 
   /**
-   * The edgequad core that will become the sigma interface with the quadtree.
+   * The quad core that will become the sigma interface with the quadtree.
    *
-   * property {object} _tree     Property holding the quadtree object.
-   * property {object} _geom     Exposition of the _geom namespace for testing.
-   * property {object} _cache    Cache for the area method.
-   * property {boolean} _enabled Can index and retreive elements.
+   * @param  {boolean?} indexEdges Tell to index edges or nodes
+   *
+   * property {object} _tree       Property holding the quadtree object
+   * property {object} _geom       Exposition of the _geom namespace for testing
+   * property {object} _cache      Cache for the area method
    */
-  var edgequad = function() {
+  var quad = function(indexEdges) {
     this._geom = _geom;
     this._tree = null;
     this._cache = {
@@ -5872,37 +5405,42 @@ if (typeof exports !== 'undefined') {
       result: false
     };
     this._enabled = true;
+    this._indexEdges = indexEdges || false;
   };
 
   /**
-   * Index a graph by inserting its edges into the quadtree.
+   * Index a graph by inserting its elements into the quadtree.
    *
-   * @param  {object} graph   A graph instance.
-   * @param  {object} params  An object of parameters with at least the quad
-   *                          bounds.
-   * @return {object}         The quadtree object.
+   * @param  {array}  graph      The graph to index
+   * @param  {object} params     An object of parameters with at least the quad
+   *                             bounds.
+   * @return {object}            The quadtree object.
    *
    * Parameters:
    * ----------
    * bounds:      {object}   boundaries of the quad defined by its origin (x, y)
    *                         width and heigth.
-   * prefix:      {string?}  a prefix for edge geometric attributes.
+   * prefix:      {string?}  a prefix for node geometric attributes.
    * maxElements: {integer?} the max number of elements in a leaf node.
    * maxLevel:    {integer?} the max recursion level of the tree.
    */
-  edgequad.prototype.index = function(graph, params) {
-    if (!this._enabled)
+  quad.prototype.index = function(graph, params) {
+    if (!this._enabled) {
       return this._tree;
+    }
 
     // Enforcing presence of boundaries
     if (!params.bounds)
-      throw 'sigma.classes.edgequad.index: bounds information not given.';
+      throw 'sigma.classes.quad.index: bounds information not given.';
 
     // Prefix
     var prefix = params.prefix || '',
         cp,
+        cc = params.curvatureCoefficients,
         source,
         target,
+        i,
+        l,
         n,
         e;
 
@@ -5914,46 +5452,63 @@ if (typeof exports !== 'undefined') {
       params.maxLevel
     );
 
-    var edges = graph.edges();
+    if (!this._indexEdges) {
+      var nodes = graph.nodes();
+      // Inserting graph nodes into the tree
+      for (i = 0, l = nodes.length; i < l; i++) {
 
-    // Inserting graph edges into the tree
-    for (var i = 0, l = edges.length; i < l; i++) {
-      source = graph.nodes(edges[i].source);
-      target = graph.nodes(edges[i].target);
-      e = {
-        x1: source[prefix + 'x'],
-        y1: source[prefix + 'y'],
-        x2: target[prefix + 'x'],
-        y2: target[prefix + 'y'],
-        size: edges[i][prefix + 'size'] || 0
-      };
+        // Inserting node
+        _quadInsert(
+          nodes[i],
+          _geom.pointToSquare({
+            x: nodes[i][prefix + 'x'],
+            y: nodes[i][prefix + 'y'],
+            size: nodes[i][prefix + 'size']
+          }),
+          this._tree
+        );
+      }
+    } else {
+      var edges = graph.edges();
+      // Inserting graph edges into the tree
+      for (i = 0, l = edges.length; i < l; i++) {
+        source = graph.nodes(edges[i].source);
+        target = graph.nodes(edges[i].target);
+        e = {
+          x1: source[prefix + 'x'],
+          y1: source[prefix + 'y'],
+          x2: target[prefix + 'x'],
+          y2: target[prefix + 'y'],
+          size: edges[i][prefix + 'size'] || 0
+        };
 
-      // Inserting edge
-      if (edges[i].type === 'curve' || edges[i].type === 'curvedArrow') {
-        if (source.id === target.id) {
-          n = {
-            x: source[prefix + 'x'],
-            y: source[prefix + 'y'],
-            size: source[prefix + 'size'] || 0
-          };
-          _quadInsert(
-            edges[i],
-            _geom.selfLoopToSquare(n),
-            this._tree);
+        // Inserting edge
+        if (edges[i].type === 'curve' || edges[i].type === 'curvedArrow') {
+          if (source.id === target.id) {
+            n = {
+              x: source[prefix + 'x'],
+              y: source[prefix + 'y'],
+              size: source[prefix + 'size'] || 0
+            };
+            _quadInsert(
+              edges[i],
+              _geom.selfLoopToSquare(n),
+              this._tree);
+          }
+          else {
+            cp = sigma.utils.getQuadraticControlPoint(e.x1, e.y1, e.x2, e.y2, edges[i].cc || cc);
+            _quadInsert(
+              edges[i],
+              _geom.quadraticCurveToSquare(e, cp),
+              this._tree);
+          }
         }
         else {
-          cp = sigma.utils.getQuadraticControlPoint(e.x1, e.y1, e.x2, e.y2);
           _quadInsert(
             edges[i],
-            _geom.quadraticCurveToSquare(e, cp),
+            _geom.lineToSquare(e),
             this._tree);
         }
-      }
-      else {
-        _quadInsert(
-          edges[i],
-          _geom.lineToSquare(e),
-          this._tree);
       }
     }
 
@@ -5968,14 +5523,14 @@ if (typeof exports !== 'undefined') {
   };
 
   /**
-   * Retrieve every graph edges held by the quadtree node containing the
+   * Retrieve every graph nodes held by the quadtree node containing the
    * searched point.
    *
    * @param  {number} x of the point.
    * @param  {number} y of the point.
-   * @return {array}  An array of edges retrieved.
+   * @return {array}  An array of nodes retrieved.
    */
-  edgequad.prototype.point = function(x, y) {
+  quad.prototype.point = function(x, y) {
     if (!this._enabled)
       return [];
 
@@ -5985,15 +5540,15 @@ if (typeof exports !== 'undefined') {
   };
 
   /**
-   * Retrieve every graph edges within a rectangular area. The methods keep the
+   * Retrieve every graph nodes within a rectangular area. The methods keep the
    * last area queried in cache for optimization reason and will act differently
    * for the same reason if the area is axis-aligned or not.
    *
    * @param  {object} A rectangle defined by two top points (x1, y1), (x2, y2)
    *                  and height.
-   * @return {array}  An array of edges retrieved.
+   * @return {array}  An array of nodes retrieved.
    */
-  edgequad.prototype.area = function(rect) {
+  quad.prototype.area = function(rect) {
     if (!this._enabled)
       return [];
 
@@ -6015,8 +5570,8 @@ if (typeof exports !== 'undefined') {
       rectData = _geom.rectangleCorners(rect);
     }
 
-    // Retrieving edges
-    var edges = this._tree ?
+    // Retrieving nodes
+    var elements = this._tree ?
       _quadRetrieveArea(
         rectData,
         this._tree,
@@ -6025,15 +5580,15 @@ if (typeof exports !== 'undefined') {
       [];
 
     // Object to array
-    var edgesArray = [];
-    for (var i in edges)
-      edgesArray.push(edges[i]);
+    var elementsArr = [];
+    for (var i in elements)
+      elementsArr.push(elements[i]);
 
     // Caching
     this._cache.query = serialized;
-    this._cache.result = edgesArray;
+    this._cache.result = elementsArr;
 
-    return edgesArray;
+    return elementsArr;
   };
 
 
@@ -6043,13 +5598,15 @@ if (typeof exports !== 'undefined') {
    */
   if (typeof this.sigma !== 'undefined') {
     this.sigma.classes = this.sigma.classes || {};
-    this.sigma.classes.edgequad = edgequad;
+    this.sigma.classes.quad = quad;
+    this.sigma.classes.edgequad = quad.bind(this, true);
   } else if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports)
-      exports = module.exports = edgequad;
-    exports.edgequad = edgequad;
+      exports = module.exports = quad;
+    exports.quad = quad;
   } else
-    this.edgequad = edgequad;
+    this.quad = quad;
+
 }).call(this);
 
 ;(function(undefined) {
@@ -9644,9 +9201,10 @@ if (typeof exports !== 'undefined') {
         labelWidth,
         labelOffsetX,
         labelOffsetY,
-        alignment = settings('labelAlignment');
+        alignment = settings('labelAlignment'),
+        maxLineLength = settings('maxNodeLabelLineLength') || 0;
 
-    if (size < settings('labelThreshold'))
+    if (size <= settings('labelThreshold'))
       return;
 
     if (!node.label || typeof node.label !== 'string')
@@ -9692,8 +9250,7 @@ if (typeof exports !== 'undefined') {
         labelOffsetY = - size - 2 * fontSize / 3;
         break;
       case 'inside':
-        labelWidth = sigma.utils.canvas.getTextWidth(context,
-            settings('approximateLabelWidth'), fontSize, node.label);
+        labelWidth = sigma.utils.canvas.getTextWidth(context, settings('approximateLabelWidth'), fontSize, node.label);
         if (labelWidth <= (size + fontSize / 3) * 2) {
           break;
         }
@@ -9706,12 +9263,83 @@ if (typeof exports !== 'undefined') {
         break;
     }
 
-    context.fillText(
-      node.label,
-      Math.round(node[prefix + 'x'] + labelOffsetX),
-      Math.round(node[prefix + 'y'] + labelOffsetY)
-    );
+    var lines = getLines(node.label, maxLineLength),
+        baseX = node[prefix + 'x'] + labelOffsetX,
+        baseY = Math.round(node[prefix + 'y'] + labelOffsetY);
+
+    for (var i = 0; i < lines.length; ++i) {
+      context.fillText(lines[i], baseX, baseY + i * (fontSize + 1));
+    }
   };
+
+  /**
+   * Split a text into several lines. Each line won't be longer than the specified maximum length.
+   * @param {string}  text            Text to split
+   * @param {number}  maxLineLength   Maximum length of a line. A value <= 1 will be treated as "infinity".
+   * @returns {Array<string>}         List of lines
+   */
+  function getLines(text, maxLineLength) {
+    if (maxLineLength <= 1) {
+      return [text];
+    }
+
+    var words = text.split(' '),
+        lines = [],
+        lineLength = 0,
+        lineIndex = -1,
+        lineList = [],
+        lineFull = true;
+
+    for (var i = 0; i < words.length; ++i) {
+      if (lineFull) {
+        if (words[i].length > maxLineLength) {
+          var parts = splitWord(words[i], maxLineLength);
+          for (var j = 0; j < parts.length; ++j) {
+            lines.push([parts[j]]);
+            ++lineIndex;
+          }
+          lineLength = parts[parts.length - 1].length;
+        } else {
+          lines.push([words[i]
+          ]);
+          ++lineIndex;
+          lineLength = words[i].length + 1;
+        }
+        lineFull = false;
+      } else if (lineLength + words[i].length <= maxLineLength) {
+        lines[lineIndex].push(words[i]);
+        lineLength += words[i].length + 1;
+      } else {
+        lineFull = true;
+        --i;
+      }
+    }
+
+    for (i = 0; i < lines.length; ++i) {
+      lineList.push(lines[i].join(' '))
+    }
+
+    return lineList;
+  }
+
+  /**
+   * Split a word into several lines (with a '-' at the end of each line but the last).
+   * @param {string} word       Word to split
+   * @param {number} maxLength  Maximum length of a line
+   * @returns {Array<string>}   List of lines
+   */
+  function splitWord(word, maxLength) {
+    var parts = [];
+
+    for (var i = 0; i < word.length; i += maxLength - 1) {
+      parts.push(word.substr(i, maxLength - 1) + '-');
+    }
+
+    var lastPartLen = parts[parts.length - 1].length;
+    parts[parts.length - 1] = parts[parts.length - 1].substr(0, lastPartLen - 1) + ' ';
+
+    return parts;
+  }
 }).call(this);
 
 ;(function(undefined) {
@@ -9738,11 +9366,15 @@ if (typeof exports !== 'undefined') {
         e,
         labelX,
         labelY,
+        lines,
+        baseX,
+        baseY,
         borderSize = settings('borderSize'),
         alignment = settings('labelAlignment'),
         fontStyle = settings('hoverFontStyle') || settings('fontStyle'),
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'],
+        maxLineLength = settings('maxNodeLabelLineLength') || 0,
         fontSize = (settings('labelSize') === 'fixed') ?
           settings('defaultLabelSize') :
           settings('labelSizeRatio') * size;
@@ -9764,7 +9396,8 @@ if (typeof exports !== 'undefined') {
       context.shadowColor = settings('labelHoverShadowColor');
     }
 
-    drawHoverBorder(alignment, context, fontSize, node);
+    lines = getLines(node.label, maxLineLength);
+    drawHoverBorder(alignment, context, fontSize, node, lines, maxLineLength);
 
     // Node border:
     if (borderSize > 0) {
@@ -9822,20 +9455,20 @@ if (typeof exports !== 'undefined') {
           break;
       }
 
-      context.fillText(
-        node.label,
-        Math.round(node[prefix + 'x'] + labelOffsetX),
-        Math.round(node[prefix + 'y'] + labelOffsetY)
-      );
+      baseX = node[prefix + 'x'] + labelOffsetX;
+      baseY = Math.round(node[prefix + 'y'] + labelOffsetY);
+
+      for (var i = 0; i < lines.length; ++i) {
+        context.fillText(lines[i], baseX, baseY + i * (fontSize + 1));
+      }
     }
 
-    function drawHoverBorder(alignment, context, fontSize, node) {
+    function drawHoverBorder(alignment, context, fontSize, node, lines, maxLineLength) {
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
-          h = fontSize + 4,
+          h = ((fontSize + 1) * lines.length) + 4,
           e = Math.round(size + fontSize / 4),
-          labelWidth = sigma.utils.canvas.getTextWidth(context,
-              settings('approximateLabelWidth'), fontSize, node.label),
+          labelWidth = 0.6 * (maxLineLength > 1 ? maxLineLength : lines[0].length) * fontSize,
           w = Math.round(labelWidth + size + 1.5 + fontSize / 3);
 
       if (node.label && typeof node.label === 'string') {
@@ -9891,6 +9524,75 @@ if (typeof exports !== 'undefined') {
       context.shadowOffsetX = 0;
       context.shadowOffsetY = 0;
       context.shadowBlur = 0;
+    }
+
+    /**
+     * Split a text into several lines. Each line won't be longer than the specified maximum length.
+     * @param {string}  text            Text to split
+     * @param {number}  maxLineLength   Maximum length of a line. A value <= 1 will be treated as "infinity".
+     * @returns {Array<string>}         List of lines
+     */
+    function getLines(text, maxLineLength) {
+      if (maxLineLength <= 1) {
+        return [text];
+      }
+
+      var words = text.split(' '),
+        lines = [],
+        lineLength = 0,
+        lineIndex = -1,
+        lineList = [],
+        lineFull = true;
+
+      for (var i = 0; i < words.length; ++i) {
+        if (lineFull) {
+          if (words[i].length > maxLineLength) {
+            var parts = splitWord(words[i], maxLineLength);
+            for (var j = 0; j < parts.length; ++j) {
+              lines.push([parts[j]]);
+              ++lineIndex;
+            }
+            lineLength = parts[parts.length - 1].length;
+          } else {
+            lines.push([words[i]
+            ]);
+            ++lineIndex;
+            lineLength = words[i].length + 1;
+          }
+          lineFull = false;
+        } else if (lineLength + words[i].length <= maxLineLength) {
+          lines[lineIndex].push(words[i]);
+          lineLength += words[i].length + 1;
+        } else {
+          lineFull = true;
+          --i;
+        }
+      }
+
+      for (i = 0; i < lines.length; ++i) {
+        lineList.push(lines[i].join(' '))
+      }
+
+      return lineList;
+    }
+
+    /**
+     * Split a word into several lines (with a '-' at the end of each line but the last).
+     * @param {string} word       Word to split
+     * @param {number} maxLength  Maximum length of a line
+     * @returns {Array<string>}   List of lines
+     */
+    function splitWord(word, maxLength) {
+      var parts = [];
+
+      for (var i = 0; i < word.length; i += maxLength - 1) {
+        parts.push(word.substr(i, maxLength - 1) + '-');
+      }
+
+      var lastPartLen = parts[parts.length - 1].length;
+      parts[parts.length - 1] = parts[parts.length - 1].substr(0, lastPartLen - 1) + ' ';
+
+      return parts;
     }
   };
 }).call(this);
@@ -10006,7 +9708,7 @@ if (typeof exports !== 'undefined') {
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, sSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     if (!color)
       switch (edgeColor) {
@@ -10138,7 +9840,7 @@ if (typeof exports !== 'undefined') {
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, tSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     if (source.id === target.id) {
       d = Math.sqrt((tX - cp.x1) * (tX - cp.x1) + (tY - cp.y1) * (tY - cp.y1));
@@ -10279,7 +9981,7 @@ if (typeof exports !== 'undefined') {
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, sSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     if (!color)
       switch (edgeColor) {
@@ -10427,7 +10129,7 @@ if (typeof exports !== 'undefined') {
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, tSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     if (source.id === target.id) {
       d = Math.sqrt((tX - cp.x1) * (tX - cp.x1) + (tY - cp.y1) * (tY - cp.y1));
@@ -11657,7 +11359,8 @@ if (typeof exports !== 'undefined') {
                   source[prefix + 'x'],
                   source[prefix + 'y'],
                   target[prefix + 'x'],
-                  target[prefix + 'y']);
+                  target[prefix + 'y'],
+                  edge.cc);
                 if (
                   sigma.utils.isPointOnQuadraticCurve(
                   modifiedX,
