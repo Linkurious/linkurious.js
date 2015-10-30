@@ -13,7 +13,8 @@
 
   function LegendPlugin(s) {
     var self = this,
-      settings = s.settings;
+      settings = s.settings,
+      pixelRatio = window.devicePixelRatio;
 
     this._sigmaInstance = s;
     this._designPlugin = sigma.plugins.design(s);
@@ -37,6 +38,12 @@
       legendBorderRadius: settings('legendBorderRadius')
     };
 
+    iterate(this._visualSettings, function (value, key) {
+      if (typeof value === 'number') {
+        self._visualSettings[key] = value * pixelRatio;
+      }
+    });
+
     computeTotalWidth(this._visualSettings);
 
     var renderer = s.renderers[0]; // TODO: handle several renderers?
@@ -44,10 +51,12 @@
     renderer.container.appendChild(this._canvas);
     //renderer.initDOM('canvas', 'legend');
     //this._canvas = renderer.domElements['legend'];
-    this._canvas.width = renderer.container.offsetWidth;
-    this._canvas.height = renderer.container.offsetHeight;
+    this._canvas.width = renderer.container.offsetWidth * pixelRatio;
+    this._canvas.height = renderer.container.offsetHeight * pixelRatio;
     this._canvas.style.position = 'absolute';
     this._canvas.style.pointerEvents = 'none';
+    this._canvas.style.width = renderer.container.offsetWidth;
+    this._canvas.style.height = renderer.container.offsetHeight;
 
     window.addEventListener('resize', function () {
       self._canvas.width = renderer.container.offsetWidth;
@@ -1094,7 +1103,7 @@
       drawPolygon(svg, points, vs.legendShapeColor);
     } else {
       size *= 1.2;
-      var lineWidth = 2; // Arbitrary
+      var lineWidth = 2 * window.devicePixelRatio; // Arbitrary
       drawLine(svg, x - size, y, x + size, y, vs.legendShapeColor, lineWidth);
       drawLine(svg, x, y - size, x, y + size, vs.legendShapeColor, lineWidth);
     }
@@ -1105,7 +1114,7 @@
    * @param svg     {Object}
    * @param points  {Array<number>} Format: [x1, y1, x2, y2, ...]
    * @param color   {string}
-   * @param rotation {Object}       Optional. Specifies a rotation to apply to the polygon.
+   * @param [rotation] {Object}       Optional. Specifies a rotation to apply to the polygon.
    */
   function drawPolygon(svg, points, color, rotation) {
     var attrPoints = points[0] + ',' + points[1];
