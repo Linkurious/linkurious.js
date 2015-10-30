@@ -681,6 +681,500 @@
   'use strict';
 
   /**
+   * Sigma GraphML File Exporter
+   * ================================
+   *
+   * The aim of this plugin is to enable users to retrieve a GraphML file of the
+   * graph.
+   *
+   * Author: Sylvain Milan
+   * Date created: 25/09/2015
+   */
+
+  if (typeof sigma === 'undefined')
+    throw 'sigma.exporters.graphML: sigma is not declared';
+
+  // Utilities
+  function download(fileEntry, extension, filename) {
+    var blob = null,
+      objectUrl = null,
+      dataUrl = null;
+
+    if(window.Blob){
+      // use Blob if available
+      blob = new Blob([fileEntry], {type: 'text/xml'});
+      objectUrl = window.URL.createObjectURL(blob);
+    }
+    else {
+      // else use dataURI
+      dataUrl = 'data:text/xml;charset=UTF-8,' +
+        encodeURIComponent('<?xml version="1.0" encoding="UTF-8"?>') +
+        encodeURIComponent(fileEntry);
+    }
+
+    if (navigator.msSaveBlob) { // IE11+ : (has Blob, but not a[download])
+      navigator.msSaveBlob(blob, filename);
+    } else if (navigator.msSaveOrOpenBlob) { // IE10+ : (has Blob, but not a[download])
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      // A-download
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', (window.Blob) ? objectUrl : dataUrl);
+      anchor.setAttribute('download', filename || 'graph.' + extension);
+
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
+
+    if (objectUrl) {
+      setTimeout(function() { // Firefox needs a timeout
+        window.URL.revokeObjectURL(objectUrl);
+      }, 0);
+    }
+  }
+
+  function iterate(obj, func) {
+    for (var k in obj) {
+      if (!obj.hasOwnProperty(k)) {
+        continue;
+      }
+
+      func(obj[k], k);
+    }
+  }
+
+  /**
+   * Convert Javascript string in dot notation into an object reference.
+   *
+   * @param  {object} obj The object.
+   * @param  {string} str The string to convert, e.g. 'a.b.etc'.
+   * @return {?}          The object reference.
+   */
+  function strToObjectRef(obj, str) {
+    // http://stackoverflow.com/a/6393943
+    if (str == null) return null;
+    return str.split('.').reduce(function(obj, i) { return obj[i] }, obj);
+  }
+
+  function hexToRgb(hex) {
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+      return r + r + g + g + b + b;
+    });
+
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16)
+    ] : null;
+  }
+
+  sigma.prototype.toGraphML = function (params) {
+    params = params || {};
+
+    var doc = document.implementation.createDocument('', '', null),
+        oSerializer = new XMLSerializer(),
+        sXML,
+        webgl = true,
+        prefix,
+        nodes = this.graph.nodes(),
+        edges = this.graph.edges();
+
+    if (params.renderer) {
+      webgl = params.renderer instanceof sigma.renderers.webgl;
+      prefix = webgl ?
+        params.renderer.camera.prefix:
+        params.renderer.camera.readPrefix;
+    } else {
+      prefix = '';
+    }
+
+    function setRGB(obj, color) {
+      var rgb;
+      if (color[0] === '#') {
+        rgb = hexToRgb(color);
+      } else {
+        rgb = color.match(/\d+(\.\d+)?/g);
+      }
+
+      obj.r = rgb[0];
+      obj.g = rgb[1];
+      obj.b = rgb[2];
+      if (obj.a) {
+        obj.a = rgb[3];
+      }
+    }
+
+    function createAndAppend(parentElement, typeToCreate, attributes, elementValue, force) {
+      attributes = attributes || {};
+
+      var elt = doc.createElement(typeToCreate);
+
+      for (var key in attributes) {
+        if (!attributes.hasOwnProperty(key)) {
+          continue;
+        }
+        var value = attributes[key];
+        if (value !== undefined) {
+          elt.setAttribute(key, value);
+        }
+      }
+
+      if (elementValue !== undefined || force) {
+        if (Object.prototype.toString.call(elementValue) === '[object Object]') {
+          elementValue = JSON.stringify(elementValue);
+        }
+
+        var textNode = document.createTextNode(elementValue);
+        elt.appendChild(textNode);
+      }
+
+      parentElement.appendChild(elt);
+
+      return elt;
+    }
+
+    var builtinAttributes = [
+      'id', 'source', 'target'
+    ];
+
+    var reservedAttributes = [
+      'size', 'x', 'y', 'type', 'color', 'label', 'fixed', 'hidden', 'active'
+    ];
+
+    var keyElements = {
+        'size': {for: 'all', type: 'double'},
+        'x': {for: 'node', type: 'double'},
+        'y': {for: 'node', type: 'double'},
+        'type': {for: 'all', type: 'string'},
+        'color': {for: 'all', type: 'string'},
+        'r': {for:'all', type:'int'},
+        'g': {for:'all', type:'int'},
+        'b': {for:'all', type:'int'},
+        'a': {for:'all', type:'double'},
+        'label': {for: 'all', type: 'string'},
+        'fixed': {for: 'node', type: 'boolean'},
+        'hidden': {for: 'all', type: 'boolean'},
+        'active': {for: 'all', type: 'boolean'}
+      },
+        nodeElements = [],
+        edgeElements = [];
+
+    function processItem(item, itemType, itemAttributesName) {
+      var dataAttributes = strToObjectRef(item, itemAttributesName);
+      var elt = {id:item.id};
+
+      reservedAttributes.forEach(function (attr) {
+        var value = (attr === 'x' || attr === 'y') ? item[prefix + attr] : item[attr];
+        if (attr === 'y' && value) {
+          value = -parseFloat(value);
+        }
+
+        if (value !== undefined) {
+          elt[(itemType === 'edge' ? 'edge_' : '') + attr] = value;
+          if (attr === 'color') {
+            setRGB(elt, value);
+          }
+        }
+      });
+
+      iterate(dataAttributes, function (value, key) {
+        if (reservedAttributes.indexOf(key) !== -1 || builtinAttributes.indexOf(key) !== -1) {
+          return;
+        }
+
+        if (!keyElements[key]) {
+          keyElements[key] = {for:itemType, type:'string'};
+        } else if (keyElements[key].for !== itemType) {
+          keyElements[key].for = 'all';
+        }
+
+        elt[key] = value;
+      });
+
+      if (itemType === 'edge') {
+        elt.source = item.source;
+        elt.target = item.target;
+        edgeElements.push(elt);
+      } else {
+        nodeElements.push(elt);
+      }
+    }
+
+    nodes.forEach(function (n) {
+      processItem(n, 'node', params.nodesAttributes);
+    });
+
+    edges.forEach(function (e) {
+      processItem(e, 'edge', params.edgesAttributes);
+    });
+
+    /* Root element */
+    var rootElem = createAndAppend(doc, 'graphml', {
+    'xmlns': 'http://graphml.graphdrawing.org/xmlns',
+    'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+    'xsi:schemaLocation': 'http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd',
+    'xmlns:y': 'http://www.yworks.com/xml/graphml',
+    'xmlns:java': 'http://www.yworks.com/xml/yfiles-common/1.0/java',
+    'xmlns:sys': 'http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0',
+    'xmlns:x': 'http://ww.yworks.com/xml/yfiles-common/markup/2.0'
+  });
+
+    /* GraphML attributes */
+    iterate(keyElements, function (value, key) {
+      if (value.for === 'node' || value.for === 'all') {
+        createAndAppend(rootElem, 'key', {
+          'attr.name': key,
+          'attr.type': value.type,
+          'for': 'node',
+          'id': key
+        });
+      }
+
+      if (value.for === 'edge' || value.for === 'all') {
+        createAndAppend(rootElem, 'key', {
+          'attr.name': key,
+          'attr.type': value.type,
+          'for': 'edge',
+          'id': 'edge_' + key
+        });
+      }
+    });
+
+    /* yFiles extension */
+    createAndAppend(rootElem, 'key', {
+      'id':'nodegraphics',
+      'for':'node',
+      'yfiles.type':'nodegraphics',
+      'attr.type': 'string'
+    });
+
+    createAndAppend(rootElem, 'key', {
+      'id':'edgegraphics',
+      'for':'edge',
+      'yfiles.type':'edgegraphics',
+      'attr.type': 'string'
+    });
+
+    /* Graph element */
+    var graphElem = createAndAppend(rootElem, 'graph', {
+      'edgedefault': params.undirectedEdges ? 'undirected' : 'directed',
+      'id': params.graphId ? params.graphId : 'G',
+      'parse.nodes': nodes.length,
+      'parse.edges': edges.length,
+      'parse.order': 'nodesfirst'
+    });
+
+    function appendShapeNode(nodeElem, node) {
+      var dataElem = createAndAppend(nodeElem, 'data', { key:'nodegraphics'});
+      var shapeNodeElem = createAndAppend(dataElem, 'y:ShapeNode');
+
+      createAndAppend(shapeNodeElem, 'y:Geometry', { x:node.x, y:node.y, width:node.size, height:node.size});
+      createAndAppend(shapeNodeElem, 'y:Fill', { color: node.color ? node.color : '#000000', transparent: false });
+      createAndAppend(shapeNodeElem, 'y:NodeLabel', null, node.label ? node.label : '');
+      createAndAppend(shapeNodeElem, 'y:Shape', {type:node.type ? node.type : 'circle'});
+    }
+
+    function appendPolyLineEdge(edgeElem, edge) {
+      var dataElem = createAndAppend(edgeElem, 'data', { key:'edgegraphics'});
+      var shapeEdgeElem = createAndAppend(dataElem, 'y:PolyLineEdge');
+
+      createAndAppend(shapeEdgeElem, 'y:LineStyle', {
+        type:edge.edge_type ? edge.edge_type : 'line',
+        color:edge.edge_color ? edge.edge_color : '#0000FF',
+        width:edge.edge_size ? edge.edge_size : 1
+      });
+
+      createAndAppend(shapeEdgeElem, 'y:EdgeLabel', null, edge.edge_label ? edge.edge_label : '');
+    }
+
+    /* Node elements */
+    nodeElements.forEach(function (elt) {
+      var nodeElem = createAndAppend(graphElem, 'node', { id:elt.id });
+
+      appendShapeNode(nodeElem, elt);
+
+      iterate(elt, function (value, key) {
+        if (builtinAttributes.indexOf(key) !== -1) {
+          return;
+        }
+
+        createAndAppend(nodeElem, 'data', {key: key}, value, true);
+      });
+    });
+
+    /* Edge elements */
+    edgeElements.forEach(function (elt) {
+      var edgeElem = createAndAppend(graphElem, 'edge', { id:elt.id, source:elt.source, target:elt.target });
+
+      appendPolyLineEdge(edgeElem, elt);
+
+      iterate(elt, function (value, key) {
+        if (builtinAttributes.indexOf(key) !== -1) {
+          return;
+        }
+
+        createAndAppend(edgeElem, 'data', {key:key}, value, true);
+      });
+    });
+
+    sXML = '<?xml version="1.0" encoding="UTF-8"?>' + oSerializer.serializeToString(doc);
+
+    if (params.download) {
+      download(sXML, 'graphml', params.filename);
+    }
+  };
+
+}.call(this));
+;(function(undefined) {
+  'use strict';
+
+  /**
+   * Sigma JSON File Exporter
+   * ================================
+   *
+   * The aim of this plugin is to enable users to retrieve a JSON file of the
+   * graph.
+   *
+   * Author: Sébastien Heymann <seb@linkurio.us> (Linkurious)
+   * Version: 0.0.1
+   */
+
+  if (typeof sigma === 'undefined')
+    throw 'sigma.exporters.json: sigma is not declared';
+
+  // Utilities
+  function download(fileEntry, extension, filename) {
+    var blob = null,
+        objectUrl = null,
+        dataUrl = null;
+
+    if(window.Blob){
+      // use Blob if available
+      blob = new Blob([fileEntry], {type: 'text/json'});
+      objectUrl = window.URL.createObjectURL(blob);
+    }
+    else {
+      // else use dataURI
+      dataUrl = 'data:text/json;charset=UTF-8,' + encodeURIComponent(fileEntry);
+    }
+
+    if (navigator.msSaveBlob) { // IE11+ : (has Blob, but not a[download])
+      navigator.msSaveBlob(blob, filename);
+    } else if (navigator.msSaveOrOpenBlob) { // IE10+ : (has Blob, but not a[download])
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      // A-download
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', (window.Blob) ? objectUrl : dataUrl);
+      anchor.setAttribute('download', filename || 'graph.' + extension);
+
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
+
+    if (objectUrl) {
+      setTimeout(function() { // Firefox needs a timeout
+        window.URL.revokeObjectURL(objectUrl);
+      }, 0);
+    }
+  }
+
+  /**
+   * Fast deep copy function.
+   *
+   * @param  {object} o The object.
+   * @return {object}   The object copy.
+   */
+  function deepCopy(o) {
+    var copy = Object.create(null);
+    for (var i in o) {
+      if (typeof o[i] === "object" && o[i] !== null) {
+        copy[i] = deepCopy(o[i]);
+      }
+      else if (typeof o[i] === "function" && o[i] !== null) {
+        // clone function:
+        eval(" copy[i] = " +  o[i].toString());
+        //copy[i] = o[i].bind(_g);
+      }
+
+      else
+        copy[i] = o[i];
+    }
+    return copy;
+  };
+
+  /**
+   * Returns true if the string "str" starts with the string "start".
+   *
+   * @param {string} start
+   * @param {string} str
+   * @return {boolean}
+   */
+  function startsWith(start, str) {
+    return str.slice(0, start.length) == start;
+  };
+
+  /**
+   * Remove attributes added by the cameras and renderers. The node/edge
+   * object should be a clone of the original.
+   *
+   * @param  {object} o The node or edge object.
+   * @return {object}   The cleaned object.
+   */
+  function cleanup(o) {
+    for (var prop in o) {
+      if (
+        startsWith('read_cam', prop) ||
+        startsWith('cam', prop) ||
+        startsWith('renderer', ''+prop)
+      ) {
+        o[prop] = undefined;
+      }
+    }
+
+    return o;
+  }
+
+  /**
+   * Transform the graph memory structure into a JSON representation.
+   *
+   * @param  {object} params The options.
+   * @return {string}        The JSON string.
+   */
+  sigma.prototype.toJSON = function(params) {
+      params = params || {};
+
+      var graph = {
+        nodes: this.graph.nodes().map(deepCopy).map(cleanup),
+        edges: this.graph.edges().map(deepCopy).map(cleanup)
+      };
+
+      if (params.pretty) {
+        var jsonString = JSON.stringify(graph, null, ' ');
+      }
+      else {
+        var jsonString = JSON.stringify(graph);
+      }
+
+      if (params.download) {
+        download(jsonString, 'json', params.filename);
+      }
+
+      return jsonString;
+  };
+}).call(this);
+
+;(function(undefined) {
+  'use strict';
+
+  /**
    * Sigma Spreadsheet File Exporter
    * ================================
    *
@@ -1402,6 +1896,355 @@
   'use strict';
 
   if (typeof sigma === 'undefined')
+    throw 'sigma is not declared';
+
+  // Initialize package:
+  sigma.utils.pkg('sigma.plugins');
+
+  /**
+   * Sigma Image Utility
+   * =============================
+   *
+   * @author: Martin de la Taille (martindelataille)
+   * @thanks: Guillaume Plique (Yomguithereal)
+   * @version: 0.1
+   */
+
+  var _contexts,
+      _types,
+      _canvas,
+      _canvasContext;
+
+  _contexts = ['scene', 'edges', 'nodes', 'labels'];
+  _types = {
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    gif: 'image/gif',
+    tiff: 'image/tiff'
+  };
+
+  // UTILITIES FUNCTIONS:
+  // ******************
+  function dataURLToBlob(dataURL) {
+    var BASE64_MARKER = ';base64,';
+    if (dataURL.indexOf(BASE64_MARKER) == -1) {
+      var parts = dataURL.split(',');
+      var contentType = parts[0].split(':')[1];
+      var raw = decodeURIComponent(parts[1]);
+
+      return new Blob([raw], {type: contentType});
+    }
+
+    var parts = dataURL.split(BASE64_MARKER);
+    var contentType = parts[0].split(':')[1];
+    var raw = window.atob(parts[1]);
+    var rawLength = raw.length;
+
+    var uInt8Array = new Uint8Array(rawLength);
+
+    for (var i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], {type: contentType});
+  }
+
+  function download(dataUrl, extension, filename) {
+    filename = filename || 'graph.' + extension;
+
+    if (navigator.msSaveOrOpenBlob) { // IE10+
+      navigator.msSaveOrOpenBlob(dataURLToBlob(dataUrl), filename);
+    }
+    else if (navigator.msSaveBlob) { // IE11+
+      navigator.msSaveBlob(dataURLToBlob(dataUrl), filename);
+    }
+    else {
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', dataUrl);
+      anchor.setAttribute('download', filename);
+
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
+  }
+
+  function calculateAspectRatioFit(srcWidth, srcHeight, maxSize) {
+    var ratio = Math.min(maxSize / srcWidth, maxSize / srcHeight);
+    return { width: srcWidth * ratio, height: srcHeight * ratio };
+  }
+
+  function calculateZoomedBoundaries(s, r, params) {
+    var bounds;
+
+    bounds = sigma.utils.getBoundaries(
+      s.graph,
+      r.camera.readPrefix
+    );
+
+    bounds.minX /= params.zoomRatio;
+    bounds.minY /= params.zoomRatio;
+    bounds.maxX /= params.zoomRatio;
+    bounds.maxY /= params.zoomRatio;
+
+    return bounds;
+  }
+
+  function calculateRatio(s, r, params) {
+    var boundaries,
+        margin = params.margin || 0,
+        ratio = {
+          width:  r.width,
+          height: r.height,
+        };
+
+    if (!params.clips && !params.size) {
+      boundaries = calculateZoomedBoundaries(s, r, params);
+
+      ratio = {
+        width:  boundaries.maxX - boundaries.minX + boundaries.sizeMax * 2,
+        height: boundaries.maxY - boundaries.minY + boundaries.sizeMax * 2
+      };
+    }
+    else if (params.size && params.size >= 1) {
+      ratio = calculateAspectRatioFit(r.width, r.height, params.size);
+    }
+
+    ratio.width += margin;
+    ratio.height += margin;
+
+    return ratio;
+  }
+
+  /**
+  * This function generate a new canvas to download image
+  *
+  * Recognized parameters:
+  * **********************
+  * Here is the exhaustive list of every accepted parameters in the settings
+  * object:
+  * @param {s}  sigma instance
+  * @param {params}  Options
+  */
+ function Image(s, r, params) {
+    params = params || {};
+
+    if (params.format && !(params.format in _types))
+      throw Error('sigma.renderers.image: unsupported format "' + params.format + '".');
+
+    var ratio = calculateRatio(s, r, params);
+
+    var batchEdgesDrawing = s.settings('batchEdgesDrawing');
+    if (batchEdgesDrawing) {
+      s.settings('batchEdgesDrawing', false); // it may crash if true
+    }
+
+    if(!params.clip)
+      this.clone(s, params, ratio);
+
+    var merged = this.draw(r, params, ratio);
+
+    s.settings('batchEdgesDrawing', batchEdgesDrawing); // restore setting
+
+    var dataUrl = merged.toDataURL(_types[params.format || 'png']);
+
+    if(params.download)
+      download(
+        dataUrl,
+        params.format || 'png',
+        params.filename
+      );
+
+    return dataUrl;
+  }
+
+  /**
+  * @param {s}  sigma instance
+  * @param {params}  Options
+  */
+  Image.prototype.clone = function(s, params, ratio) {
+    params.tmpContainer = params.tmpContainer || 'image-container';
+
+    var el = document.getElementById(params.tmpContainer);
+    if (!el) {
+      el =  document.createElement("div");
+      el.id = params.tmpContainer;
+      document.body.appendChild(el);
+    }
+    el.setAttribute("style",
+        'width:' + ratio.width + 'px;' +
+        'height:' + Math.round(ratio.height) + 'px;');
+
+    var renderer = s.addRenderer({
+      container: document.getElementById(params.tmpContainer),
+      type: 'canvas',
+      settings: {
+        batchEdgesDrawing: true,
+        drawLabels: !!params.labels
+      }
+    });
+    renderer.camera.ratio = (params.zoomRatio > 0) ? params.zoomRatio : 1;
+
+    var webgl = renderer instanceof sigma.renderers.webgl,
+        sized = false,
+        doneContexts = [];
+
+    _canvas = document.createElement('canvas');
+    _canvasContext = _canvas.getContext('2d');
+
+    s.refresh();
+
+    _contexts.forEach(function(name) {
+      if (!renderer.contexts[name])
+        return;
+
+      if (params.labels === false && name === 'labels')
+        return;
+
+      var canvas = renderer.domElements[name] || renderer.domElements.scene,
+        context = renderer.contexts[name];
+
+      if(!sized) {
+        _canvas.width = ratio.width;
+        _canvas.height = ratio.height;
+
+        if (webgl && context instanceof WebGLRenderingContext) {
+          _canvas.width  *= 0.5;
+          _canvas.height *= 0.5;
+        }
+
+        sized = true;
+      }
+
+      if (context instanceof WebGLRenderingContext)
+        _canvasContext.drawImage(canvas, 0, 0, canvas.width / 2, canvas.height / 2);
+      else
+        _canvasContext.drawImage(canvas, 0, 0);
+
+      if (~doneContexts.indexOf(context))
+        return;
+
+      doneContexts.push(context);
+    });
+
+    // Cleaning
+    doneContexts = [];
+    s.killRenderer(renderer);
+    el.parentNode.removeChild(el);
+  }
+
+  /**
+  * @param {renderer}  related renderer instance
+  * @param {params}  Options
+  */
+  Image.prototype.draw = function(r, params, ratio) {
+
+    if(!params.size || params.size < 1)
+      params.size = window.innerWidth;
+
+    var webgl = r instanceof sigma.renderers.webgl,
+        sized = false,
+        doneContexts = [];
+
+    var merged = document.createElement('canvas'),
+        mergedContext= merged.getContext('2d');
+
+    _contexts.forEach(function(name) {
+      if (!r.contexts[name])
+        return;
+
+      if (params.labels === false && name === 'labels')
+        return;
+
+      var canvas = r.domElements[name] || r.domElements.scene,
+        context = r.contexts[name];
+
+      if (~doneContexts.indexOf(context))
+        return;
+
+      if (!sized) {
+
+        var width, height;
+
+        if(!params.clip) {
+          width = _canvas.width;
+          height = _canvas.height;
+        } else {
+          width = canvas.width;
+          height = canvas.height;
+          ratio = calculateAspectRatioFit(width, height, params.size);
+        }
+
+        merged.width = ratio.width;
+        merged.height = ratio.height;
+
+        if (!webgl && !context instanceof WebGLRenderingContext) {
+          merged.width *= 2;
+          merged.height *=2;
+        }
+
+        sized = true;
+
+        // background color
+        if (params.background) {
+          mergedContext.rect(0, 0, merged.width, merged.height);
+          mergedContext.fillStyle = params.background;
+          mergedContext.fill();
+        }
+      }
+
+      if(params.clip)
+        mergedContext.drawImage(canvas, 0, 0, merged.width, merged.height);
+      else
+        mergedContext.drawImage(_canvas, 0, 0, merged.width, merged.height);
+
+      doneContexts.push(context);
+    });
+
+    // Cleaning
+    doneContexts = [];
+
+    return merged;
+  }
+
+  /**
+   * Interface
+   * ------------------
+   */
+  var _instance = null;
+
+  /**
+   * @param {sigma}  s       The related sigma instance.
+   * @param {renderer}  r    The related renderer instance.
+   * @param {object} options An object with options.
+   */
+  sigma.plugins.image = function(s, r, options) {
+    sigma.plugins.killImage();
+    // Create object if undefined
+    if (!_instance) {
+      _instance = new Image(s, r, options);
+    }
+    return _instance;
+  };
+
+  /**
+   *  This function kills the image instance.
+   */
+  sigma.plugins.killImage = function() {
+    if (_instance instanceof Image) {
+      _instance = null;
+      _canvas = null;
+      _canvasContext = null;
+    }
+  };
+
+}).call(this);
+
+;(function(undefined) {
+  'use strict';
+
+  if (typeof sigma === 'undefined')
     throw new Error('sigma is not declared');
 
   if (typeof dagre === 'undefined' || typeof dagre.graphlib === 'undefined')
@@ -1774,347 +2617,6 @@
     return !!_instance[sigInst.id] && _instance[sigInst.id].running;
   };
 
-}).call(this);
-
-;(function(undefined) {
-  'use strict';
-
-  if (typeof sigma === 'undefined')
-    throw 'sigma is not declared';
-
-  /**
-   * Sigma ForceAtlas2.5 Supervisor
-   * ===============================
-   *
-   * Author: Guillaume Plique (Yomguithereal)
-   * Version: 0.1
-   */
-  var _root = this;
-
-  /**
-   * Feature detection
-   * ------------------
-   */
-  var webWorkers = 'Worker' in _root;
-
-  /**
-   * Supervisor Object
-   * ------------------
-   */
-  function Supervisor(sigInst, options) {
-    var _this = this,
-        workerFn = sigInst.getForceAtlas2Worker &&
-          sigInst.getForceAtlas2Worker();
-
-    options = options || {};
-
-    // _root URL Polyfill
-    _root.URL = _root.URL || _root.webkitURL;
-
-    // Properties
-    this.sigInst = sigInst;
-    this.graph = this.sigInst.graph;
-    this.ppn = 10;
-    this.ppe = 3;
-    this.config = {};
-    this.shouldUseWorker =
-      options.worker === false ? false : true && webWorkers;
-    this.workerUrl = options.workerUrl;
-
-    // State
-    this.started = false;
-    this.running = false;
-
-    // Web worker or classic DOM events?
-    if (this.shouldUseWorker) {
-      if (!this.workerUrl) {
-        var blob = this.makeBlob(workerFn);
-        this.worker = new Worker(URL.createObjectURL(blob));
-      }
-      else {
-        this.worker = new Worker(this.workerUrl);
-      }
-
-      // Post Message Polyfill
-      this.worker.postMessage =
-        this.worker.webkitPostMessage || this.worker.postMessage;
-    }
-    else {
-
-      eval(workerFn);
-    }
-
-    // Worker message receiver
-    this.msgName = (this.worker) ? 'message' : 'newCoords';
-    this.listener = function(e) {
-
-      // Retrieving data
-      _this.nodesByteArray = new Float32Array(e.data.nodes);
-
-      // If ForceAtlas2 is running, we act accordingly
-      if (_this.running) {
-
-        // Applying layout
-        _this.applyLayoutChanges();
-
-        // Send data back to worker and loop
-        _this.sendByteArrayToWorker();
-
-        // Rendering graph
-        _this.sigInst.refresh();
-      }
-    };
-
-    (this.worker || document).addEventListener(this.msgName, this.listener);
-
-    // Filling byteArrays
-    this.graphToByteArrays();
-
-    // Binding on kill to properly terminate layout when parent is killed
-    sigInst.bind('kill', function() {
-      sigInst.killForceAtlas2();
-    });
-  }
-
-  Supervisor.prototype.makeBlob = function(workerFn) {
-    var blob;
-
-    try {
-      blob = new Blob([workerFn], {type: 'application/javascript'});
-    }
-    catch (e) {
-      _root.BlobBuilder = _root.BlobBuilder ||
-                          _root.WebKitBlobBuilder ||
-                          _root.MozBlobBuilder;
-
-      blob = new BlobBuilder();
-      blob.append(workerFn);
-      blob = blob.getBlob();
-    }
-
-    return blob;
-  };
-
-  Supervisor.prototype.graphToByteArrays = function() {
-    var nodes = this.graph.nodes(),
-        edges = this.graph.edges(),
-        nbytes = nodes.length * this.ppn,
-        ebytes = edges.length * this.ppe,
-        nIndex = {},
-        i,
-        j,
-        l;
-
-    // Allocating Byte arrays with correct nb of bytes
-    this.nodesByteArray = new Float32Array(nbytes);
-    this.edgesByteArray = new Float32Array(ebytes);
-
-    // Iterate through nodes
-    for (i = j = 0, l = nodes.length; i < l; i++) {
-
-      // Populating index
-      nIndex[nodes[i].id] = j;
-
-      // Populating byte array
-      this.nodesByteArray[j] = nodes[i].x;
-      this.nodesByteArray[j + 1] = nodes[i].y;
-      this.nodesByteArray[j + 2] = 0;
-      this.nodesByteArray[j + 3] = 0;
-      this.nodesByteArray[j + 4] = 0;
-      this.nodesByteArray[j + 5] = 0;
-      this.nodesByteArray[j + 6] = 1 + this.graph.degree(nodes[i].id);
-      this.nodesByteArray[j + 7] = 1;
-      this.nodesByteArray[j + 8] = nodes[i].size;
-      this.nodesByteArray[j + 9] = 0;
-      j += this.ppn;
-    }
-
-    // Iterate through edges
-    for (i = j = 0, l = edges.length; i < l; i++) {
-      this.edgesByteArray[j] = nIndex[edges[i].source];
-      this.edgesByteArray[j + 1] = nIndex[edges[i].target];
-      this.edgesByteArray[j + 2] = edges[i].weight || 0;
-      j += this.ppe;
-    }
-  };
-
-  // TODO: make a better send function
-  Supervisor.prototype.applyLayoutChanges = function() {
-    var nodes = this.graph.nodes(),
-        j = 0,
-        realIndex;
-
-    // Moving nodes
-    for (var i = 0, l = this.nodesByteArray.length; i < l; i += this.ppn) {
-      nodes[j].x = this.nodesByteArray[i];
-      nodes[j].y = this.nodesByteArray[i + 1];
-      j++;
-    }
-  };
-
-  Supervisor.prototype.sendByteArrayToWorker = function(action) {
-    var content = {
-      action: action || 'loop',
-      nodes: this.nodesByteArray.buffer
-    };
-
-    var buffers = [this.nodesByteArray.buffer];
-
-    if (action === 'start') {
-      content.config = this.config || {};
-      content.edges = this.edgesByteArray.buffer;
-      buffers.push(this.edgesByteArray.buffer);
-    }
-
-    if (this.shouldUseWorker)
-      this.worker.postMessage(content, buffers);
-    else
-      _root.postMessage(content, '*');
-  };
-
-  Supervisor.prototype.start = function() {
-    if (this.running)
-      return;
-
-    this.running = true;
-
-    // Do not refresh edgequadtree during layout:
-    var k,
-        c;
-    for (k in this.sigInst.cameras) {
-      c = this.sigInst.cameras[k];
-      c.edgequadtree._enabled = false;
-    }
-
-    if (!this.started) {
-
-      // Sending init message to worker
-      this.sendByteArrayToWorker('start');
-      this.started = true;
-    }
-    else {
-      this.sendByteArrayToWorker();
-    }
-  };
-
-  Supervisor.prototype.stop = function() {
-    if (!this.running)
-      return;
-
-    // Allow to refresh edgequadtree:
-    var k,
-        c,
-        bounds;
-    for (k in this.sigInst.cameras) {
-      c = this.sigInst.cameras[k];
-      c.edgequadtree._enabled = true;
-
-      // Find graph boundaries:
-      bounds = sigma.utils.getBoundaries(
-        this.graph,
-        c.readPrefix
-      );
-
-      // Refresh edgequadtree:
-      if (c.settings('drawEdges') && c.settings('enableEdgeHovering'))
-        c.edgequadtree.index(this.sigInst.graph, {
-          prefix: c.readPrefix,
-          bounds: {
-            x: bounds.minX,
-            y: bounds.minY,
-            width: bounds.maxX - bounds.minX,
-            height: bounds.maxY - bounds.minY
-          }
-        });
-    }
-
-    this.running = false;
-  };
-
-  Supervisor.prototype.killWorker = function() {
-    if (this.worker) {
-      this.worker.terminate();
-    }
-    else {
-      _root.postMessage({action: 'kill'}, '*');
-      document.removeEventListener(this.msgName, this.listener);
-    }
-  };
-
-  Supervisor.prototype.configure = function(config) {
-
-    // Setting configuration
-    this.config = config;
-
-    if (!this.started)
-      return;
-
-    var data = {action: 'config', config: this.config};
-
-    if (this.shouldUseWorker)
-      this.worker.postMessage(data);
-    else
-      _root.postMessage(data, '*');
-  };
-
-  /**
-   * Interface
-   * ----------
-   */
-  sigma.prototype.startForceAtlas2 = function(config) {
-
-    // Create supervisor if undefined
-    if (!this.supervisor)
-      this.supervisor = new Supervisor(this, config);
-
-    // Configuration provided?
-    if (config)
-      this.supervisor.configure(config);
-
-    // Start algorithm
-    this.supervisor.start();
-
-    return this;
-  };
-
-  sigma.prototype.stopForceAtlas2 = function() {
-    if (!this.supervisor)
-      return this;
-
-    // Pause algorithm
-    this.supervisor.stop();
-
-    return this;
-  };
-
-  sigma.prototype.killForceAtlas2 = function() {
-    if (!this.supervisor)
-      return this;
-
-    // Stop Algorithm
-    this.supervisor.stop();
-
-    // Kill Worker
-    this.supervisor.killWorker();
-
-    // Kill supervisor
-    this.supervisor = null;
-
-    return this;
-  };
-
-  sigma.prototype.configForceAtlas2 = function(config) {
-    if (!this.supervisor)
-      this.supervisor = new Supervisor(this, config);
-
-    this.supervisor.configure(config);
-
-    return this;
-  };
-
-  sigma.prototype.isForceAtlas2Running = function(config) {
-    return !!this.supervisor && this.supervisor.running;
-  };
 }).call(this);
 
 ;(function(undefined) {
@@ -3228,7 +3730,8 @@
 
   // Exporting
   function getWorkerFn() {
-    return ';(' + crush(Worker.toString()) + ').call(this);';
+    var fnString = crush ? crush(Worker.toString()) : Worker.toString();
+    return ';(' + fnString + ').call(this);';
   }
 
   if (inWebWorker) {
@@ -3248,17 +3751,13 @@
   'use strict';
 
   if (typeof sigma === 'undefined')
-    throw new Error('sigma is not declared');
-
-  // Initialize package:
-  sigma.utils.pkg('sigma.layouts');
+    throw 'sigma is not declared';
 
   /**
-   * Sigma ForceLink Supervisor
+   * Sigma ForceAtlas2.5 Supervisor
    * ===============================
    *
    * Author: Guillaume Plique (Yomguithereal)
-   * Extensions author: Sébastien Heymann @ Linkurious
    * Version: 0.1
    */
   var _root = this;
@@ -3270,21 +3769,18 @@
   var webWorkers = 'Worker' in _root;
 
   /**
-   * Event emitter Object
-   * ------------------
-   */
-  var eventEmitter = {};
-  sigma.classes.dispatcher.extend(eventEmitter);
-
-  /**
    * Supervisor Object
    * ------------------
    */
   function Supervisor(sigInst, options) {
-    // Window URL Polyfill
-    _root.URL = _root.URL || _root.webkitURL;
+    var _this = this,
+        workerFn = sigInst.getForceAtlas2Worker &&
+          sigInst.getForceAtlas2Worker();
 
     options = options || {};
+
+    // _root URL Polyfill
+    _root.URL = _root.URL || _root.webkitURL;
 
     // Properties
     this.sigInst = sigInst;
@@ -3292,20 +3788,63 @@
     this.ppn = 10;
     this.ppe = 3;
     this.config = {};
-    this.worker = null;
-    this.shouldUseWorker = null;
-    this.workerUrl = null;
-    this.runOnBackground = null;
-    this.easing = null;
-    this.randomize = null;
-
-    this.configure(options);
+    this.shouldUseWorker =
+      options.worker === false ? false : true && webWorkers;
+    this.workerUrl = options.workerUrl;
 
     // State
     this.started = false;
     this.running = false;
 
-    this.initWorker();
+    // Web worker or classic DOM events?
+    if (this.shouldUseWorker) {
+      if (!this.workerUrl) {
+        var blob = this.makeBlob(workerFn);
+        this.worker = new Worker(URL.createObjectURL(blob));
+      }
+      else {
+        this.worker = new Worker(this.workerUrl);
+      }
+
+      // Post Message Polyfill
+      this.worker.postMessage =
+        this.worker.webkitPostMessage || this.worker.postMessage;
+    }
+    else {
+
+      eval(workerFn);
+    }
+
+    // Worker message receiver
+    this.msgName = (this.worker) ? 'message' : 'newCoords';
+    this.listener = function(e) {
+
+      // Retrieving data
+      _this.nodesByteArray = new Float32Array(e.data.nodes);
+
+      // If ForceAtlas2 is running, we act accordingly
+      if (_this.running) {
+
+        // Applying layout
+        _this.applyLayoutChanges();
+
+        // Send data back to worker and loop
+        _this.sendByteArrayToWorker();
+
+        // Rendering graph
+        _this.sigInst.refresh();
+      }
+    };
+
+    (this.worker || document).addEventListener(this.msgName, this.listener);
+
+    // Filling byteArrays
+    this.graphToByteArrays();
+
+    // Binding on kill to properly terminate layout when parent is killed
+    sigInst.bind('kill', function() {
+      sigInst.killForceAtlas2();
+    });
   }
 
   Supervisor.prototype.makeBlob = function(workerFn) {
@@ -3348,8 +3887,8 @@
       nIndex[nodes[i].id] = j;
 
       // Populating byte array
-      this.nodesByteArray[j] = this.randomize(nodes[i].x);
-      this.nodesByteArray[j + 1] = this.randomize(nodes[i].y);
+      this.nodesByteArray[j] = nodes[i].x;
+      this.nodesByteArray[j + 1] = nodes[i].y;
       this.nodesByteArray[j + 2] = 0;
       this.nodesByteArray[j + 3] = 0;
       this.nodesByteArray[j + 4] = 0;
@@ -3357,7 +3896,7 @@
       this.nodesByteArray[j + 6] = 1 + this.graph.degree(nodes[i].id);
       this.nodesByteArray[j + 7] = 1;
       this.nodesByteArray[j + 8] = nodes[i].size;
-      this.nodesByteArray[j + 9] = nodes[i].fixed || 0;
+      this.nodesByteArray[j + 9] = 0;
       j += this.ppn;
     }
 
@@ -3371,21 +3910,15 @@
   };
 
   // TODO: make a better send function
-  Supervisor.prototype.applyLayoutChanges = function(prefixed) {
+  Supervisor.prototype.applyLayoutChanges = function() {
     var nodes = this.graph.nodes(),
         j = 0,
         realIndex;
 
     // Moving nodes
     for (var i = 0, l = this.nodesByteArray.length; i < l; i += this.ppn) {
-      if (prefixed) {
-        nodes[j].fa2_x = this.nodesByteArray[i];
-        nodes[j].fa2_y = this.nodesByteArray[i + 1];
-
-      } else {
-        nodes[j].x = this.nodesByteArray[i];
-        nodes[j].y = this.nodesByteArray[i + 1];
-      }
+      nodes[j].x = this.nodesByteArray[i];
+      nodes[j].y = this.nodesByteArray[i + 1];
       j++;
     }
   };
@@ -3416,11 +3949,19 @@
 
     this.running = true;
 
+    // Do not refresh edgequadtree during layout:
+    var k,
+        c;
+    for (k in this.sigInst.cameras) {
+      c = this.sigInst.cameras[k];
+      c.edgequadtree._enabled = false;
+    }
+
     if (!this.started) {
+
       // Sending init message to worker
       this.sendByteArrayToWorker('start');
       this.started = true;
-      eventEmitter.dispatchEvent('start');
     }
     else {
       this.sendByteArrayToWorker();
@@ -3431,97 +3972,34 @@
     if (!this.running)
       return;
 
+    // Allow to refresh edgequadtree:
+    var k,
+        c,
+        bounds;
+    for (k in this.sigInst.cameras) {
+      c = this.sigInst.cameras[k];
+      c.edgequadtree._enabled = true;
+
+      // Find graph boundaries:
+      bounds = sigma.utils.getBoundaries(
+        this.graph,
+        c.readPrefix
+      );
+
+      // Refresh edgequadtree:
+      if (c.settings('drawEdges') && c.settings('enableEdgeHovering'))
+        c.edgequadtree.index(this.sigInst.graph, {
+          prefix: c.readPrefix,
+          bounds: {
+            x: bounds.minX,
+            y: bounds.minY,
+            width: bounds.maxX - bounds.minX,
+            height: bounds.maxY - bounds.minY
+          }
+        });
+    }
+
     this.running = false;
-    eventEmitter.dispatchEvent('stop');
-  };
-
-  Supervisor.prototype.initWorker = function() {
-    var _this = this,
-        workerFn = sigma.layouts.getForceLinkWorker();
-
-    // Web worker or classic DOM events?
-    if (this.shouldUseWorker) {
-      if (!this.workerUrl) {
-        var blob = this.makeBlob(workerFn);
-        this.worker = new Worker(URL.createObjectURL(blob));
-      }
-      else {
-        this.worker = new Worker(this.workerUrl);
-      }
-
-      // Post Message Polyfill
-      this.worker.postMessage =
-        this.worker.webkitPostMessage || this.worker.postMessage;
-    }
-    else {
-
-      // TODO: do we crush?
-      eval(workerFn);
-    }
-
-    // Worker message receiver
-    this.msgName = (this.worker) ? 'message' : 'newCoords';
-    this.listener = function(e) {
-
-      // Retrieving data
-      _this.nodesByteArray = new Float32Array(e.data.nodes);
-
-      // If ForceLink is running, we act accordingly
-      if (_this.running) {
-
-        // Applying layout
-        _this.applyLayoutChanges(_this.runOnBackground);
-
-        // Send data back to worker and loop
-        _this.sendByteArrayToWorker();
-
-        // Rendering graph
-        if (!_this.runOnBackground)
-          _this.sigInst.refresh({skipIndexation: true});
-      }
-
-      // Stop ForceLink if it has converged
-      if (e.data.converged) {
-        _this.running = false;
-      }
-
-      if (!_this.running) {
-        _this.killWorker();
-        if (_this.runOnBackground && _this.easing) {
-          _this.applyLayoutChanges(true);
-          eventEmitter.dispatchEvent('interpolate');
-          sigma.plugins.animate(
-            _this.sigInst,
-            {
-              x: 'fa2_x',
-              y: 'fa2_y'
-            },
-            {
-              easing: _this.easing,
-              onComplete: function() {
-                _this.sigInst.refresh();
-                eventEmitter.dispatchEvent('stop');
-              }
-            }
-          );
-        }
-        else {
-          _this.applyLayoutChanges(false);
-          _this.sigInst.refresh();
-          eventEmitter.dispatchEvent('stop');
-        }
-      }
-    };
-
-    (this.worker || document).addEventListener(this.msgName, this.listener);
-
-    // Filling byteArrays
-    this.graphToByteArrays();
-
-    // Binding on kill to properly terminate layout when parent is killed
-    _this.sigInst.bind('kill', function() {
-      sigma.layouts.killForceLink();
-    });
   };
 
   Supervisor.prototype.killWorker = function() {
@@ -3539,23 +4017,6 @@
     // Setting configuration
     this.config = config;
 
-    this.shouldUseWorker =
-      config.worker === false ? false : true && webWorkers;
-    this.workerUrl = config.workerUrl;
-    this.runOnBackground = (config.background) ? true : false;
-    this.easing = config.easing;
-
-    switch (config.randomize) {
-      case 'globally':
-        this.randomize = function(x) { return Math.random() * (config.randomizeFactor || 1) };
-      break;
-      case 'locally':
-        this.randomize = function(x) { return x + (Math.random() * (config.randomizeFactor || 1)) };
-      break;
-      default:
-        this.randomize = function(x) { return x };
-    }
-
     if (!this.started)
       return;
 
@@ -3571,74 +4032,59 @@
    * Interface
    * ----------
    */
-  var supervisor = null;
-
-  sigma.layouts.startForceLink = function(sigInst, config) {
+  sigma.prototype.startForceAtlas2 = function(config) {
 
     // Create supervisor if undefined
-    if (!supervisor) {
-      supervisor = new Supervisor(sigInst, config);
-    }
-    else if (!supervisor.running) {
-      supervisor.killWorker();
-      supervisor.initWorker();
-      supervisor.started = false;
-    }
+    if (!this.supervisor)
+      this.supervisor = new Supervisor(this, config);
 
     // Configuration provided?
     if (config)
-      supervisor.configure(config);
+      this.supervisor.configure(config);
 
     // Start algorithm
-    supervisor.start();
+    this.supervisor.start();
 
-    return eventEmitter;
+    return this;
   };
 
-  sigma.layouts.stopForceLink = function() {
-    if (!supervisor)
-      return;
+  sigma.prototype.stopForceAtlas2 = function() {
+    if (!this.supervisor)
+      return this;
 
-    // Stop algorithm
-    supervisor.stop();
+    // Pause algorithm
+    this.supervisor.stop();
 
-    return supervisor;
+    return this;
   };
 
-  sigma.layouts.killForceLink = function() {
-    if (!supervisor)
-      return;
+  sigma.prototype.killForceAtlas2 = function() {
+    if (!this.supervisor)
+      return this;
 
     // Stop Algorithm
-    supervisor.stop();
+    this.supervisor.stop();
 
     // Kill Worker
-    supervisor.killWorker();
+    this.supervisor.killWorker();
 
     // Kill supervisor
-    supervisor = null;
+    this.supervisor = null;
 
-    eventEmitter = {};
-    sigma.classes.dispatcher.extend(eventEmitter);
+    return this;
   };
 
-  sigma.layouts.configForceLink = function(sigInst, config) {
-    if (!supervisor) {
-      supervisor = new Supervisor(sigInst, config);
-    }
-    else if (!supervisor.running) {
-      supervisor.killWorker();
-      supervisor.initWorker();
-      supervisor.started = false;
-    }
+  sigma.prototype.configForceAtlas2 = function(config) {
+    if (!this.supervisor)
+      this.supervisor = new Supervisor(this, config);
 
-    supervisor.configure(config);
+    this.supervisor.configure(config);
 
-    return eventEmitter;
+    return this;
   };
 
-  sigma.layouts.isForceLinkRunning = function() {
-    return !!supervisor && supervisor.running;
+  sigma.prototype.isForceAtlas2Running = function(config) {
+    return !!this.supervisor && this.supervisor.running;
   };
 }).call(this);
 
@@ -4919,14 +5365,16 @@
           Object.keys(parallelNodes).forEach(function(key) {
             setSource = parallelNodes[key].shift();
             setTarget = parallelNodes[key].shift();
-            setNodes = parallelNodes[key];
+            setNodes = parallelNodes[key].filter(function(setNode) {
+              return !NodeMatrix[np(setNode, 'fixed')];
+            });
+
+            if (setNodes.length == 1) return;
 
             sX = NodeMatrix[np(setSource, 'x')];
             sY = NodeMatrix[np(setSource, 'y')];
             tX = NodeMatrix[np(setTarget, 'x')];
             tY = NodeMatrix[np(setTarget, 'y')];
-
-            if (setNodes.length == 1) return;
 
             // the extremity of lowest degree attracts the nodes
             // up to 1/4 of the distance:
@@ -5179,7 +5627,8 @@
 
   // Exporting
   function getWorkerFn() {
-    return ';(' + crush(Worker.toString()) + ').call(this);';
+    var fnString = crush ? crush(Worker.toString()) : Worker.toString();
+    return ';(' + fnString + ').call(this);';
   }
 
   if (inWebWorker) {
@@ -5193,6 +5642,414 @@
 
     sigma.layouts.getForceLinkWorker = getWorkerFn;
   }
+}).call(this);
+;(function(undefined) {
+  'use strict';
+
+  if (typeof sigma === 'undefined')
+    throw new Error('sigma is not declared');
+
+  // Initialize package:
+  sigma.utils.pkg('sigma.layouts');
+
+  /**
+   * Sigma ForceLink Supervisor
+   * ===============================
+   *
+   * Author: Guillaume Plique (Yomguithereal)
+   * Extensions author: Sébastien Heymann @ Linkurious
+   * Version: 0.1
+   */
+  var _root = this;
+
+  /**
+   * Feature detection
+   * ------------------
+   */
+  var webWorkers = 'Worker' in _root;
+
+  /**
+   * Event emitter Object
+   * ------------------
+   */
+  var eventEmitter = {};
+  sigma.classes.dispatcher.extend(eventEmitter);
+
+  /**
+   * Supervisor Object
+   * ------------------
+   */
+  function Supervisor(sigInst, options) {
+    // Window URL Polyfill
+    _root.URL = _root.URL || _root.webkitURL;
+
+    options = options || {};
+
+    // Properties
+    this.sigInst = sigInst;
+    this.graph = this.sigInst.graph;
+    this.ppn = 10;
+    this.ppe = 3;
+    this.config = {};
+    this.worker = null;
+    this.shouldUseWorker = null;
+    this.workerUrl = null;
+    this.runOnBackground = null;
+    this.easing = null;
+    this.randomize = null;
+
+    this.configure(options);
+
+    // State
+    this.started = false;
+    this.running = false;
+
+    this.initWorker();
+  }
+
+  Supervisor.prototype.makeBlob = function(workerFn) {
+    var blob;
+
+    try {
+      blob = new Blob([workerFn], {type: 'application/javascript'});
+    }
+    catch (e) {
+      _root.BlobBuilder = _root.BlobBuilder ||
+                          _root.WebKitBlobBuilder ||
+                          _root.MozBlobBuilder;
+
+      blob = new BlobBuilder();
+      blob.append(workerFn);
+      blob = blob.getBlob();
+    }
+
+    return blob;
+  };
+
+  Supervisor.prototype.graphToByteArrays = function() {
+    var nodes = this.graph.nodes(),
+        edges = this.graph.edges(),
+        nbytes = nodes.length * this.ppn,
+        ebytes = edges.length * this.ppe,
+        nIndex = {},
+        i,
+        j,
+        l;
+
+    // Allocating Byte arrays with correct nb of bytes
+    this.nodesByteArray = new Float32Array(nbytes);
+    this.edgesByteArray = new Float32Array(ebytes);
+
+    // Iterate through nodes
+    for (i = j = 0, l = nodes.length; i < l; i++) {
+
+      // Populating index
+      nIndex[nodes[i].id] = j;
+
+      // Populating byte array
+      this.nodesByteArray[j] = this.randomize(nodes[i].x);
+      this.nodesByteArray[j + 1] = this.randomize(nodes[i].y);
+      this.nodesByteArray[j + 2] = 0;
+      this.nodesByteArray[j + 3] = 0;
+      this.nodesByteArray[j + 4] = 0;
+      this.nodesByteArray[j + 5] = 0;
+      this.nodesByteArray[j + 6] = 1 + this.graph.degree(nodes[i].id);
+      this.nodesByteArray[j + 7] = 1;
+      this.nodesByteArray[j + 8] = nodes[i].size;
+      this.nodesByteArray[j + 9] = nodes[i].fixed || 0;
+      j += this.ppn;
+    }
+
+    // Iterate through edges
+    for (i = j = 0, l = edges.length; i < l; i++) {
+      this.edgesByteArray[j] = nIndex[edges[i].source];
+      this.edgesByteArray[j + 1] = nIndex[edges[i].target];
+      this.edgesByteArray[j + 2] = edges[i].weight || 0;
+      j += this.ppe;
+    }
+  };
+
+  // TODO: make a better send function
+  Supervisor.prototype.applyLayoutChanges = function(prefixed) {
+    var nodes = this.graph.nodes(),
+        j = 0,
+        realIndex;
+
+    // Moving nodes
+    for (var i = 0, l = this.nodesByteArray.length; i < l; i += this.ppn) {
+      if (!nodes[j].fixed) {
+        if (prefixed) {
+          nodes[j].fa2_x = this.nodesByteArray[i];
+          nodes[j].fa2_y = this.nodesByteArray[i + 1];
+
+        } else {
+          nodes[j].x = this.nodesByteArray[i];
+          nodes[j].y = this.nodesByteArray[i + 1];
+        }
+      }
+      j++;
+    }
+  };
+
+  Supervisor.prototype.sendByteArrayToWorker = function(action) {
+    var content = {
+      action: action || 'loop',
+      nodes: this.nodesByteArray.buffer
+    };
+
+    var buffers = [this.nodesByteArray.buffer];
+
+    if (action === 'start') {
+      content.config = this.config || {};
+      content.edges = this.edgesByteArray.buffer;
+      buffers.push(this.edgesByteArray.buffer);
+    }
+
+    if (this.shouldUseWorker)
+      this.worker.postMessage(content, buffers);
+    else
+      _root.postMessage(content, '*');
+  };
+
+  Supervisor.prototype.start = function() {
+    if (this.running)
+      return;
+
+    this.running = true;
+
+    if (!this.started) {
+      // Sending init message to worker
+      this.sendByteArrayToWorker('start');
+      this.started = true;
+      eventEmitter.dispatchEvent('start');
+    }
+    else {
+      this.sendByteArrayToWorker();
+    }
+  };
+
+  Supervisor.prototype.stop = function() {
+    if (!this.running)
+      return;
+
+    this.running = false;
+    eventEmitter.dispatchEvent('stop');
+  };
+
+  Supervisor.prototype.initWorker = function() {
+    var _this = this,
+        workerFn = sigma.layouts.getForceLinkWorker();
+
+    // Web worker or classic DOM events?
+    if (this.shouldUseWorker) {
+      if (!this.workerUrl) {
+        var blob = this.makeBlob(workerFn);
+        this.worker = new Worker(URL.createObjectURL(blob));
+      }
+      else {
+        this.worker = new Worker(this.workerUrl);
+      }
+
+      // Post Message Polyfill
+      this.worker.postMessage =
+        this.worker.webkitPostMessage || this.worker.postMessage;
+    }
+    else {
+
+      // TODO: do we crush?
+      eval(workerFn);
+    }
+
+    // Worker message receiver
+    this.msgName = (this.worker) ? 'message' : 'newCoords';
+    this.listener = function(e) {
+
+      // Retrieving data
+      _this.nodesByteArray = new Float32Array(e.data.nodes);
+
+      // If ForceLink is running, we act accordingly
+      if (_this.running) {
+
+        // Applying layout
+        _this.applyLayoutChanges(_this.runOnBackground);
+
+        // Send data back to worker and loop
+        _this.sendByteArrayToWorker();
+
+        // Rendering graph
+        if (!_this.runOnBackground)
+          _this.sigInst.refresh({skipIndexation: true});
+      }
+
+      // Stop ForceLink if it has converged
+      if (e.data.converged) {
+        _this.running = false;
+      }
+
+      if (!_this.running) {
+        _this.killWorker();
+        if (_this.runOnBackground && _this.easing) {
+          _this.applyLayoutChanges(true);
+          eventEmitter.dispatchEvent('interpolate');
+
+          // reset fa_x/y in case a pinned node was previously layed out
+          _this.graph.nodes()
+            .filter(function(node) { return node.fixed; })
+            .forEach(function(node) {
+              node.fa2_x = node.x;
+              node.fa2_y = node.y;
+            });
+
+          sigma.plugins.animate(
+            _this.sigInst,
+            {
+              x: 'fa2_x',
+              y: 'fa2_y'
+            },
+            {
+              easing: _this.easing,
+              onComplete: function() {
+                _this.sigInst.refresh();
+                eventEmitter.dispatchEvent('stop');
+              }
+            }
+          );
+        }
+        else {
+          _this.applyLayoutChanges(false);
+          _this.sigInst.refresh();
+          eventEmitter.dispatchEvent('stop');
+        }
+      }
+    };
+
+    (this.worker || document).addEventListener(this.msgName, this.listener);
+
+    // Filling byteArrays
+    this.graphToByteArrays();
+
+    // Binding on kill to properly terminate layout when parent is killed
+    _this.sigInst.bind('kill', function() {
+      sigma.layouts.killForceLink();
+    });
+  };
+
+  Supervisor.prototype.killWorker = function() {
+    if (this.worker) {
+      this.worker.terminate();
+    }
+    else {
+      _root.postMessage({action: 'kill'}, '*');
+      document.removeEventListener(this.msgName, this.listener);
+    }
+  };
+
+  Supervisor.prototype.configure = function(config) {
+
+    // Setting configuration
+    this.config = config;
+
+    this.shouldUseWorker =
+      config.worker === false ? false : true && webWorkers;
+    this.workerUrl = config.workerUrl;
+    this.runOnBackground = (config.background) ? true : false;
+    this.easing = config.easing;
+
+    switch (config.randomize) {
+      case 'globally':
+        this.randomize = function(x) { return Math.random() * (config.randomizeFactor || 1) };
+      break;
+      case 'locally':
+        this.randomize = function(x) { return x + (Math.random() * (config.randomizeFactor || 1)) };
+      break;
+      default:
+        this.randomize = function(x) { return x };
+    }
+
+    if (!this.started)
+      return;
+
+    var data = {action: 'config', config: this.config};
+
+    if (this.shouldUseWorker)
+      this.worker.postMessage(data);
+    else
+      _root.postMessage(data, '*');
+  };
+
+  /**
+   * Interface
+   * ----------
+   */
+  var supervisor = null;
+
+  sigma.layouts.startForceLink = function(sigInst, config) {
+
+    // Create supervisor if undefined
+    if (!supervisor) {
+      supervisor = new Supervisor(sigInst, config);
+    }
+    else if (!supervisor.running) {
+      supervisor.killWorker();
+      supervisor.initWorker();
+      supervisor.started = false;
+    }
+
+    // Configuration provided?
+    if (config)
+      supervisor.configure(config);
+
+    // Start algorithm
+    supervisor.start();
+
+    return eventEmitter;
+  };
+
+  sigma.layouts.stopForceLink = function() {
+    if (!supervisor)
+      return;
+
+    // Stop algorithm
+    supervisor.stop();
+
+    return supervisor;
+  };
+
+  sigma.layouts.killForceLink = function() {
+    if (!supervisor)
+      return;
+
+    // Stop Algorithm
+    supervisor.stop();
+
+    // Kill Worker
+    supervisor.killWorker();
+
+    // Kill supervisor
+    supervisor = null;
+
+    eventEmitter = {};
+    sigma.classes.dispatcher.extend(eventEmitter);
+  };
+
+  sigma.layouts.configForceLink = function(sigInst, config) {
+    if (!supervisor) {
+      supervisor = new Supervisor(sigInst, config);
+    }
+    else if (!supervisor.running) {
+      supervisor.killWorker();
+      supervisor.initWorker();
+      supervisor.started = false;
+    }
+
+    supervisor.configure(config);
+
+    return eventEmitter;
+  };
+
+  sigma.layouts.isForceLinkRunning = function() {
+    return !!supervisor && supervisor.running;
+  };
 }).call(this);
 
 ;(function(undefined) {
@@ -5665,8 +6522,11 @@
             edgesMap = {},
             key;
 
+        if (!Array.isArray(result))
+          result = result.results[0].data;
+
         // Iteration on all result data
-        result.results[0].data.forEach(function (data) {
+        result.forEach(function (data) {
 
             // iteration on graph for all node
             data.graph.nodes.forEach(function (node) {
@@ -5753,6 +6613,8 @@
         cypherCallback = function (callback) {
 
             return function (response) {
+                if (response.errors.length > 0)
+                    return callback(null, response.errors);
 
                 var graph = { nodes: [], edges: [] };
 
@@ -6678,7 +7540,7 @@
         for(i = 0; i < neighbors.length; i++) {
           neighbor = this.nodes(neighbors[i]);
           pathLength = pathLengthFunction(inspectedItem.node, neighbor, inspectedItem.pathLength);
-          heuristicLength = heuristicLengthFunction(neighbor, destNode);
+          heuristicLength = heuristicLengthFunction(neighbor, destNode, pathLength);
           addToLists(neighbor, inspectedItem.node, pathLength, heuristicLength);
         }
       }
@@ -7392,6 +8254,11 @@
    * basically call requestAnimationFrame, interpolate the values and call the
    * refresh method during a specified duration.
    *
+   * Events fired though sigma instance:
+   * *************
+   * animate.start  Fired at the beginning of the animation.
+   * animate.end    Fired at the end of the animation.
+   *
    * Recognized parameters:
    * **********************
    * Here is the exhaustive list of every accepted parameters in the settings
@@ -7453,24 +8320,29 @@
     s.animations = s.animations || Object.create({});
     sigma.plugins.killAnimate(s);
 
+    s.dispatchEvent('animate.start'); // send a sigma event
+
     function step() {
       var p = (sigma.utils.dateNow() - start) / duration;
 
       if (p >= 1) {
         nodes.forEach(function(node) {
           for (var k in animate)
-            if (k in animate)
+            if (k in animate && animate[k] in node)
               node[k] = node[animate[k]];
         });
 
         s.refresh({skipIndexation: true});
-        if (typeof o.onComplete === 'function')
+        if (typeof o.onComplete === 'function') {
           o.onComplete();
-      } else {
+        }
+        s.dispatchEvent('animate.end'); // send a sigma event
+      }
+      else {
         p = easing(p);
         nodes.forEach(function(node) {
           for (var k in animate)
-            if (k in animate) {
+            if (k in animate && animate[k] in node) {
               if (k.match(/color$/))
                 node[k] = interpolateColors(
                   startPositions[node.id][k],
@@ -7883,7 +8755,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         copy[i] = o[i];
     }
     return copy;
-  };
+  }
 
   /**
    * This method will put the values in different bins using a linear scale,
@@ -8061,7 +8933,7 @@ sigma.plugins.colorbrewer = {YlGn: {
           isArray = true;
 
       byFn = function(item, key) { return strToObjectRef(item, key); };
-      schemeFn = function(palette, key) { return strToObjectRef(palette, key); }
+      schemeFn = function(palette, key) { return strToObjectRef(palette, key); };
 
       function insertItem(val, item) {
         if (self.idx[key][val] === undefined) {
@@ -8077,7 +8949,7 @@ sigma.plugins.colorbrewer = {YlGn: {
           isSequential = (typeof val === 'number');
           // TODO: throw error if is number AND (is NaN or is Infinity)
         }
-      };
+        }
 
       // Index the collection:
       this.idx[key] = {};
@@ -9095,12 +9967,1549 @@ sigma.plugins.colorbrewer = {YlGn: {
   * Extended sigma settings.
   */
   var settings = {
-    // {number}
-    dragNodeStickiness: 0,
+    /* {number} Width of the widgets */
+    legendWidth: 130,
+    /* {string} Name of the font used by the widgets */
+    legendFontFamily: 'Arial',
+    /* {number}  Size of the text */
+    legendFontSize: 10,
+    /* {string} Color of the text */
+    legendFontColor: 'black',
+    /* {string} Name of the font used to display the widgets' title */
+    legendTitleFontFamily: 'Arial',
+    /* {number}  Size of the font used to display the titles */
+    legendTitleFontSize: 15,
+    /* {string} Color of the titles */
+    legendTitleFontColor: 'black',
+    /* {number} The maximum number of characters displayed when displaying a widget's title */
+    legendTitleMaxLength: '30',
+    /* {string} The text alignment of the widgets' title ('left', 'middle') */
+    legendTitleTextAlign: 'left',
+    /* {string} Color of the shapes in the legend */
+    legendShapeColor: 'grey',
+    /* {string} Color of the widgets' background */
+    legendBackgroundColor: 'white',
+    /* {string} Color of the widgets' border */
+    legendBorderColor: 'black',
+    /* {number} Radius of the widgets' border */
+    legendBorderRadius: 10,
+    /* {number}  Size of the widgets' border */
+    legendBorderWidth: 1,
+    /* {number}  Size of the margin between a widget's borders and its content */
+    legendInnerMargin: 10,
+    /* {number}  Size of the margin between widgets */
+    legendOuterMargin: 5
   };
 
   // Export the previously designed settings:
   sigma.settings = sigma.utils.extend(sigma.settings || {}, settings);
+
+}).call(this);
+;(function(undefined) {
+  'use strict';
+
+  if (typeof sigma === 'undefined')
+    throw 'sigma is not declared';
+
+  // Initialize package:
+  sigma.utils.pkg('sigma.plugins');
+
+  /* ======================== */
+  /* ===== MAIN CLASSES ===== */
+  /* ======================== */
+
+  function LegendPlugin(s) {
+    var self = this,
+      settings = s.settings,
+      pixelRatio = window.devicePixelRatio || 1;
+
+    this._sigmaInstance = s;
+    this._designPlugin = sigma.plugins.design(s);
+
+    this._visualSettings = {
+      pixelRatio: pixelRatio,
+      legendWidth: settings('legendWidth'),
+      legendFontFamily: settings('legendFontFamily'),
+      legendFontSize: settings('legendFontSize'),
+      legendFontColor: settings('legendFontColor'),
+      legendTitleFontFamily: settings('legendTitleFontFamily'),
+      legendTitleFontSize: settings('legendTitleFontSize'),
+      legendTitleFontColor: settings('legendTitleFontColor'),
+      legendShapeColor: settings('legendShapeColor'),
+      legendBackgroundColor: settings('legendBackgroundColor'),
+      legendBorderColor: settings('legendBorderColor'),
+      legendBorderWidth: settings('legendBorderWidth'),
+      legendInnerMargin: settings('legendInnerMargin'),
+      legendOuterMargin: settings('legendOuterMargin'),
+      legendTitleMaxLength: settings('legendTitleMaxLength'),
+      legendTitleTextAlign: settings('legendTitleTextAlign'),
+      legendBorderRadius: settings('legendBorderRadius')
+    };
+
+    iterate(this._visualSettings, function (value, key) {
+      if (typeof value === 'number') {
+        self._visualSettings[key] = value * pixelRatio;
+      }
+    });
+
+    computeTotalWidth(this._visualSettings);
+
+    var renderer = s.renderers[0]; // TODO: handle several renderers?
+    this._canvas = document.createElement('canvas');
+    //renderer.initDOM('canvas', 'legend');
+    //this._canvas = renderer.domElements['legend'];
+    this._canvas.style.position = 'absolute';
+    this._canvas.style.pointerEvents = 'none';
+    setupCanvas(this._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
+    renderer.container.appendChild(this._canvas);
+
+    window.addEventListener('resize', function () {
+      setupCanvas(self._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
+      drawLayout(self);
+    });
+
+    this.textWidgetCounter = 1;
+    this.enoughSpace = true;
+    this.placement = 'bottom';
+    this.visible = true;
+    this.widgets = { };
+    this.boundingBox = {x:0, y:0, w:0, h:0};
+    this.externalCSS = [];
+
+    this.addWidget('node', 'size');
+    this.addWidget('node', 'color');
+    this.addWidget('node', 'icon');
+    this.addWidget('node', 'type');
+    this.addWidget('edge', 'size');
+    this.addWidget('edge', 'color');
+    this.addWidget('edge', 'type');
+
+    this.draw();
+  }
+
+
+  function LegendWidget(canvas, sigmaInstance, designPlugin, legendPlugin, elementType, visualVar) {
+    this._canvas = canvas;
+    this._sigmaInstance = sigmaInstance;
+    this._designPlugin = designPlugin;
+    this._legendPlugin = legendPlugin;
+    this.visualVar = visualVar;
+    this.elementType = elementType;
+    this.x = 0;
+    this.y = 0;
+    this.text = '';
+    this.unit = null;
+    this.img = new Image();
+    this.pinned = false;
+  }
+
+  /* ============================= */
+  /* ===== UTILITY FUNCTIONS ===== */
+  /* ============================= */
+
+  function setupCanvas(canvas, width, height, pixelRatio) {
+    canvas.setAttribute('width', (width * pixelRatio));
+    canvas.setAttribute('height', (height * pixelRatio));
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+  }
+
+  /**
+   * Example: with obj = a and str = 'qw.er.ty', returns a.qw.er.ty
+   * @param {Object} obj
+   * @param {string} str
+   * @returns {Object}
+   */
+  function strToObjectRef(obj, str) {
+    if (str == null) return null;
+    return str.split('.').reduce(function(obj, i) { return obj[i] }, obj);
+  }
+
+  function dataURLToBlob(dataURL) {
+    var BASE64_MARKER = ';base64,';
+    if (dataURL.indexOf(BASE64_MARKER) == -1) {
+      var parts = dataURL.split(',');
+      var contentType = parts[0].split(':')[1];
+      var raw = decodeURIComponent(parts[1]);
+
+      return new Blob([raw], {type: contentType});
+    }
+
+    var parts = dataURL.split(BASE64_MARKER);
+    var contentType = parts[0].split(':')[1];
+    var raw = window.atob(parts[1]);
+    var rawLength = raw.length;
+
+    var uInt8Array = new Uint8Array(rawLength);
+
+    for (var i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], {type: contentType});
+  }
+
+  function download(fileEntry, filename, isDataUrl) {
+    var blob = null,
+        objectUrl = null,
+        dataUrl = null;
+
+    if (window.Blob){
+      // use Blob if available
+      blob = isDataUrl ? dataURLToBlob(fileEntry) : new Blob([fileEntry], {type: 'text/xml'});
+      objectUrl = window.URL.createObjectURL(blob);
+    }
+    else {
+      // else use dataURI
+      dataUrl = 'data:text/xml;charset=UTF-8,' +
+        encodeURIComponent('<?xml version="1.0" encoding="UTF-8"?>') +
+        encodeURIComponent(fileEntry);
+    }
+
+    if (navigator.msSaveBlob) { // IE11+ : (has Blob, but not a[download])
+      navigator.msSaveBlob(blob, filename);
+    } else if (navigator.msSaveOrOpenBlob) { // IE10+ : (has Blob, but not a[download])
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      // A-download
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', (window.Blob) ? objectUrl : dataUrl);
+      anchor.setAttribute('download', filename);
+
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
+
+    if (objectUrl) {
+      setTimeout(function() { // Firefox needs a timeout
+        window.URL.revokeObjectURL(objectUrl);
+      }, 0);
+    }
+  }
+
+  /**
+   * Iterate over an array or object and call a specified function on each value
+   * @param obj {Array|Object}
+   * @param func {function}   function (value, key) { ... }
+   */
+  function iterate(obj, func) {
+    for (var k in obj) {
+      if (!obj.hasOwnProperty(k) || obj[k] === undefined) {
+        continue;
+      }
+
+      func(obj[k], k);
+    }
+  }
+
+  /**
+   * Create a DOM element and append it to another element.
+   * @param parentElement   {DOMElement} Parent element
+   * @param typeToCreate    {string}  Type of the element to create
+   * @param attributes      {object}  Attributes of the element to create
+   * @param [elementValue]  {*}       Value to put inside the element
+   * @param [force]         {boolean} If true, put 'elementValue' inside the element even if it's null or undefiened
+   * @returns {Element}     {DOMElement} Appended object
+   */
+  function createAndAppend(parentElement, typeToCreate, attributes, elementValue, force) {
+    attributes = attributes || {};
+
+    var elt = document.createElement(typeToCreate);
+
+    for (var key in attributes) {
+      if (!attributes.hasOwnProperty(key)) {
+        continue;
+      }
+      var value = attributes[key];
+      if (value !== undefined) {
+        elt.setAttribute(key, value);
+      }
+    }
+
+    if (elementValue !== undefined || force) {
+      if (Object.prototype.toString.call(elementValue) === '[object Object]') {
+        elementValue = JSON.stringify(elementValue);
+      }
+
+      var textNode = document.createTextNode(elementValue);
+      elt.appendChild(textNode);
+    }
+
+    parentElement.appendChild(elt);
+
+    return elt;
+  }
+
+  /**
+   * Convert a widget's SVG to a base64 encoded image url, so it can be drawn onto a canvas.
+   *
+   * @param {Object}    widget        Widget
+   * @param {function}  callback      Function that will be called once the image is built
+   */
+  function buildImageFromSvg(widget, callback) {
+    if (!widget.svg) {
+      callback();
+      return;
+    }
+
+    var str = '';
+
+    str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + widget.svg.width + 'px" height="' + widget.svg.height + 'px">';
+
+    str += widget.svg.innerHTML + '</svg>';
+    var src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str)));
+
+    if (widget.img.src !== src) {
+      widget.img.onload = callback;
+      widget.img.src = src;
+    } else {
+      callback();
+    }
+  }
+
+  /**
+   * Returns the sum of a widget's width + its border + its outer margin
+   * @param visualSettings
+   */
+  function computeTotalWidth(visualSettings) {
+    visualSettings.totalWidgetWidth =
+      visualSettings.legendWidth + (visualSettings.legendBorderWidth + visualSettings.legendOuterMargin) * 2
+  }
+
+  /**
+   *  Reconstruct the legend's svg (i.e. recreate the image representation of each widget).
+   *  @param {LegendPlugin} legendPlugin
+   *  @param {function}     callback
+   */
+  function buildLegendWidgets(legendPlugin, callback) {
+    var nbWidgetsBuilt = 0,
+        nbWidgets = Object.keys(legendPlugin.widgets).length;
+
+    iterate(legendPlugin.widgets, function (value) {
+      buildWidget(value, function () {
+        ++nbWidgetsBuilt;
+        if (callback && nbWidgetsBuilt === nbWidgets) {
+          callback();
+        }
+      });
+    });
+  }
+
+  /**
+   * Apply the layout algorithm to compute the position of every widget.
+   * Does not build widgets.
+   * Draw the legend at the end.
+   */
+  function drawLayout(legendPlugin) {
+    var vs = legendPlugin._visualSettings,
+        placement = legendPlugin.placement,
+        horizontal = placement === 'top' || placement === 'bottom',
+        maxHeight = legendPlugin._canvas.height,
+        maxWidth = legendPlugin._canvas.width,
+        textWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'text'),
+        nodeWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'node'),
+        edgeWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'edge'),
+        widgetLists = [textWidgets, nodeWidgets, edgeWidgets],
+        height = horizontal ? getMaxHeight(legendPlugin.widgets) + vs.legendOuterMargin * 2 : maxHeight,
+        maxNbCols = Math.floor(maxWidth / vs.totalWidgetWidth),
+        cols = initializeColumns(horizontal ? maxNbCols : 1, vs.legendOuterMargin * 2),
+        colIndex = 0,
+        tryAgain = true,
+        notEnoughSpace = false;
+
+    while (tryAgain && !notEnoughSpace) {
+      tryAgain = false;
+      colIndex = 0;
+      iterate(widgetLists, function (list) {
+        var widgetsToDisplay = [],
+            desiredHeight,
+            bestCombination;
+
+        if (tryAgain || notEnoughSpace) {
+          return;
+        }
+
+        list.forEach(function (w) {
+          widgetsToDisplay.push(w);
+        });
+
+        while (true) {
+          desiredHeight = height - (cols[colIndex] ? cols[colIndex].height : 0);
+          bestCombination = getOptimalWidgetCombination(widgetsToDisplay, desiredHeight);
+          bestCombination.forEach(function (index) {
+            cols[colIndex].widgets.push(widgetsToDisplay[index]);
+            cols[colIndex].height += widgetsToDisplay[index].svg.height;
+          });
+          for (var i = bestCombination.length - 1; i >= 0; --i) {
+            widgetsToDisplay.splice(bestCombination[i], 1);
+          }
+
+          if (widgetsToDisplay.length > 0) {
+            if (horizontal) {
+             if (colIndex === maxNbCols - 1) {
+               cols = initializeColumns(maxNbCols, vs.legendOuterMargin * 2);
+               height += 30;
+               tryAgain = true;
+               if (height > maxHeight) {
+                 notEnoughSpace = true;
+               }
+               break;
+             } else {
+                ++colIndex;
+             }
+            } else if (cols.length === maxNbCols) {
+              notEnoughSpace = true;
+              break;
+            } else {
+              cols.push({widgets: [], height: vs.legendOuterMargin * 2});
+              ++colIndex;
+            }
+          } else {
+            break;
+          }
+        }
+      });
+    }
+
+    if (!notEnoughSpace) {
+      if (placement === 'right') {
+        cols.reverse();
+      }
+
+      for (var i = 0; i < cols.length; ++i) {
+        var h = placement === 'bottom' ? height - cols[i].height : 0;
+        for (var j = 0; j < cols[i].widgets.length; ++j) {
+          cols[i].widgets[j].x = vs.totalWidgetWidth * i +
+            (placement === 'right' ? (maxWidth - cols.length * vs.totalWidgetWidth) : vs.legendOuterMargin);
+
+          if (placement === 'bottom') {
+            cols[i].widgets[j].y = maxHeight - height + h + vs.legendOuterMargin * 2;
+          } else {
+            cols[i].widgets[j].y = h + vs.legendOuterMargin;
+          }
+          h += cols[i].widgets[j].svg.height;
+        }
+      }
+
+      var nbCols = cols.reduce(function (prev, value) { return prev + (value.height > vs.legendOuterMargin * 2 ? 1 : 0); }, 0),
+          legendWidth = nbCols * (vs.totalWidgetWidth + vs.legendOuterMargin) + vs.legendOuterMargin,
+          legendHeight = cols.reduce(function (previous, value) { return ( previous > value.height ? previous : value.height ); }, 0);
+
+      legendPlugin.boundingBox = {
+        w: legendWidth,
+        h: legendHeight,
+        x: legendPlugin.placement === 'right' ? maxWidth - legendWidth : 0,
+        y: legendPlugin.placement === 'bottom' ? maxHeight - legendHeight : 0
+      };
+    } else {
+      legendPlugin.boundingBox = {x:0, y:0, w:0, h:0};
+    }
+
+    drawLegend(legendPlugin);
+    legendPlugin.enoughSpace = !notEnoughSpace;
+  }
+
+  function initializeColumns(number, initialHeight) {
+    var columns = [];
+    for (var i = 0; i < number; ++i) {
+      columns.push({widgets:[], height:initialHeight});
+    }
+
+    return columns;
+  }
+
+  /**
+   * Returns the list of widgets of which the total height is maximal but smaller than a specified limit
+   * @param widgets       {Array<LegendWidget>} Initial list of widgets
+   * @param desiredHeight {number}              Maximum desired height
+   * @returns {Array<Number>}                   List of indexes
+   */
+  function getOptimalWidgetCombination(widgets, desiredHeight) {
+    var best = {indexes: [], height: 0},
+        combinations = getCombinations(widgets.length, 0);
+
+    combinations.forEach(function (c) {
+      var height = computeCombinedWidgetsHeight(widgets, c);
+      if (height > best.height && height <= desiredHeight) {
+        best.indexes = c;
+        best.height = height;
+      }
+    });
+
+    return best.indexes;
+  }
+
+  /**
+   * Returns the list of combinations that are possible given a length and index.
+   * Warning: complexity O(2^n) (should not be a problem since we usually won't have high values)
+   * Example: getCombinations(3, 0) -> [ [0], [1], [2], [0, 1], [0, 2], [1, 2], [0, 1, 2] ]
+   *          getCombinations(3, 1) -> [ [1], [2], [1, 2] ]
+   * @param length        {number}
+   * @param startingIndex {number}
+   * @returns {Array<number>}
+   */
+  function getCombinations(length, startingIndex) {
+    if (startingIndex === length) {
+      return [];
+    } else {
+      var combinations = [[startingIndex]],
+          nextCombinations = getCombinations(length, startingIndex + 1);
+
+      nextCombinations.forEach(function (c) {
+        combinations.push([startingIndex].concat(c));
+      });
+
+      combinations = combinations.concat(nextCombinations);
+
+      return combinations;
+    }
+  }
+
+  /**
+   * Returns the total height of widgets with their index contained in the specified array
+   * @param {Array<LegendWidget>} widgets
+   * @param {Array<number>}       indexes
+   * @returns {number}
+   */
+  function computeCombinedWidgetsHeight(widgets, indexes) {
+    var totalHeight = 0;
+    indexes.forEach(function (index) {
+      totalHeight += widgets[index].svg.height;
+    });
+
+    return totalHeight;
+  }
+
+  /**
+   * Returns every widget that is not pinned (the widgets that are taken care of by the layout algorithm)
+   * @param widgets
+   * @param elementType
+   * @returns {Array}
+   */
+  function getUnpinnedWidgets(widgets, elementType) {
+    var unpinned = [];
+
+    iterate(widgets, function (value) {
+      if (value.svg && !value.pinned && value.elementType === elementType) {
+        unpinned.push(value);
+      }
+    });
+
+    return unpinned;
+  }
+
+  /**
+   * Returns the height of the largest widget.
+   * @param widgets {Array<LegendWidget>}
+   * @returns {number}
+   */
+  function getMaxHeight(widgets) {
+    var maxWidgetHeight = 0;
+    iterate(widgets, function (widget) {
+      if (widget.svg && widget.svg.height > maxWidgetHeight) {
+        maxWidgetHeight = widget.svg.height;
+      }
+    });
+
+    return maxWidgetHeight;
+  }
+
+  function makeWidgetId(elementType, visualVar) {
+    return elementType + '_' + visualVar;
+  }
+
+  /**
+   * Clear the canvas on which the legend is displayed.
+   */
+  function clearLegend(legendPlugin) {
+    var context = legendPlugin._canvas.getContext('2d');
+    context.clearRect(0, 0, legendPlugin._canvas.width, legendPlugin._canvas.height);
+  }
+
+  /**
+   * Draw each widget (unpinned before pinned, we want the user-positioned
+   * widget to be displayed on top those positioned with the layout algorithm.
+   */
+  function drawLegend(legendPlugin) {
+    clearLegend(legendPlugin);
+    iterate(legendPlugin.widgets, function (widget) {
+      if (mustDisplayWidget(legendPlugin, widget)) {
+        drawWidget(widget);
+      }
+    });
+  }
+
+
+  /**
+   * Indicates if a widget must be displayed (typically used when a widget's image has just been loaded to
+   * know if it must be displayed immediatly).
+   * @param legendPlugin
+   * @param widget
+   * @returns {boolean}
+   */
+  function mustDisplayWidget(legendPlugin, widget) {
+    return legendPlugin.visible && (legendPlugin.enoughSpace || widget.pinned) && legendPlugin.widgets[widget.id] !== undefined && widget.svg !== null;
+  }
+
+  /**
+   * Create a widget's svg.
+   */
+  function buildWidget(widget, callback) {
+    var vs = widget._legendPlugin._visualSettings;
+
+    if (widget.visualVar === 'size') {
+      widget.svg = drawSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.unit)
+    } else if (widget.elementType !== 'text') {
+      widget.svg = drawNonSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.visualVar, widget.unit);
+    } else {
+      var lines = getLines(vs, widget.text, vs.legendWidth - 2 * vs.legendInnerMargin),
+          lineHeight = vs.legendFontSize + 1,
+          height = lines.length * lineHeight + vs.legendInnerMargin * 2,
+          offsetY = vs.legendInnerMargin + lineHeight;
+
+      widget.svg = document.createElement('svg');
+      drawBackground(widget.svg, vs, height);
+
+      for (var i = 0; i < lines.length; ++i) {
+        drawText(vs, widget.svg, lines[i], vs.legendInnerMargin, offsetY);
+        offsetY += lineHeight;
+      }
+
+      widget.svg.width = vs.totalWidgetWidth;
+      widget.svg.height = height + 2 * (vs.legendBorderWidth + vs.legendOuterMargin);
+    }
+
+     buildImageFromSvg(widget, callback);
+  }
+
+  /**
+   * Build a widget a redraw the layout
+   * @param widget
+   */
+  function buildWidgetAndDrawLayout(widget) {
+    buildWidget(widget, function () { drawLayout(widget._legendPlugin); });
+  }
+
+  /**
+   * Split a string into multiple lines. Each line's length (in pixels) won't be larger than 'maxWidth'.
+   * Words are not splited into several lines.
+   * @param vs {Object}       Visual settings
+   * @param text {string}     String to split.
+   * @param maxWidth {number} Maximum length (in pixels) of a string.
+   * @returns {Array<string>}
+   */
+  function getLines(vs, text, maxWidth) {
+    var approximateWidthMeasuring = false,
+        spaceWidth = getTextWidth(' ', vs.legendFontFamily, vs.legendFontSize, approximateWidthMeasuring),
+        words = text.split(' '),
+        lines = [{width:-spaceWidth, words:[]}],
+        lineIndex = 0,
+        lineList = [];
+
+    for (var i = 0; i < words.length; ++i) {
+      var width = getTextWidth(words[i] + ' ', vs.legendFontFamily, vs.legendFontSize, approximateWidthMeasuring);
+      if (lines[lineIndex].width + width <= maxWidth) {
+        lines[lineIndex].words.push(words[i] + ' ');
+        lines[lineIndex].width += width;
+      } else {
+        lines.push({width:width - spaceWidth, words:[words[i] + ' ']});
+        lineIndex++;
+      }
+    }
+
+    for (i = 0; i < lines.length; ++i) {
+      var str = '';
+      for (var j = 0; j < lines[i].words.length; ++j) {
+        str += lines[i].words[j];
+      }
+      lineList.push(str);
+    }
+
+    return lineList;
+  }
+
+  function getPropertyName(prop) {
+    var s = prop.split('.');
+    if ((s.length > 2 && s[s.length - 2] === 'categories') || (s.length >= 1 && s[1] === 'categories')) {
+      return 'Category';
+    } else {
+      return prettyfy(s[s.length - 1]);
+    }
+  }
+
+  /**
+   * Draw a widget on the canvas.
+   */
+  function drawWidget(widget) {
+    if (!widget.img) {
+      return;
+    }
+
+    var ctx = widget._canvas.getContext('2d');
+
+    ctx.drawImage(widget.img, widget.x, widget.y);
+    if (widget.elementType === 'node' && widget.visualVar === 'icon') {
+      ctx.textBaseline = 'middle';
+      iterate(widget.svg.icons, function (value, content) {
+        ctx.fillStyle = value.color;
+        ctx.font = value.fontSize + 'px ' + value.font;
+        ctx.fillText(content, widget.x + value.x, widget.y + value.y);
+      });
+    }
+  }
+
+  /**
+   * Iterate over a list of elements and returns the minimum and maximum values for a specified property.
+   * @param elements {Array<Object>}  List of nodes or edges
+   * @param propertyName {string}     Name of the property.
+   * @returns {{min: *, max: *}}
+   */
+  function getBoundaryValues(elements, propertyName) {
+    var minValue = null,
+        maxValue = null;
+
+    for (var i = 1; i < elements.length; ++i) {
+      var value = strToObjectRef(elements[i], propertyName);
+      if (typeof value !== 'number') {
+        continue;
+      }
+
+      if (!minValue || value < minValue) {
+        minValue = value;
+      }
+      if (!maxValue || value > maxValue) {
+        maxValue = value;
+      }
+    }
+
+    return {min: minValue ? minValue : 0, max: maxValue ? maxValue : 0};
+  }
+
+  /**
+   * Returns 'number' + 1 values between a specified minimum and maximum. These values are linear.
+   * Example: extractValueList({min:1, max:5}, 4) -> [1, 2, 3, 4, 5]
+   * @param boundaries {{min:{number}, max:{number}}}
+   * @param number
+   * @returns {Array}
+   */
+  function extractValueList(boundaries, number) {
+    var list = [],
+        dif = boundaries.max - boundaries.min;
+
+    for (var i = 0; i < number + 1; ++i) {
+      list.push(boundaries.min + dif * (i / number))
+    }
+
+    return list;
+  }
+
+
+  /**
+   * Returns a map of the different values of a property.
+   * @param elts      List of elements. Edges or nodes.
+   * @param propName  Name of the property.
+   * @returns {Object}
+   */
+  function getExistingPropertyValues(elts, propName) {
+    var existingValues = {};
+    for (var i = 0; i < elts.length; ++i) {
+      var prop = strToObjectRef(elts[i], propName);
+      if (prop && typeof prop === 'object') {
+        iterate(prop, function (value) {
+          existingValues[value] = true;
+        });
+      } else {
+        existingValues[prop] = true;
+      }
+    }
+
+    return existingValues;
+  }
+
+  /**
+   * Returns the number of keys that exists in both a specified object and a scheme.
+   * @param scheme
+   * @param existingValues
+   * @returns {number}
+   */
+  function getNbElements(scheme, existingValues) {
+    var nb = 0;
+    iterate(scheme, function (val, key) {
+      if (existingValues[key]) {
+        ++nb;
+      }
+    });
+
+    return nb;
+  }
+
+  /* ============================= */
+  /* ===== DRAWING FUNCTIONS ===== */
+  /* ============================= */
+
+  /**
+   * Draw a widget representing a size (node size, edge size)
+   *
+   * @param visualSettings        {Object}
+   * @param graph                 {Object}
+   * @param designPluginInstance  {LegendPlugin}
+   * @param elementType           {string}        'node' or 'edge'
+   * @param unit                  {string}        Optional. Specifies a unit to display alongside the title
+   * @returns {Element}
+   */
+  function drawSizeLegend(visualSettings, graph, designPluginInstance, elementType, unit) {
+    var vs = visualSettings,
+        svg = document.createElement('svg'),
+        elts = elementType === 'node' ? graph.nodes() : graph.edges(),
+        styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges,
+        titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + vs.legendFontSize * 1.5;
+
+    if (!styles.size) {
+      return null;
+    }
+
+    var propName = styles.size.by,
+        boundaries = getBoundaryValues(elts, propName),
+        minValue = boundaries.min,
+        maxValue = boundaries.max,
+        isInteger = minValue % 1 === 0 && maxValue % 1 === 0,
+        meanValue = isInteger ? Math.round((minValue + maxValue) / 2) : (minValue + maxValue) / 2,
+        ratio = styles.size.max / styles.size.min,
+        bigElementSize = vs.legendFontSize * 1.5,
+        smallElementSize = bigElementSize / ratio,
+        mediumElementSize = (bigElementSize + smallElementSize) / 2,
+        height;
+
+    if (elementType === 'node') {
+      var circleBorderWidth = 2;
+
+      height = titleMargin + bigElementSize * 2 + 10;
+
+      drawBackground(svg, vs, height);
+      drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
+
+      var textOffsetX = bigElementSize * 2 + circleBorderWidth + vs.legendInnerMargin * 2;
+      drawText(vs, svg, numberToText(maxValue, isInteger), textOffsetX, titleMargin + vs.legendFontSize);
+      drawText(vs, svg, numberToText(meanValue, isInteger), textOffsetX, titleMargin + 2 * vs.legendFontSize);
+      drawText(vs, svg, numberToText(minValue, isInteger), textOffsetX, titleMargin + 3 * vs.legendFontSize);
+
+
+      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize, bigElementSize,
+                 vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
+      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize * 2 - mediumElementSize,
+                 mediumElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
+      drawCircle(svg, bigElementSize + vs.legendInnerMargin, titleMargin + bigElementSize * 2 - smallElementSize,
+                 smallElementSize, vs.legendBackgroundColor, vs.legendShapeColor, circleBorderWidth);
+
+    } else if (elementType === 'edge') {
+      var labelOffsetY = titleMargin + bigElementSize * 1.7,
+          rectWidth = (vs.legendWidth - vs.legendInnerMargin * 2) / 3;
+
+      height = labelOffsetY + vs.legendFontSize;
+
+
+      drawBackground(svg, vs, height);
+      drawWidgetTitle(vs, svg, getPropertyName(styles.size.by), unit);
+
+      draw(svg, 'rect', {x:vs.legendInnerMargin, y:titleMargin + 5, width:rectWidth, height:bigElementSize / 2,
+                         fill:vs.legendShapeColor});
+      draw(svg, 'rect', {x:vs.legendInnerMargin + rectWidth, y:titleMargin + 5 + (bigElementSize - mediumElementSize) / 4,
+                         width:rectWidth, height:mediumElementSize / 2, fill:vs.legendShapeColor});
+      draw(svg, 'rect', {x:vs.legendInnerMargin + 2 * rectWidth, y:titleMargin + 5 + (bigElementSize - smallElementSize) / 4,
+                         width:rectWidth, height:smallElementSize / 2, fill:vs.legendShapeColor});
+
+      drawText(vs, svg, numberToText(maxValue, isInteger), vs.legendInnerMargin + rectWidth * 0.5, labelOffsetY, 'middle');
+      drawText(vs, svg, numberToText(meanValue, isInteger), vs.legendInnerMargin + rectWidth * 1.5, labelOffsetY, 'middle');
+      drawText(vs, svg, numberToText(minValue, isInteger), vs.legendInnerMargin + rectWidth * 2.5, labelOffsetY, 'middle');
+    }
+
+    svg.width = vs.totalWidgetWidth;
+    svg.height = height + (vs.legendBorderWidth + vs.legendOuterMargin) * 2;
+
+    return svg;
+  }
+
+  /**
+   * Draw a legend widget that doesn't represent a size (color, icon, etc)
+   * @param visualSettings  {Object}
+   * @param graph           {Object}
+   * @param designPluginInstance {LegendPlugin}
+   * @param elementType     {string} 'node' or 'edge'
+   * @param visualVar       {string} 'color', 'icon', 'type'
+   * @param unit            {string}  Optional. Unit to display alongside the title.
+   *                                  in the way the icons are displayed).
+   * @returns {Element}
+   */
+  function drawNonSizeLegend(visualSettings, graph, designPluginInstance, elementType, visualVar, unit) {
+    var vs = visualSettings,
+        svg = document.createElement('svg'),
+        elts = elementType === 'node' ? graph.nodes() : graph.edges(),
+        styles = elementType === 'node' ? designPluginInstance.styles.nodes : designPluginInstance.styles.edges;
+
+    if (!styles[visualVar]) {
+      return null;
+    }
+
+    var palette = designPluginInstance.palette,
+        lineHeight = vs.legendFontSize * 1.5,
+        titleMargin = vs.legendTitleFontSize + vs.legendInnerMargin + lineHeight * 0.8,
+        quantitativeColor = visualVar === 'color' && styles.color.bins,
+        edgeType = elementType === 'edge' && visualVar === 'type',
+        scheme = quantitativeColor ? strToObjectRef(palette, styles.color.scheme)[styles.color.bins] : strToObjectRef(palette, styles[visualVar].scheme),
+        existingValues = getExistingPropertyValues(elts, styles[visualVar].by),
+        nbElements = quantitativeColor ?  Object.keys(scheme).length : getNbElements(scheme, existingValues),
+        height = lineHeight * nbElements + titleMargin + (edgeType ? lineHeight : 0),
+        leftColumnWidth = vs.legendWidth / 3,
+        offsetY = titleMargin,
+        textOffsetX = elementType === 'edge' ? leftColumnWidth : vs.legendFontSize * 1.5 + vs.legendInnerMargin,
+        boundaries,
+        valueList,
+        isInteger,
+        txt,
+        fontSize;
+
+    if (quantitativeColor) {
+        boundaries = getBoundaryValues(elts, styles.color.by);
+        valueList = extractValueList(boundaries, styles.color.bins);
+        isInteger = boundaries.min % 1 == 0 && boundaries.max % 1 == 0;
+    }
+
+    svg.icons = {};
+
+    drawBackground(svg, vs, height);
+    drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
+
+    /* Display additional information for the type of edge */
+    if (elementType === 'edge' && visualVar === 'type') {
+      txt =  'source node to target node';
+      fontSize = shrinkFontSize(txt, vs.legendFontFamily, vs.legendFontSize, vs.legendWidth - vs.legendInnerMargin * 2);
+      drawText(vs, svg, txt, vs.legendInnerMargin, offsetY, 'left', vs.legendFontColor, vs.legendFontFamily, fontSize);
+      offsetY += lineHeight;
+    }
+
+    iterate(scheme, function (value, key) {
+      if (!quantitativeColor && !existingValues[key]) {
+        return;
+      }
+
+      if (visualVar === 'color') {
+        if (quantitativeColor) {
+          value = scheme[scheme.length - key - 1];
+        }
+
+        if (elementType === 'edge') {
+          draw(svg, 'rect', {x:vs.legendInnerMargin, y:offsetY - lineHeight / 8,
+                             width:leftColumnWidth - vs.legendInnerMargin * 2, height:lineHeight / 4, fill:value});
+        } else {
+          drawCircle(svg, vs.legendInnerMargin + vs.legendFontSize / 2, offsetY, vs.legendFontSize / 2, value);
+        }
+      } else if (visualVar === 'icon') {
+        svg.icons[value.content] = {
+          font: value.font,
+          fontSize: vs.legendFontSize,
+          //color: value.color,
+          color: vs.legendFontColor,
+          x: vs.legendInnerMargin,
+          y: offsetY
+        };
+      } else if (visualVar === 'type') {
+        if (elementType === 'edge') {
+          drawEdge(vs, svg, value, vs.legendInnerMargin, leftColumnWidth - vs.legendInnerMargin, offsetY, vs.legendFontSize / 3);
+        } else {
+          drawShape(vs, svg, value, vs.legendInnerMargin + vs.legendFontSize / 2, offsetY, vs.legendFontSize / 2);
+        }
+      }
+
+      var textYAdjustment = 2;
+      if (quantitativeColor) {
+        txt = numberToText(valueList[nbElements - key - 1], isInteger) + ' - ' + numberToText(valueList[nbElements - parseInt(key)], isInteger);
+        drawText(vs, svg, txt, leftColumnWidth, offsetY + textYAdjustment, 'left', null, null, null, 'middle');
+      } else {
+        var shrinkedText = getShrinkedText(prettyfy(key), vs.legendWidth - vs.legendInnerMargin - textOffsetX,
+          vs.legendFontFamily, vs.legendFontSize);
+
+        drawText(vs, svg, shrinkedText, textOffsetX, offsetY + textYAdjustment, 'left', null, null, null, 'middle');
+      }
+
+      offsetY += lineHeight;
+    });
+
+    svg.width = vs.totalWidgetWidth;
+    svg.height = height + (vs.legendBorderWidth + vs.legendOuterMargin) * 2;
+
+    return svg;
+  }
+
+  /**
+   * Remove every character of a string that are after a specified with limit. Add '...' at the end of the string if
+   * at least one character is removed.
+   * @param text       {string}
+   * @param maxWidth   {number}
+   * @param fontFamily {string}
+   * @param fontSize   {number}
+   * @returns {*}
+   */
+  function getShrinkedText(text, maxWidth, fontFamily, fontSize) {
+    var textWidth = getTextWidth(text, fontFamily, fontSize, false),
+        shrinked = false;
+
+    while (textWidth > maxWidth) {
+      shrinked = true;
+      var ratio = maxWidth / textWidth,
+          text = text.substr(0, text.length * ratio);
+      textWidth = getTextWidth(text, fontFamily, fontSize, false);
+    }
+
+    if (shrinked) {
+      text += '...';
+    }
+
+    return text;
+  }
+
+  /**
+   * Not currently used, but may be useful in the future. The idea was to display an image in base64
+   * inside a svg.
+   * @param svg
+   * @param base64Img
+   * @param x
+   * @param y
+   */
+  function drawImage(svg, base64Img, x, y) {
+    var i = createAndAppend(svg, 'image',  {
+      x:x,
+      y:y,
+      'xlink:href':base64Img
+    });
+  }
+
+  function drawText(vs, svg, content, x, y, textAlign, color, fontFamily, fontSize, verticalAlign) {
+    createAndAppend(svg, 'text', {
+      x: x,
+      y: y,
+      'text-anchor': textAlign ? textAlign : 'left',
+      fill: color ? color : vs.legendFontColor,
+      'font-size': fontSize ? fontSize : vs.legendFontSize,
+      'font-family': fontFamily ? fontFamily : vs.legendFontFamily,
+      'alignment-baseline': verticalAlign ? verticalAlign : 'auto'
+    }, content);
+  }
+
+  function drawCircle(svg, x, y, r, color, borderColor, borderWidth) {
+    createAndAppend(svg, 'circle', {
+      cx:x,
+      cy:y,
+      r:r,
+      fill:color,
+      stroke:borderColor,
+      'stroke-width':borderWidth
+    });
+  }
+
+  function drawBackground(svg, vs, height) {
+    draw(svg, 'rect', {
+      x:vs.legendBorderWidth,
+      y:vs.legendBorderWidth,
+      width:vs.legendWidth,
+      height:height,
+      stroke:vs.legendBorderColor,
+      'stroke-width':vs.legendBorderWidth,
+      fill:vs.legendBackgroundColor,
+      rx:vs.legendBorderRadius,
+      ry:vs.legendBorderRadius});
+  }
+
+  /* 'type' can be 'arrow', 'parallel', 'cuvedArrow', 'dashed', 'dotted', 'tapered' */
+  function drawEdge(vs, svg, type, x1, x2, y, size) {
+    var triangleSize = size * 2.5,
+        curveHeight = size * 3,
+        offsetX = Math.sqrt(3) / 2 * triangleSize;
+
+    if (type === 'arrow') {
+      drawLine(svg, x1, y, x2 - offsetX + 1, y, vs.legendShapeColor, size);
+      drawPolygon(svg, [x2, y, x2 - offsetX, y - triangleSize / 2, x2 - offsetX, y + triangleSize / 2], vs.legendShapeColor);
+    } else if (type === 'parallel') {
+      size *= 0.8;
+      drawLine(svg, x1, y - size, x2, y - size, vs.legendShapeColor, size);
+      drawLine(svg, x1, y + size, x2, y + size, vs.legendShapeColor, size);
+    } else if (type === 'curve') {
+      drawCurve(svg, x1, y, (x1 + x2) / 2, y - curveHeight, x2, y, vs.legendShapeColor, size);
+    } else if (type === 'curvedArrow') {
+      var angle,
+          len = x2 - x1;
+
+      /* Warning: this is totally arbitrary. It's only an approximation, it should be replaced by proper values */
+      if (len < 40) {
+        angle = 35;
+      } else if (len < 60) {
+        angle = 33;
+      } else {
+        angle = 30;
+      }
+
+      drawCurve(svg, x1, y, (x1 + x2) / 2, y - curveHeight, x2 - triangleSize / 2, y - size, vs.legendShapeColor, size);
+      drawPolygon(svg, [x2, y, x2 - offsetX, y - triangleSize / 2, x2 - offsetX, y + triangleSize / 2],
+                  vs.legendShapeColor, {angle:angle, cx:x2, cy:y});
+    } else if (type === 'dashed') {
+      var dashArray = '8 3';  // Same values as in sigma.renderers.linkurious/canvas/sigma.canvas.edges.dashed
+      drawLine(svg, x1, y, x2, y, vs.legendShapeColor, size, dashArray);
+    } else if (type === 'dotted') {
+      var dotDashArray = '2'; // Same values as in sigma.renderers.linkurious/canvas/sigma.canvas.edges.dotted
+      drawLine(svg, x1, y, x2, y, vs.legendShapeColor, size, dotDashArray);
+    } else if (type === 'tapered') {
+      drawPolygon(svg, [x1, y + size, x1, y - size, x2, y], vs.legendShapeColor);
+    }
+  }
+
+  function drawCurve(svg, x1, y1, x2, y2, x3, y3, color, width) {
+    var d = 'M ' + x1 + ' ' + y1 + ' Q ' + x2 + ' ' + y2 + ' ' + x3 + ' ' + y3;
+
+    createAndAppend(svg, 'path', {
+      d:d,
+      stroke:color,
+      'stroke-width':width,
+      fill:'none'
+    });
+  }
+
+  function drawShape(vs, svg, shape, x, y, size) {
+    var points = [],
+        angle;
+
+    if (shape === 'diamond') {
+      size *= 1.3;
+      points = [ x - size,  y, x, y - size, x + size, y, x, y + size ];
+    } else if (shape === 'star') {
+      size *= 1.7;
+      angle = -Math.PI / 2;
+
+      for (var i = 0; i < 5; ++i) {
+        points[i*2] = Math.cos(angle);
+        points[i*2+1] = Math.sin(angle);
+        angle += Math.PI * 4 / 5;
+      }
+    } else if (shape === 'equilateral') {
+      size *= 1.3;
+      var nbPoints = 5; // Default value like in sigma.renderers.linkurious/canvas/sigma.canvas.nodes.equilateral
+
+      angle = -Math.PI / 2;
+
+      for (var i = 0; i < nbPoints; ++i) {
+        points[i*2] = Math.cos(angle);
+        points[i*2+1] = Math.sin(angle);
+        angle += Math.PI * 2 / nbPoints;
+      }
+    } else if (shape === 'square') {
+      points = [x - size, y - size, x + size, y - size, x + size, y + size, x - size, y + size];
+    }
+
+    if (shape === 'star' || shape === 'equilateral') {
+      for (var i = 0; i < points.length; i += 2) {
+        points[i] = x + points[i] * size;
+        points[i+1] = y + points[i+1] * size;
+      }
+    }
+
+    if (shape !== 'cross') {
+      drawPolygon(svg, points, vs.legendShapeColor);
+    } else {
+      size *= 1.2;
+      var lineWidth = 2 * window.devicePixelRatio; // Arbitrary
+      drawLine(svg, x - size, y, x + size, y, vs.legendShapeColor, lineWidth);
+      drawLine(svg, x, y - size, x, y + size, vs.legendShapeColor, lineWidth);
+    }
+  }
+
+  /**
+   * Draw a polygon on a svg.
+   * @param svg     {Object}
+   * @param points  {Array<number>} Format: [x1, y1, x2, y2, ...]
+   * @param color   {string}
+   * @param [rotation] {Object}       Optional. Specifies a rotation to apply to the polygon.
+   */
+  function drawPolygon(svg, points, color, rotation) {
+    var attrPoints = points[0] + ',' + points[1];
+    for (var i = 2; i < points.length; i += 2) {
+      attrPoints += ' ' + points[i] + ',' + points[i+1];
+    }
+
+    var attributes = {points:attrPoints, fill:color};
+    if (rotation) {
+      attributes.transform = 'rotate(' + rotation.angle + ', ' + rotation.cx + ', ' + rotation.cy + ')';
+    }
+
+    createAndAppend(svg, 'polygon', attributes);
+  }
+
+  function drawLine(svg, x1, y1, x2, y2, color, width, dashArray) {
+    createAndAppend(svg, 'line', {
+      x1:x1,
+      y1:y1,
+      x2:x2,
+      y2:y2,
+      stroke:color,
+      'stroke-width':width,
+      'stroke-dasharray':dashArray
+    });
+  }
+
+  function draw(svg, type, args) {
+    createAndAppend(svg, type, args);
+  }
+
+  /**
+   * Draw the title of a widget. If the title is too large, the font size will be reduced until it fits.
+   * @param vs    {Object} Visual settings.
+   * @param svg   {Object}
+   * @param title {string} Title of the widget.
+   * @param unit  {string} Optional. The unit to be displayed alongside the title.
+   */
+  function drawWidgetTitle(vs, svg, title, unit) {
+    var text = (title.length > vs.legendTitleMaxLength ? title.substring(0, vs.legendTitleMaxLength) : title)
+             + (unit ? ' (' + unit + ')' : ''),
+        fontSize = shrinkFontSize(text, vs.legendTitleFontFamily, vs.legendTitleFontSize, vs.legendWidth - vs.legendInnerMargin),
+        offsetX = vs.legendTitleTextAlign === 'middle' ? vs.legendWidth / 2 : vs.legendInnerMargin;
+
+    drawText(vs, svg, text, offsetX, vs.legendFontSize + vs.legendInnerMargin, vs.legendTitleTextAlign,
+      vs.legendTitleFontColor, vs.legendTitleFontFamily, fontSize);
+  }
+
+  /**
+   * Convert a property name to a nice, good looking title (e.g. 'funding_year' -> 'Funding year')
+   * @param txt {string}
+   * @returns {string}
+   */
+  function prettyfy(txt) {
+    return txt.charAt(0).toUpperCase() + txt.slice(1).replace(/_/g, ' ');
+  }
+
+  /**
+   * Reduce the font size of until the specified text fits a specified with.
+   * @param text        {string}
+   * @param fontFamily  {string}
+   * @param fontSize    {number}
+   * @param maxWidth    {number}
+   * @returns {number}            The new size of the font.
+   */
+  function shrinkFontSize(text, fontFamily, fontSize, maxWidth) {
+    while (getTextWidth(text, fontFamily, fontSize, false) > maxWidth) {
+      fontSize -= (fontSize > 15 ? 2 : 1);
+    }
+
+    return fontSize;
+  }
+
+  var helper = document.createElement('canvas').getContext('2d');
+  /**
+   * Compute the width in pixels of a string, given a font family and font size.
+   * @param text        {string}
+   * @param fontFamily  {string}
+   * @param fontSize    {number}
+   * @param approximate {boolean} Optional. Specifies if the computation must be approximate (faster, but not accurate).
+   * @returns {number}  Width of the text.
+   */
+  function getTextWidth(text, fontFamily, fontSize, approximate) {
+    if (approximate) {
+      return 0.45 * fontSize * text.length;
+    } else {
+      helper.font = fontSize + 'px ' + fontFamily;
+      return helper.measureText(text).width;
+    }
+  }
+
+  /**
+   * Convert a number N to a formatted string.
+   * If N > 9999 -> 3 most significant digits + unit (K, M, G, ...)
+   * If N <= 9999 -> 4 most significant digits (including digits after the comma)
+   * @param number {number}
+   * @param isInteger {boolean} Indicates if the number is an integer (if so, no digit after the comma will be displayed).
+   * @returns {string} The formatted number/
+   */
+  function numberToText(number, isInteger) {
+    var units = ['K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+
+    if (number > 9999) {
+      var i = 0;
+      while (i < units.length && number > 999) {
+        number /= 1000;
+        ++i;
+      }
+      return Math.ceil(number) + units[i-1];
+    } else if (isInteger) {
+      return Math.round(number).toString();
+    } else if (number < 10) {
+      return (Math.round(number * 1000) / 1000).toString();
+    } else if (number < 100) {
+      return (Math.round(number * 100) / 100).toString();
+    } else if (number < 1000) {
+      return (Math.round(number * 10) / 10).toString();
+    } else {
+      return (Math.round(number)).toString();
+    }
+  }
+
+  /* ============================ */
+  /* ===== PUBLIC FUNCTIONS ===== */
+  /* ============================ */
+
+  var _legendInstances = {};
+
+  /**
+   * Returns the instance of a specified sigma instance's legend plugin. Create it if it does not exist yet.
+   * @param s {Object}        Sigma instance.
+   * @returns {LegendPlugin}
+   */
+  sigma.plugins.legend = function (s) {
+    if (!_legendInstances[s.id]) {
+      _legendInstances[s.id] = new LegendPlugin(s);
+
+      s.bind('kill', function() {
+        sigma.plugins.killLegend(s);
+      });
+    }
+
+    return _legendInstances[s.id];
+  };
+
+  /**
+   * Destroy a sigma instance's associated legend plugin instance.
+   * @param s {Object} Sigma instance.
+   */
+  sigma.plugins.killLegend = function (s) {
+    var legendInstance = _legendInstances[s.id];
+    if (legendInstance) {
+      iterate(legendInstance.widgets, function (value, key) {
+        legendInstance.widgets[key] = undefined;
+      });
+      _legendInstances[s.id] = undefined;
+    }
+  };
+
+  /**
+   * Build the widgets, compute the layout and draw the legend.
+   * Must be called whenever the graph's design changes.
+   */
+  LegendPlugin.prototype.draw = function (callback) {
+    var self = this,
+        pixelRatio = this._visualSettings.pixelRatio;
+
+    //setupCanvas(this._canvas, this._canvas.width / pixelRatio, this._canvas.height / pixelRatio, this._visualSettings.pixelRatio);
+    buildLegendWidgets(this, function () {
+      drawLayout(self);
+      if (callback) {
+        callback();
+      }
+    });
+  };
+
+  /**
+   * Set the visibility of the legend.
+   * @param visible {boolean}
+   */
+  LegendPlugin.prototype.setVisibility = function (visible) {
+    this.visible = visible;
+    drawLayout(this);
+  };
+
+  /**
+   * Change the position of the legend.
+   * @param newPlacement 'top', 'bottom', 'left' or 'right'
+   */
+  LegendPlugin.prototype.setPlacement = function (newPlacement) {
+    if (['top', 'bottom', 'right', 'left'].indexOf(newPlacement) === -1) {
+      return;
+    }
+
+    this.placement = newPlacement;
+    drawLayout(this);
+  };
+
+
+  /**
+   * Add a widget to the legend. Draw the legend.
+   * Note: if a widget is not used (no corresponding design mapping), it won't be displayed.
+   * @param elementType 'node' or 'edge'
+   * @param visualVar   'size', 'color', 'icon'
+   * @param unit        Optional. The unit to be displayed beside the widget's title
+   * @returns {*}       The added widget.
+   */
+  LegendPlugin.prototype.addWidget = function (elementType, visualVar, unit) {
+    var widget = this.widgets[makeWidgetId(elementType, visualVar)];
+
+    if (!widget) {
+      widget = new LegendWidget(this._canvas, this._sigmaInstance, this._designPlugin, this, elementType, visualVar);
+      widget.id = makeWidgetId(elementType, visualVar);
+      this.widgets[widget.id] = widget;
+    }
+    widget.unit = unit;
+    buildWidgetAndDrawLayout(widget);
+
+    return widget;
+  };
+
+  /**
+   * @param elementType {string} 'node' or 'edge'
+   * @param visualVar   {string} 'color', 'icon', 'size', 'type'
+   * @returns {LegendWidget}
+   */
+  LegendPlugin.prototype.getWidget = function (elementType, visualVar) {
+    return this.widgets[makeWidgetId(elementType, visualVar)];
+  };
+
+  /**
+   * Add a widget that only contains text.  Draw the legend.
+   * @param text              The text to be displayed inside the widget.
+   * @returns {LegendWidget}  The added widget
+   */
+  LegendPlugin.prototype.addTextWidget = function (text) {
+    var widget = new LegendWidget(this._canvas, this._sigmaInstance, this._designPlugin, this, 'text');
+
+    widget.text = text;
+    widget.id = 'text' + this.textWidgetCounter++;
+    this.widgets[widget.id] = widget;
+
+    buildWidgetAndDrawLayout(widget);
+
+    return widget;
+  };
+
+  /**
+   * Remove a widget.
+   * @param arg1  The widget to remove, or the type of element ('node' or 'edge')
+   * @param arg2  If the first argument was the type of element, it represents the visual variable
+   *              of the widget to remove
+   */
+  LegendPlugin.prototype.removeWidget = function (arg1, arg2) {
+    var id = arg1 instanceof LegendWidget ? arg1.id : makeWidgetId(arg1, arg2);
+    if (this.widgets[id]) {
+      this.widgets[id] = undefined;
+      drawLayout(this);
+    }
+  };
+
+  /**
+   * Remove all widgets from the legend.
+   */
+  LegendPlugin.prototype.removeAllWidgets = function () {
+    this.widgets = {};
+    drawLayout(this);
+  };
+
+  /**
+   * Unpin the widget. An pinned widget is not taken into account when it is positioned through
+   * automatic layout.
+   */
+  LegendWidget.prototype.unpin = function () {
+    this.pinned = false;
+    drawLayout(this._legendPlugin);
+  };
+
+
+  /**
+   * Change the position of a widget and pin it. An pinned widget is not taken into account when
+   * it is positioned through automatic layout.
+   * @param x
+   * @param y
+   */
+  LegendWidget.prototype.setPosition = function (x, y) {
+    this.pinned = true;
+    this.x = x;
+    this.y = y;
+    drawLayout(this._legendPlugin);
+  };
+
+  /**
+   * Set the text of a widget. The widget must be a text widget.
+   * @param text The text to be displayed by the widget.
+   */
+  LegendWidget.prototype.setText = function (text) {
+    this.text = text;
+    buildWidgetAndDrawLayout(this);
+  };
+
+  /**
+   * Set the unit of a widget. The widget must represent a size.
+   * @param unit The unit to be displayed alongside the widget's title.
+   */
+  LegendWidget.prototype.setUnit = function (unit) {
+    this.unit = unit;
+    buildWidgetAndDrawLayout(this);
+  };
+
+  /**
+   * Specify the list of external css files that must be included within the svg.
+   * @param externalCSSList {Array<string>}
+   */
+  LegendPlugin.prototype.setExternalCSS = function (externalCSSList) {
+    this.externalCSS = externalCSSList;
+  };
+
+  /**
+   * Download the legend (PNG format).
+   * @param [filename] {string} Optional. Default: 'legend.png'
+   */
+  LegendPlugin.prototype.exportPng = function (filename) {
+    var visibility = this.visible,
+        self = this;
+
+    // We set the legend to visible so it draws the legend in the canvas
+    self.visible = true;
+    self.draw(function () {
+      var tmpCanvas = document.createElement('canvas'),
+        ctx = tmpCanvas.getContext('2d'),
+        box = self.boundingBox;
+
+      tmpCanvas.width = box.w;
+      tmpCanvas.height = box.h;
+
+      ctx.drawImage(self._canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+      self.setVisibility(visibility);
+
+      download(tmpCanvas.toDataURL(), filename ? filename : 'legend.png', true);
+    });
+  };
+
+  /**
+   * Download the legend (SVG format).
+   * 'setExternalCSS' needs to be called before (if there is any external CSS file needed).
+   * @param [filename] {string} Optional. Default: 'legend.svg'
+   */
+  LegendPlugin.prototype.exportSvg = function (filename) {
+    var self = this;
+    this.draw(function () {
+      var vs = self._visualSettings,
+        box = self.boundingBox,
+        str = '';
+
+      (self.externalCSS || []).forEach(function (url) {
+        str += '<?xml-stylesheet type="text/css" href="' + url + '" ?>\n';
+      });
+
+      str += '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' + box.w + 'px" height="' + box.h + 'px">';
+      iterate(self.widgets, function (widget) {
+        if (widget.svg === null) {
+          return;
+        }
+
+        str += '<g transform="translate(' + (widget.x + - box.x) + ' ' + (widget.y - box.y) + ')">';
+        str += widget.svg.innerHTML;
+        if (widget.visualVar === 'icon') {
+          var tmpSvg = document.createElement('svg');
+          iterate(widget.svg.icons, function (value, content) {
+            drawText(vs, tmpSvg, content, value.x, value.y, 'left', vs.legendFontColor, value.font,
+              vs.legendFontSize, 'central');
+          });
+          str += tmpSvg.innerHTML;
+        }
+        str += '</g>';
+      });
+      str += '</svg>';
+
+      download(str, filename ? filename : 'legend.svg');
+    });
+  };
 
 }).call(this);
 /**
@@ -9159,16 +11568,16 @@ sigma.plugins.colorbrewer = {YlGn: {
       _body = document.body,
       _renderer = renderer,
       _mouse = renderer.container.lastChild,
-      _camera = renderer.camera,
+      _prefix = renderer.options.prefix,
       _node = null,
       _draggingNode = null,
-      _prefix = renderer.options.prefix,
       _hoverStack = [],
       _hoverIndex = {},
       _isMouseDown = false,
       _isMouseOverCanvas = false,
       _drag = false,
-      _stickiness = s.settings('dragNodeStickiness');
+      _sticky = true,
+      _enabled = true;
 
     if (renderer instanceof sigma.renderers.svg) {
         _mouse = renderer.container.firstChild;
@@ -9178,9 +11587,27 @@ sigma.plugins.colorbrewer = {YlGn: {
     renderer.bind('hovers', treatOutNode);
     renderer.bind('click', click);
 
-    _s.bind('kill', function() {
-      _self.unbindAll();
-    });
+    /**
+     * Enable dragging and events.
+     */
+    this.enable = function() {
+      _enabled = true;
+    }
+
+    /**
+     * Disable dragging and events.
+     */
+    this.disable = function() {
+      _enabled = false;
+      _node = null,
+      _draggingNode = null,
+      _hoverStack = [],
+      _hoverIndex = {},
+      _isMouseDown = false,
+      _isMouseOverCanvas = false,
+      _drag = false,
+      _sticky = true;
+    }
 
     /**
      * Unbind all event listeners.
@@ -9265,10 +11692,11 @@ sigma.plugins.colorbrewer = {YlGn: {
     };
 
     function nodeMouseDown(event) {
-      if(event.which == 3) return; // Right mouse button pressed
+      if(!_enabled || event.which == 3) return; // Right mouse button pressed
 
       _isMouseDown = true;
       if (_node && _s.graph.nodes().length > 0) {
+        _sticky = true;
         _mouse.removeEventListener('mousedown', nodeMouseDown);
         _body.addEventListener('mousemove', nodeMouseMove);
         _body.addEventListener('mouseup', nodeMouseUp);
@@ -9332,8 +11760,8 @@ sigma.plugins.colorbrewer = {YlGn: {
         var offset = calculateOffset(_renderer.container),
             x = event.clientX - offset.left,
             y = event.clientY - offset.top,
-            cos = Math.cos(_camera.angle),
-            sin = Math.sin(_camera.angle),
+            cos = Math.cos(_renderer.camera.angle),
+            sin = Math.sin(_renderer.camera.angle),
             nodes = _s.graph.nodes(),
             ref = [],
             x2,
@@ -9344,35 +11772,55 @@ sigma.plugins.colorbrewer = {YlGn: {
             isHoveredNodeActive,
             dist;
 
-        if (nodes.length < 2) return;
+        if (!_enabled || nodes.length < 2) return;
 
-        // Getting and derotating the reference coordinates.
-        for (var i = 0; i < 2; i++) {
+        dist = sigma.utils.getDistance(x, y, _node[_prefix + 'x'],_node[_prefix + 'y']);
+
+        if (_sticky && dist < _node[_prefix + 'size']) return;
+        _sticky = false;
+
+        // Find two reference points and derotate them
+        // We take the first node as a first reference point and then try to find
+        // another node not aligned with it
+        for (var i = 0;;i++) {
+          if(!_enabled) break;
+
           n = nodes[i];
           if (n) {
             aux = {
               x: n.x * cos + n.y * sin,
               y: n.y * cos - n.x * sin,
-              renX: n[_prefix + 'x'],
-              renY: n[_prefix + 'y'],
+              renX: n[_prefix + 'x'], //renderer X
+              renY: n[_prefix + 'y'], //renderer Y
             };
             ref.push(aux);
           }
+          if(i == nodes.length - 1) { //we tried all nodes
+            break
+          }
+          if (i > 0) {
+            if (ref[0].x == ref[1].x || ref[0].y == ref[1].y) {
+              ref.pop() // drop last nodes and try to find another one
+            } else { // we managed to find two nodes not aligned
+              break
+            }
+          }
         }
 
+        var a = ref[0], b = ref[1];
+
         // Applying linear interpolation.
-        x = ((x - ref[0].renX) / (ref[1].renX - ref[0].renX)) *
-          (ref[1].x - ref[0].x) + ref[0].x;
-        y = ((y - ref[0].renY) / (ref[1].renY - ref[0].renY)) *
-          (ref[1].y - ref[0].y) + ref[0].y;
+        var divx = (b.renX - a.renX);
+        if (divx === 0) divx = 1; //fix edge case where axis are aligned
+
+        var divy = (b.renY - a.renY);
+        if (divy === 0) divy = 1; //fix edge case where axis are aligned
+
+        x = ((x - a.renX) / divx) * (b.x - a.x) + a.x;
+        y = ((y - a.renY) / divy) * (b.y - a.y) + a.y;
 
         x2 = x * cos - y * sin;
         y2 = y * cos + x * sin;
-
-        if (_stickiness > 0) {
-          dist = sigma.utils.getDistance(x2, y2, _node.x, _node.y);
-          if (dist < _stickiness) return;
-        }
 
         // Drag multiple nodes, Keep distance
         if(_a) {
@@ -9445,6 +11893,16 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     s.bind('kill', function() {
       sigma.plugins.killDragNodes(s);
+    });
+
+    // disable on plugins.animate start.
+    s.bind('animate.start', function() {
+      _instance[s.id].disable();
+    });
+
+    // enable on plugins.animate end.
+    s.bind('animate.end', function() {
+      _instance[s.id].enable();
     });
 
     return _instance[s.id];
@@ -9856,355 +12314,6 @@ sigma.plugins.colorbrewer = {YlGn: {
         this.siblingEdgesIndex = Object.create(null);
       }
     });
-
-}).call(this);
-
-;(function(undefined) {
-  'use strict';
-
-  if (typeof sigma === 'undefined')
-    throw 'sigma is not declared';
-
-  // Initialize package:
-  sigma.utils.pkg('sigma.plugins');
-
-  /**
-   * Sigma Image Utility
-   * =============================
-   *
-   * @author: Martin de la Taille (martindelataille)
-   * @thanks: Guillaume Plique (Yomguithereal)
-   * @version: 0.1
-   */
-
-  var _contexts,
-      _types,
-      _canvas,
-      _canvasContext;
-
-  _contexts = ['scene', 'edges', 'nodes', 'labels'];
-  _types = {
-    png: 'image/png',
-    jpg: 'image/jpeg',
-    gif: 'image/gif',
-    tiff: 'image/tiff'
-  };
-
-  // UTILITIES FUNCTIONS:
-  // ******************
-  function dataURLToBlob(dataURL) {
-    var BASE64_MARKER = ';base64,';
-    if (dataURL.indexOf(BASE64_MARKER) == -1) {
-      var parts = dataURL.split(',');
-      var contentType = parts[0].split(':')[1];
-      var raw = decodeURIComponent(parts[1]);
-
-      return new Blob([raw], {type: contentType});
-    }
-
-    var parts = dataURL.split(BASE64_MARKER);
-    var contentType = parts[0].split(':')[1];
-    var raw = window.atob(parts[1]);
-    var rawLength = raw.length;
-
-    var uInt8Array = new Uint8Array(rawLength);
-
-    for (var i = 0; i < rawLength; ++i) {
-      uInt8Array[i] = raw.charCodeAt(i);
-    }
-
-    return new Blob([uInt8Array], {type: contentType});
-  }
-
-  function download(dataUrl, extension, filename) {
-    filename = filename || 'graph.' + extension;
-
-    if (navigator.msSaveOrOpenBlob) { // IE10+
-      navigator.msSaveOrOpenBlob(dataURLToBlob(dataUrl), filename);
-    }
-    else if (navigator.msSaveBlob) { // IE11+
-      navigator.msSaveBlob(dataURLToBlob(dataUrl), filename);
-    }
-    else {
-      var anchor = document.createElement('a');
-      anchor.setAttribute('href', dataUrl);
-      anchor.setAttribute('download', filename);
-
-      // Firefox requires the link to be added to the DOM before it can be clicked.
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
-    }
-  }
-
-  function calculateAspectRatioFit(srcWidth, srcHeight, maxSize) {
-    var ratio = Math.min(maxSize / srcWidth, maxSize / srcHeight);
-    return { width: srcWidth * ratio, height: srcHeight * ratio };
-  }
-
-  function calculateZoomedBoundaries(s, r, params) {
-    var bounds;
-
-    bounds = sigma.utils.getBoundaries(
-      s.graph,
-      r.camera.readPrefix
-    );
-
-    bounds.minX /= params.zoomRatio;
-    bounds.minY /= params.zoomRatio;
-    bounds.maxX /= params.zoomRatio;
-    bounds.maxY /= params.zoomRatio;
-
-    return bounds;
-  }
-
-  function calculateRatio(s, r, params) {
-    var boundaries,
-        margin = params.margin || 0,
-        ratio = {
-          width:  r.width,
-          height: r.height,
-        };
-
-    if (!params.clips && !params.size) {
-      boundaries = calculateZoomedBoundaries(s, r, params);
-
-      ratio = {
-        width:  boundaries.maxX - boundaries.minX + boundaries.sizeMax * 2,
-        height: boundaries.maxY - boundaries.minY + boundaries.sizeMax * 2
-      };
-    }
-    else if (params.size && params.size >= 1) {
-      ratio = calculateAspectRatioFit(r.width, r.height, params.size);
-    }
-
-    ratio.width += margin;
-    ratio.height += margin;
-
-    return ratio;
-  }
-
-  /**
-  * This function generate a new canvas to download image
-  *
-  * Recognized parameters:
-  * **********************
-  * Here is the exhaustive list of every accepted parameters in the settings
-  * object:
-  * @param {s}  sigma instance
-  * @param {params}  Options
-  */
- function Image(s, r, params) {
-    params = params || {};
-
-    if (params.format && !(params.format in _types))
-      throw Error('sigma.renderers.image: unsupported format "' + params.format + '".');
-
-    var ratio = calculateRatio(s, r, params);
-
-    var batchEdgesDrawing = s.settings('batchEdgesDrawing');
-    if (batchEdgesDrawing) {
-      s.settings('batchEdgesDrawing', false); // it may crash if true
-    }
-
-    if(!params.clip)
-      this.clone(s, params, ratio);
-
-    var merged = this.draw(r, params, ratio);
-
-    s.settings('batchEdgesDrawing', batchEdgesDrawing); // restore setting
-
-    var dataUrl = merged.toDataURL(_types[params.format || 'png']);
-
-    if(params.download)
-      download(
-        dataUrl,
-        params.format || 'png',
-        params.filename
-      );
-
-    return dataUrl;
-  }
-
-  /**
-  * @param {s}  sigma instance
-  * @param {params}  Options
-  */
-  Image.prototype.clone = function(s, params, ratio) {
-    params.tmpContainer = params.tmpContainer || 'image-container';
-
-    var el = document.getElementById(params.tmpContainer);
-    if (!el) {
-      el =  document.createElement("div");
-      el.id = params.tmpContainer;
-      document.body.appendChild(el);
-    }
-    el.setAttribute("style",
-        'width:' + ratio.width + 'px;' +
-        'height:' + Math.round(ratio.height) + 'px;');
-
-    var renderer = s.addRenderer({
-      container: document.getElementById(params.tmpContainer),
-      type: 'canvas',
-      settings: {
-        batchEdgesDrawing: true,
-        drawLabels: !!params.labels
-      }
-    });
-    renderer.camera.ratio = (params.zoomRatio > 0) ? params.zoomRatio : 1;
-
-    var webgl = renderer instanceof sigma.renderers.webgl,
-        sized = false,
-        doneContexts = [];
-
-    _canvas = document.createElement('canvas');
-    _canvasContext = _canvas.getContext('2d');
-
-    s.refresh();
-
-    _contexts.forEach(function(name) {
-      if (!renderer.contexts[name])
-        return;
-
-      if (params.labels === false && name === 'labels')
-        return;
-
-      var canvas = renderer.domElements[name] || renderer.domElements.scene,
-        context = renderer.contexts[name];
-
-      if(!sized) {
-        _canvas.width = ratio.width;
-        _canvas.height = ratio.height;
-
-        if (webgl && context instanceof WebGLRenderingContext) {
-          _canvas.width  *= 0.5;
-          _canvas.height *= 0.5;
-        }
-
-        sized = true;
-      }
-
-      if (context instanceof WebGLRenderingContext)
-        _canvasContext.drawImage(canvas, 0, 0, canvas.width / 2, canvas.height / 2);
-      else
-        _canvasContext.drawImage(canvas, 0, 0);
-
-      if (~doneContexts.indexOf(context))
-        return;
-
-      doneContexts.push(context);
-    });
-
-    // Cleaning
-    doneContexts = [];
-    s.killRenderer(renderer);
-    el.parentNode.removeChild(el);
-  }
-
-  /**
-  * @param {renderer}  related renderer instance
-  * @param {params}  Options
-  */
-  Image.prototype.draw = function(r, params, ratio) {
-
-    if(!params.size || params.size < 1)
-      params.size = window.innerWidth;
-
-    var webgl = r instanceof sigma.renderers.webgl,
-        sized = false,
-        doneContexts = [];
-
-    var merged = document.createElement('canvas'),
-        mergedContext= merged.getContext('2d');
-
-    _contexts.forEach(function(name) {
-      if (!r.contexts[name])
-        return;
-
-      if (params.labels === false && name === 'labels')
-        return;
-
-      var canvas = r.domElements[name] || r.domElements.scene,
-        context = r.contexts[name];
-
-      if (~doneContexts.indexOf(context))
-        return;
-
-      if (!sized) {
-
-        var width, height;
-
-        if(!params.clip) {
-          width = _canvas.width;
-          height = _canvas.height;
-        } else {
-          width = canvas.width;
-          height = canvas.height;
-          ratio = calculateAspectRatioFit(width, height, params.size);
-        }
-
-        merged.width = ratio.width;
-        merged.height = ratio.height;
-
-        if (!webgl && !context instanceof WebGLRenderingContext) {
-          merged.width *= 2;
-          merged.height *=2;
-        }
-
-        sized = true;
-
-        // background color
-        if (params.background) {
-          mergedContext.rect(0, 0, merged.width, merged.height);
-          mergedContext.fillStyle = params.background;
-          mergedContext.fill();
-        }
-      }
-
-      if(params.clip)
-        mergedContext.drawImage(canvas, 0, 0, merged.width, merged.height);
-      else
-        mergedContext.drawImage(_canvas, 0, 0, merged.width, merged.height);
-
-      doneContexts.push(context);
-    });
-
-    // Cleaning
-    doneContexts = [];
-
-    return merged;
-  }
-
-  /**
-   * Interface
-   * ------------------
-   */
-  var _instance = null;
-
-  /**
-   * @param {sigma}  s       The related sigma instance.
-   * @param {renderer}  r    The related renderer instance.
-   * @param {object} options An object with options.
-   */
-  sigma.plugins.image = function(s, r, options) {
-    sigma.plugins.killImage();
-    // Create object if undefined
-    if (!_instance) {
-      _instance = new Image(s, r, options);
-    }
-    return _instance;
-  };
-
-  /**
-   *  This function kills the image instance.
-   */
-  sigma.plugins.killImage = function() {
-    if (_instance instanceof Image) {
-      _instance = null;
-      _canvas = null;
-      _canvasContext = null;
-    }
-  };
 
 }).call(this);
 
@@ -12835,14 +14944,13 @@ sigma.plugins.colorbrewer = {YlGn: {
 
   function poweredBy(options) {
     options = options || {};
-    var content,
+    var self = this,
+        content,
         html = options.html || this.settings('poweredByHTML'),
         url = options.url || this.settings('poweredByURL'),
         pingURL = options.pingURL || this.settings('poweredByPingURL');
 
-    if (!this.domElements['poweredby']) {
-      this.initDOM('div', 'poweredby');
-
+    if (!document.getElementsByClassName('sigma-poweredby').length) {
       if (url) {
         content = [
           '<a href="' +
@@ -12861,12 +14969,16 @@ sigma.plugins.colorbrewer = {YlGn: {
         img.src = pingURL;
       }
 
-      this.domElements['poweredby'].innerHTML = content.join('');
-      this.domElements['poweredby'].style.bottom = '2px';
-      this.domElements['poweredby'].style.right = '1px';
-      this.domElements['poweredby'].style.background = 'rgba(255, 255, 255, 0.8)';
+      var dom = document.createElement('div');
+      dom.setAttribute('class', 'sigma-poweredby');
+      dom.innerHTML = content.join('');
+      dom.style.position = 'absolute';
+      dom.style.bottom = '2px';
+      dom.style.right = '1px';
+      dom.style.zIndex = '1000';
+      dom.style.background = 'rgba(255, 255, 255, 0.8)';
 
-      this.container.appendChild(this.domElements['poweredby']);
+      this.container.appendChild(dom);
     }
   }
 
@@ -13461,12 +15573,13 @@ sigma.plugins.colorbrewer = {YlGn: {
      * This function removes the existing tooltip and creates a new tooltip for a
      * specified node or edge.
      *
-     * @param {object} o       The node or the edge.
-     * @param {object} options The options related to the object.
-     * @param {number} x       The X coordinate of the mouse.
-     * @param {number} y       The Y coordinate of the mouse.
+     * @param {object}    o          The node or the edge.
+     * @param {object}    options    The options related to the object.
+     * @param {number}    x          The X coordinate of the mouse.
+     * @param {number}    y          The Y coordinate of the mouse.
+     * @param {function?} onComplete Optional function called when open finish
      */
-    this.open = function(o, options, x, y) {
+    this.open = function(o, options, x, y, onComplete) {
       remove();
 
       // Create the DOM element:
@@ -13611,6 +15724,7 @@ sigma.plugins.colorbrewer = {YlGn: {
             _tooltip.style.left = x + 'px';
           }
         }
+        if (onComplete) onComplete();
       }, 0);
     };
 
@@ -13729,9 +15843,8 @@ sigma.plugins.colorbrewer = {YlGn: {
             null,
             so,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, so.delay);
       });
 
@@ -13790,9 +15903,8 @@ sigma.plugins.colorbrewer = {YlGn: {
             n,
             no,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, no.delay);
       });
 
@@ -13853,9 +15965,8 @@ sigma.plugins.colorbrewer = {YlGn: {
             e,
             eo,
             clientX,
-            clientY);
-
-          self.dispatchEvent('shown', event.data);
+            clientY,
+            self.dispatchEvent.bind(self,'shown', event.data));
         }, eo.delay);
       });
 
@@ -14991,7 +17102,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         t, sX, sY, tX, tY, cp.x1, cp.y1, cp.x2, cp.y2
       );
     } else {
-      cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
       c = sigma.utils.getPointOnQuadraticCurve(t, sX, sY, tX, tY, cp.x, cp.y);
     }
 
@@ -15744,14 +17855,13 @@ sigma.plugins.colorbrewer = {YlGn: {
   // Main function
   function halo(params) {
     params = params || {};
-    var pixelRatio = sigma.utils.getPixelRatio();
 
     if (!this.domElements['background']) {
       this.initDOM('canvas', 'background');
       this.domElements['background'].width =
-        this.container.offsetWidth * pixelRatio;
+        this.container.offsetWidth;
       this.domElements['background'].height =
-        this.container.offsetHeight * pixelRatio;
+        this.container.offsetHeight;
       this.container.insertBefore(this.domElements['background'], this.container.firstChild);
     }
 
@@ -15822,7 +17932,7 @@ sigma.plugins.colorbrewer = {YlGn: {
           context.bezierCurveTo(cp.x1, cp.y1, cp.x2, cp.y2, tX, tY);
         }
         else {
-          cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+          cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
           context.quadraticCurveTo(cp.x, cp.y, tX, tY);
         }
       }
@@ -16038,7 +18148,7 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, sSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     // Level:
     if (level) {
@@ -16160,7 +18270,7 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, tSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     if (source.id === target.id) {
       d = Math.sqrt(Math.pow(tX - cp.x1, 2) + Math.pow(tY - cp.y1, 2));
@@ -16981,6 +19091,101 @@ sigma.plugins.colorbrewer = {YlGn: {
 
   sigma.utils.pkg('sigma.canvas.edges');
 
+
+  var calc = function(ratio, n, i, sortByDirection) {
+    if (sortByDirection) {
+      // sort edges by direction:
+      var d = (ratio * n) / i;
+      return { y: d ? d : Number.POSITIVE_INFINITY };
+    }
+
+    var step = ratio / (n / 2);
+    var d = ratio - step * i;
+    return { y: d ? 1 / d : n };
+  };
+
+  /**
+   * Curves multiple edges between two nodes (i.e. "parallel edges").
+   * This method is not a renderer. It should be called after modification
+   * of the graph structure.
+   * Time complexity: 2 * O(|E|)
+   *
+   * Settings: autoCurveRatio, autoCurveSortByDirection
+   *
+   * @param {object} s The sigma instance
+   */
+  sigma.canvas.edges.autoCurve = function(s) {
+    var
+      key,
+      ratio = s.settings('autoCurveRatio'),
+      sortByDirection = s.settings('autoCurveSortByDirection'),
+      defaultEdgeType = s.settings('defaultEdgeType'),
+      edges = s.graph.edges();
+
+    var count = {
+      key: function(o) {
+        var key = o.source + ',' + o.target;
+        if (this[key]) {
+          return key;
+        }
+        if (!sortByDirection) {
+          key = o.target + ',' + o.source;
+          if (this[key]) {
+            return key;
+          }
+        }
+        this[key] = { i: 0, n: 0 };
+        return key;
+      },
+      inc: function(o) {
+        // number of edges parallel to this one (included)
+        this[this.key(o)].n++;
+      }
+    };
+
+    edges.forEach(function(edge) {
+      count.inc(edge);
+    });
+
+    edges.forEach(function(edge) {
+      key = count.key(edge);
+
+      if (count[key].n > 1) {
+        // update edge type:
+        if (edge.type === 'arrow' || edge.type === 'tapered' ||
+          defaultEdgeType === 'arrow' || defaultEdgeType === 'tapered') {
+
+          if (!edge.cc_prev_type) {
+            edge.cc_prev_type = edge.type;
+          }
+          edge.type = 'curvedArrow';
+        }
+        else {
+          if (!edge.cc_prev_type) {
+            edge.cc_prev_type = edge.type;
+          }
+          edge.type = 'curve';
+        }
+
+        // curvature coefficients
+        edge.cc = calc(ratio, count[key].n, count[key].i++, sortByDirection);
+      }
+      else if (edge.cc) {
+        // the edge is no longer a parallel edge
+        edge.type = edge.cc_prev_type;
+        edge.cc_prev_type = null;
+        edge.cc = null;
+      }
+    });
+  };
+
+})();
+
+;(function() {
+  'use strict';
+
+  sigma.utils.pkg('sigma.canvas.edges');
+
   /**
    * This edge renderer will display edges as curves.
    *
@@ -17009,7 +19214,7 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, sSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     // Level:
     if (level) {
@@ -17083,6 +19288,7 @@ sigma.plugins.colorbrewer = {YlGn: {
       context.shadowColor = '#000000'
     }
   };
+
 })();
 
 ;(function() {
@@ -17125,7 +19331,7 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     cp = (source.id === target.id) ?
       sigma.utils.getSelfLoopControlPoints(sX, sY, tSize) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY);
+      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
 
     if (source.id === target.id) {
       d = Math.sqrt(Math.pow(tX - cp.x1, 2) + Math.pow(tY - cp.y1, 2));
@@ -17839,7 +20045,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'] || 1,
         defaultNodeColor = settings('defaultNodeColor'),
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         alignment = settings('labelAlignment'),
         fontSize = (settings('labelSize') === 'fixed') ?
           settings('defaultLabelSize') :
@@ -17847,13 +20053,15 @@ sigma.plugins.colorbrewer = {YlGn: {
         color = settings('nodeHoverColor') === 'node' ?
           (node.color || defaultNodeColor) :
           settings('defaultNodeHoverColor'),
+        borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (node.border_color || defaultNodeColor),
         level = settings('nodeHoverLevel');
 
     if (alignment !== 'center') {
       prepareLabelBackground(context);
-      drawHoverBorder(alignment, context, fontSize, node);
+      drawLabelBackground(alignment, context, fontSize, node);
     }
-
 
     // Level:
     if (level) {
@@ -17891,9 +20099,9 @@ sigma.plugins.colorbrewer = {YlGn: {
     // Node border:
     if (borderSize > 0) {
       context.beginPath();
-      context.fillStyle = settings('nodeBorderColor') === 'node' ?
-        (node.color || defaultNodeColor) :
-        settings('defaultNodeBorderColor');
+      context.fillStyle = settings('nodeBorderColor') === 'node'
+        ? borderColor
+        : settings('defaultNodeBorderColor');
       context.arc(
         node[prefix + 'x'],
         node[prefix + 'y'],
@@ -17918,7 +20126,7 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     if (alignment === 'center') {
       prepareLabelBackground(context);
-      drawHoverBorder(alignment, context, fontSize, node);
+      drawLabelBackground(alignment, context, fontSize, node);
     }
 
     // Display the label:
@@ -17929,6 +20137,7 @@ sigma.plugins.colorbrewer = {YlGn: {
 
       var labelOffsetX = 0,
           labelOffsetY = fontSize / 3,
+          shouldRender = true,
           labelWidth;
       context.textAlign = "center";
 
@@ -17945,8 +20154,14 @@ sigma.plugins.colorbrewer = {YlGn: {
         case 'top':
           labelOffsetY = - size - 2 * fontSize / 3;
           break;
+        case 'constrained':
+          labelWidth = sigma.utils.canvas.getTextWidth(node.label);
+          if (labelWidth > (size + fontSize / 3) * 2) {
+            shouldRender = false;
+          }
+          break;
         case 'inside':
-          labelWidth = getTextWidth(node.label);
+          labelWidth = sigma.utils.canvas.getTextWidth(node.label);
           if (labelWidth <= (size + fontSize / 3) * 2) {
             break;
           }
@@ -17959,11 +20174,13 @@ sigma.plugins.colorbrewer = {YlGn: {
           break;
       }
 
-      context.fillText(
-        node.label,
-        Math.round(node[prefix + 'x'] + labelOffsetX),
-        Math.round(node[prefix + 'y'] + labelOffsetY)
-      );
+      if (shouldRender) {
+        context.fillText(
+          node.label,
+          Math.round(node[prefix + 'x'] + labelOffsetX),
+          Math.round(node[prefix + 'y'] + labelOffsetY)
+        );
+      }
     }
 
     function prepareLabelBackground(context) {
@@ -17983,7 +20200,7 @@ sigma.plugins.colorbrewer = {YlGn: {
       }
     }
 
-    function drawHoverBorder(alignment, context, fontSize, node) {
+    function drawLabelBackground(alignment, context, fontSize, node) {
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
           labelWidth = sigma.utils.canvas.getTextWidth(context,
@@ -17995,6 +20212,8 @@ sigma.plugins.colorbrewer = {YlGn: {
       if (node.label && typeof node.label === 'string') {
         // draw a rectangle for the label
         switch (alignment) {
+          case 'constrained':
+          /* falls through*/
           case 'center':
             y = Math.round(node[prefix + 'y'] - fontSize * 0.5 - 2);
             context.rect(x - w * 0.5, y, w, h);
@@ -18080,9 +20299,10 @@ sigma.plugins.colorbrewer = {YlGn: {
         labelWidth,
         labelOffsetX,
         labelOffsetY,
+        shouldRender = true,
         alignment = settings('labelAlignment');
 
-    if (size < settings('labelThreshold'))
+    if (size <= settings('labelThreshold'))
       return;
 
     if (!node.label || typeof node.label !== 'string')
@@ -18133,6 +20353,13 @@ sigma.plugins.colorbrewer = {YlGn: {
       case 'top':
         labelOffsetY = - size - 2 * fontSize / 3;
         break;
+      case 'constrained':
+        labelWidth = sigma.utils.canvas.getTextWidth(context,
+            settings('approximateLabelWidth'), fontSize, node.label);
+        if (labelWidth > (size + fontSize / 3) * 2) {
+          shouldRender = false;
+        }
+        break;
       case 'inside':
         labelWidth = sigma.utils.canvas.getTextWidth(context,
             settings('approximateLabelWidth'), fontSize, node.label);
@@ -18148,11 +20375,13 @@ sigma.plugins.colorbrewer = {YlGn: {
         break;
     }
 
-    context.fillText(
-      node.label,
-      Math.round(node[prefix + 'x'] + labelOffsetX),
-      Math.round(node[prefix + 'y'] + labelOffsetY)
-    );
+    if (shouldRender) {
+      context.fillText(
+        node.label,
+        Math.round(node[prefix + 'x'] + labelOffsetX),
+        Math.round(node[prefix + 'y'] + labelOffsetY)
+      );
+    }
   };
 }).call(this);
 
@@ -18160,10 +20389,6 @@ sigma.plugins.colorbrewer = {YlGn: {
   'use strict';
 
   sigma.utils.pkg('sigma.canvas.nodes');
-
-  // incrementally scaled, not automatically resized for now
-  // (ie. possible memory leak if there are many graph load / unload)
-  var imgCache = {};
 
   var drawCross = function(node, x, y, size, context) {
     var lineWeight = (node.cross && node.cross.lineWeight) || 1;
@@ -18181,79 +20406,6 @@ sigma.plugins.colorbrewer = {YlGn: {
     context.lineTo(x - lineWeight, y - lineWeight);
   }
 
-  var drawImage = function (node, x, y, size, context, imgCrossOrigin, threshold) {
-    if(!node.image || !node.image.url || size < threshold) return;
-
-    var url = node.image.url;
-    var ih = node.image.h || 1; // 1 is arbitrary, anyway only the ratio counts
-    var iw = node.image.w || 1;
-    var scale = node.image.scale || 1;
-    var clip = node.image.clip || 1;
-
-    // create new IMG or get from imgCache
-    var image = imgCache[url];
-    if(!image) {
-      image = document.createElement('IMG');
-      image.setAttribute('crossOrigin', imgCrossOrigin);
-      image.src = url;
-      image.onload = function() {
-        window.dispatchEvent(new Event('resize'));
-      };
-      imgCache[url] = image;
-    }
-
-    // calculate position and draw
-    var xratio = (iw < ih) ? (iw / ih) : 1;
-    var yratio = (ih < iw) ? (ih / iw) : 1;
-    var r = size * scale;
-
-    // Draw the clipping cross:
-    context.save(); // enter clipping mode
-    context.beginPath();
-    drawCross(node, x, y, size, context);
-    context.closePath();
-    context.clip();
-
-    // Draw the actual image
-    context.drawImage(
-      image,
-      x + Math.sin(-3.142 / 4) * r * xratio,
-      y - Math.cos(-3.142 / 4) * r * yratio,
-      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
-      r * yratio * 2 * Math.cos(-3.142 / 4)
-    );
-    context.restore(); // exit clipping mode
-  };
-
-  var drawIcon = function (node, x, y, size, context, threshold) {
-    if(!node.icon || size < threshold) return;
-
-    var font = node.icon.font || 'Arial',
-        fgColor = node.icon.color || '#F00',
-        text = node.icon.content || '?',
-        px = node.icon.x || 0.5,
-        py = node.icon.y || 0.5,
-        height = size,
-        width = size;
-
-
-    var fontSizeRatio = 0.70;
-    if (typeof node.icon.scale === "number") {
-      fontSizeRatio = Math.abs(Math.max(0.01, node.icon.scale));
-    }
-
-
-    var fontSize = Math.round(fontSizeRatio * height);
-
-    context.save();
-    context.fillStyle = fgColor;
-
-    context.font = '' + fontSize + 'px ' + font;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, x, y);
-    context.restore();
-  };
 
   /**
    * The node renderer renders the node as a cross.
@@ -18271,43 +20423,16 @@ sigma.plugins.colorbrewer = {YlGn: {
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
+        borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
 
     // Level:
-    if (level) {
-      context.shadowOffsetX = 0;
-      // inspired by Material Design shadows, level from 1 to 5:
-      switch(level) {
-        case 1:
-          context.shadowOffsetY = 1.5;
-          context.shadowBlur = 4;
-          context.shadowColor = 'rgba(0,0,0,0.36)';
-          break;
-        case 2:
-          context.shadowOffsetY = 3;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.39)';
-          break;
-        case 3:
-          context.shadowOffsetY = 6;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.42)';
-          break;
-        case 4:
-          context.shadowOffsetY = 10;
-          context.shadowBlur = 20;
-          context.shadowColor = 'rgba(0,0,0,0.47)';
-          break;
-        case 5:
-          context.shadowOffsetY = 15;
-          context.shadowBlur = 24;
-          context.shadowColor = 'rgba(0,0,0,0.52)';
-          break;
-      }
-    }
+    sigma.utils.canvas.setLevel(level, context);
 
     // Color:
     if (node.active) {
@@ -18319,7 +20444,7 @@ sigma.plugins.colorbrewer = {YlGn: {
       }
     }
 
-    // Border:
+    // Outer border:
     if (node.active) {
       if (outerBorderSize > 0) {
         context.beginPath();
@@ -18330,17 +20455,20 @@ sigma.plugins.colorbrewer = {YlGn: {
         context.closePath();
         context.fill();
       }
-      if (borderSize > 0) {
-        context.beginPath();
-        context.fillStyle = settings('nodeBorderColor') === 'node' ?
-          (color || defaultNodeColor) :
-          settings('defaultNodeBorderColor');
-        drawCross(node, x, y, size + borderSize, context);
-        context.closePath();
-        context.fill();
-      }
     }
 
+    // Border:
+    if (borderSize > 0) {
+      context.beginPath();
+      context.fillStyle = settings('nodeBorderColor') === 'node'
+        ? borderColor
+        : settings('defaultNodeBorderColor');
+      drawCross(node, x, y, size + borderSize, context);
+      context.closePath();
+      context.fill();
+    }
+
+    // Shape:
     context.fillStyle = color;
     context.beginPath();
     drawCross(node, x, y, size, context);
@@ -18348,20 +20476,18 @@ sigma.plugins.colorbrewer = {YlGn: {
     context.fill();
 
     // reset shadow
-    if (level) {
-      context.shadowOffsetY = 0;
-      context.shadowBlur = 0;
-      context.shadowColor = '#000000'
-    }
+    sigma.utils.canvas.setLevel(level, context);
 
     // Image:
     if (node.image) {
-      drawImage(node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'));
+      sigma.utils.canvas.drawImage(
+        node, x, y, size, context, imgCrossOrigin, settings('imageThreshold', drawCross)
+      );
     }
 
     // Icon:
     if (node.icon) {
-      drawIcon(node, x, y, size, context, settings('iconThreshold'));
+      sigma.utils.canvas.drawIcon(node, x, y, size, context, settings('iconThreshold'));
     }
 
   };
@@ -18372,83 +20498,15 @@ sigma.plugins.colorbrewer = {YlGn: {
 
   sigma.utils.pkg('sigma.canvas.nodes');
 
-  // incrementally scaled, not automatically resized for now
-  // (ie. possible memory leak if there are many graph load / unload)
-  var imgCache = {};
-
-  var drawImage = function (node, x, y, size, context, imgCrossOrigin, threshold) {
-    if(!node.image || !node.image.url || size < threshold) return;
-
-    var url = node.image.url;
-    var ih = node.image.h || 1; // 1 is arbitrary, anyway only the ratio counts
-    var iw = node.image.w || 1;
-    var scale = node.image.scale || 1;
-    var clip = node.image.clip || 1;
-
-    // create new IMG or get from imgCache
-    var image = imgCache[url];
-    if(!image) {
-      image = document.createElement('IMG');
-      image.setAttribute('crossOrigin', imgCrossOrigin);
-      image.src = url;
-      image.onload = function() {
-        window.dispatchEvent(new Event('resize'));
-      };
-      imgCache[url] = image;
-    }
-
-    // calculate position and draw
-    var xratio = (iw < ih) ? (iw / ih) : 1;
-    var yratio = (ih < iw) ? (ih / iw) : 1;
-    var r = size * scale;
-
-    // Draw the clipping disc:
-    context.save(); // enter clipping mode
+  var drawBorder = function(context, x, y, radius, color, line_width) {
     context.beginPath();
-    context.arc(x, y, size * clip, 0, Math. PI * 2, true);
+    context.strokeStyle = color;
+	  context.lineWidth = line_width;
+    context.arc(x, y, radius, 0, Math.PI * 2, true);
     context.closePath();
-    context.clip();
-
-    // Draw the actual image
-    context.drawImage(
-      image,
-      x + Math.sin(-3.142 / 4) * r * xratio,
-      y - Math.cos(-3.142 / 4) * r * yratio,
-      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
-      r * yratio * 2 * Math.cos(-3.142 / 4)
-    );
-    context.restore(); // exit clipping mode
+    context.stroke();
   };
 
-  var drawIcon = function (node, x, y, size, context, threshold) {
-    if(!node.icon || size < threshold) return;
-
-    var font = node.icon.font || 'Arial',
-        fgColor = node.icon.color || '#F00',
-        text = node.icon.content || '?',
-        px = node.icon.x || 0.5,
-        py = node.icon.y || 0.5,
-        height = size,
-        width = size;
-
-
-    var fontSizeRatio = 0.70;
-    if (typeof node.icon.scale === "number") {
-      fontSizeRatio = Math.abs(Math.max(0.01, node.icon.scale));
-    }
-
-
-    var fontSize = Math.round(fontSizeRatio * height);
-
-    context.save();
-    context.fillStyle = fgColor;
-
-    context.font = '' + fontSize + 'px ' + font;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, x, y);
-    context.restore();
-  };
 
   /**
    * The default node renderer. It renders the node as a simple disc.
@@ -18466,43 +20524,16 @@ sigma.plugins.colorbrewer = {YlGn: {
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
+	    borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
 
     // Level:
-    if (level) {
-      context.shadowOffsetX = 0;
-      // inspired by Material Design shadows, level from 1 to 5:
-      switch(level) {
-        case 1:
-          context.shadowOffsetY = 1.5;
-          context.shadowBlur = 4;
-          context.shadowColor = 'rgba(0,0,0,0.36)';
-          break;
-        case 2:
-          context.shadowOffsetY = 3;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.39)';
-          break;
-        case 3:
-          context.shadowOffsetY = 6;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.42)';
-          break;
-        case 4:
-          context.shadowOffsetY = 10;
-          context.shadowBlur = 20;
-          context.shadowColor = 'rgba(0,0,0,0.47)';
-          break;
-        case 5:
-          context.shadowOffsetY = 15;
-          context.shadowBlur = 24;
-          context.shadowColor = 'rgba(0,0,0,0.52)';
-          break;
-      }
-    }
+    sigma.utils.canvas.setLevel(level, context);
 
     if (node.active) {
       // Color:
@@ -18526,9 +20557,9 @@ sigma.plugins.colorbrewer = {YlGn: {
       // Border:
       if (borderSize > 0) {
         context.beginPath();
-        context.fillStyle = settings('nodeBorderColor') === 'node' ?
-          (color || defaultNodeColor) :
-          settings('defaultNodeBorderColor');
+        context.fillStyle = settings('nodeBorderColor') === 'node'
+          ? borderColor
+          : settings('defaultNodeBorderColor');
         context.arc(x, y, size + borderSize, 0, Math.PI * 2, true);
         context.closePath();
         context.fill();
@@ -18556,6 +20587,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         context.fill();
         lastend += Math.PI * 2 * j;
       }
+      sigma.utils.canvas.resetLevel(context);
     }
     else {
       context.fillStyle = color;
@@ -18563,23 +20595,24 @@ sigma.plugins.colorbrewer = {YlGn: {
       context.arc(x, y, size, 0, Math.PI * 2, true);
       context.closePath();
       context.fill();
-    }
 
-    // reset shadow
-    if (level) {
-      context.shadowOffsetY = 0;
-      context.shadowBlur = 0;
-      context.shadowColor = '#000000'
+      sigma.utils.canvas.resetLevel(context);
+
+      if (!node.active && borderSize > 0 && (size > 2 * borderSize)) {
+		    drawBorder(context, x, y, size, borderColor, borderSize);
+      }
     }
 
     // Image:
     if (node.image) {
-      drawImage(node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'));
+      sigma.utils.canvas.drawImage(
+        node, x, y, size, context, imgCrossOrigin, settings('imageThreshold')
+      );
     }
 
     // Icon:
     if (node.icon) {
-      drawIcon(node, x, y, size, context, settings('iconThreshold'));
+      sigma.utils.canvas.drawIcon(node, x, y, size, context, settings('iconThreshold'));
     }
 
   };
@@ -18590,90 +20623,13 @@ sigma.plugins.colorbrewer = {YlGn: {
 
   sigma.utils.pkg('sigma.canvas.nodes');
 
-  // incrementally scaled, not automatically resized for now
-  // (ie. possible memory leak if there are many graph load / unload)
-  var imgCache = {};
-
   var drawDiamond = function(node, x, y, size, context) {
     context.moveTo(x - size, y);
     context.lineTo(x, y - size);
     context.lineTo(x + size, y);
     context.lineTo(x, y + size);
-  }
-
-  var drawImage = function (node, x, y, size, context, imgCrossOrigin, threshold) {
-    if(!node.image || !node.image.url || size < threshold) return;
-
-    var url = node.image.url;
-    var ih = node.image.h || 1; // 1 is arbitrary, anyway only the ratio counts
-    var iw = node.image.w || 1;
-    var scale = node.image.scale || 1;
-    var clip = node.image.clip || 1;
-
-    // create new IMG or get from imgCache
-    var image = imgCache[url];
-    if(!image) {
-      image = document.createElement('IMG');
-      image.setAttribute('crossOrigin', imgCrossOrigin);
-      image.src = url;
-      image.onload = function() {
-        window.dispatchEvent(new Event('resize'));
-      };
-      imgCache[url] = image;
-    }
-
-    // calculate position and draw
-    var xratio = (iw < ih) ? (iw / ih) : 1;
-    var yratio = (ih < iw) ? (ih / iw) : 1;
-    var r = size * scale;
-
-    // Draw the clipping diamond:
-    context.save(); // enter clipping mode
-    context.beginPath();
-    drawDiamond(node, x, y, size, context);
-    context.closePath();
-    context.clip();
-
-    // Draw the actual image
-    context.drawImage(
-      image,
-      x + Math.sin(-3.142 / 4) * r * xratio,
-      y - Math.cos(-3.142 / 4) * r * yratio,
-      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
-      r * yratio * 2 * Math.cos(-3.142 / 4)
-    );
-    context.restore(); // exit clipping mode
   };
 
-  var drawIcon = function (node, x, y, size, context, threshold) {
-    if(!node.icon || size < threshold) return;
-
-    var font = node.icon.font || 'Arial',
-        fgColor = node.icon.color || '#F00',
-        text = node.icon.content || '?',
-        px = node.icon.x || 0.5,
-        py = node.icon.y || 0.5,
-        height = size,
-        width = size;
-
-
-    var fontSizeRatio = 0.70;
-    if (typeof node.icon.scale === "number") {
-      fontSizeRatio = Math.abs(Math.max(0.01, node.icon.scale));
-    }
-
-
-    var fontSize = Math.round(fontSizeRatio * height);
-
-    context.save();
-    context.fillStyle = fgColor;
-
-    context.font = '' + fontSize + 'px ' + font;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, x, y);
-    context.restore();
-  };
 
   /**
    * The node renderer renders the node as a diamond.
@@ -18691,43 +20647,13 @@ sigma.plugins.colorbrewer = {YlGn: {
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
+        borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
-
-    // Level:
-    if (level) {
-      context.shadowOffsetX = 0;
-      // inspired by Material Design shadows, level from 1 to 5:
-      switch(level) {
-        case 1:
-          context.shadowOffsetY = 1.5;
-          context.shadowBlur = 4;
-          context.shadowColor = 'rgba(0,0,0,0.36)';
-          break;
-        case 2:
-          context.shadowOffsetY = 3;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.39)';
-          break;
-        case 3:
-          context.shadowOffsetY = 6;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.42)';
-          break;
-        case 4:
-          context.shadowOffsetY = 10;
-          context.shadowBlur = 20;
-          context.shadowColor = 'rgba(0,0,0,0.47)';
-          break;
-        case 5:
-          context.shadowOffsetY = 15;
-          context.shadowBlur = 24;
-          context.shadowColor = 'rgba(0,0,0,0.52)';
-          break;
-      }
-    }
 
     if (node.active) {
       // Color:
@@ -18738,8 +20664,13 @@ sigma.plugins.colorbrewer = {YlGn: {
         color = settings('defaultNodeActiveColor') || color;
       }
 
-      // Border:
+      // Outer border:
       if (outerBorderSize > 0) {
+        // Level:
+        if (level) {
+          setShadow(level, context);
+        }
+
         context.beginPath();
         context.fillStyle = settings('nodeOuterBorderColor') === 'node' ?
           (color || defaultNodeColor) :
@@ -18747,18 +20678,28 @@ sigma.plugins.colorbrewer = {YlGn: {
         drawDiamond(node, x, y, size + borderSize + outerBorderSize, context);
         context.closePath();
         context.fill();
-      }
-      if (borderSize > 0) {
-        context.beginPath();
-        context.fillStyle = settings('nodeBorderColor') === 'node' ?
-          (color || defaultNodeColor) :
-          settings('defaultNodeBorderColor');
-        drawDiamond(node, x, y, size + borderSize, context);
-        context.closePath();
-        context.fill();
+
+        if (level) {
+          resetShadow(context);
+        }
       }
     }
 
+    // Border:
+    if (borderSize > 0) {
+      context.beginPath();
+      context.fillStyle = settings('nodeBorderColor') === 'node'
+        ? borderColor
+        : settings('defaultNodeBorderColor');
+      drawDiamond(node, x, y, size + borderSize, context);
+      context.closePath();
+      context.fill();
+    }
+
+    // Level:
+    sigma.utils.canvas.setLevel(level, context);
+
+    // Shape:
     context.fillStyle = color;
     context.beginPath();
     drawDiamond(node, x, y, size, context);
@@ -18767,19 +20708,19 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     // reset shadow
     if (level) {
-      context.shadowOffsetY = 0;
-      context.shadowBlur = 0;
-      context.shadowColor = '#000000'
+      sigma.utils.canvas.resetLevel(context);
     }
 
     // Image:
     if (node.image) {
-      drawImage(node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'));
+      sigma.utils.canvas.drawImage(
+        node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'), drawDiamond
+      );
     }
 
     // Icon:
     if (node.icon) {
-      drawIcon(node, x, y, size, context, settings('iconThreshold'));
+      sigma.utils.canvas.drawIcon(node, x, y, size, context, settings('iconThreshold'));
     }
 
   };
@@ -18789,10 +20730,6 @@ sigma.plugins.colorbrewer = {YlGn: {
   'use strict';
 
   sigma.utils.pkg('sigma.canvas.nodes');
-
-  // incrementally scaled, not automatically resized for now
-  // (ie. possible memory leak if there are many graph load / unload)
-  var imgCache = {};
 
   var drawEquilateral = function(node, x, y, size, context) {
     var pcount = (node.equilateral && node.equilateral.numPoints) || 5;
@@ -18815,81 +20752,8 @@ sigma.plugins.colorbrewer = {YlGn: {
         y - Math.cos(rotate + 2 * Math.PI * i / pcount) * radius
       );
     }
-  }
-
-  var drawImage = function (node, x, y, size, context, imgCrossOrigin, threshold) {
-    if(!node.image || !node.image.url || size < threshold) return;
-
-    var url = node.image.url;
-    var ih = node.image.h || 1; // 1 is arbitrary, anyway only the ratio counts
-    var iw = node.image.w || 1;
-    var scale = node.image.scale || 1;
-    var clip = node.image.clip || 1;
-
-    // create new IMG or get from imgCache
-    var image = imgCache[url];
-    if(!image) {
-      image = document.createElement('IMG');
-      image.setAttribute('crossOrigin', imgCrossOrigin);
-      image.src = url;
-      image.onload = function() {
-        window.dispatchEvent(new Event('resize'));
-      };
-      imgCache[url] = image;
-    }
-
-    // calculate position and draw
-    var xratio = (iw < ih) ? (iw / ih) : 1;
-    var yratio = (ih < iw) ? (ih / iw) : 1;
-    var r = size * scale;
-
-    // Draw the clipping equilateral:
-    context.save(); // enter clipping mode
-    context.beginPath();
-    drawEquilateral(node, x, y, size, context);
-    context.closePath();
-    context.clip();
-
-    // Draw the actual image
-    context.drawImage(
-      image,
-      x + Math.sin(-3.142 / 4) * r * xratio,
-      y - Math.cos(-3.142 / 4) * r * yratio,
-      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
-      r * yratio * 2 * Math.cos(-3.142 / 4)
-    );
-    context.restore(); // exit clipping mode
   };
 
-  var drawIcon = function (node, x, y, size, context, threshold) {
-    if(!node.icon || size < threshold) return;
-
-    var font = node.icon.font || 'Arial',
-        fgColor = node.icon.color || '#F00',
-        text = node.icon.content || '?',
-        px = node.icon.x || 0.5,
-        py = node.icon.y || 0.5,
-        height = size,
-        width = size;
-
-
-    var fontSizeRatio = 0.70;
-    if (typeof node.icon.scale === "number") {
-      fontSizeRatio = Math.abs(Math.max(0.01, node.icon.scale));
-    }
-
-
-    var fontSize = Math.round(fontSizeRatio * height);
-
-    context.save();
-    context.fillStyle = fgColor;
-
-    context.font = '' + fontSize + 'px ' + font;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, x, y);
-    context.restore();
-  };
 
   /**
    * The node renderer renders the node as a equilateral.
@@ -18907,43 +20771,13 @@ sigma.plugins.colorbrewer = {YlGn: {
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
+        borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
-
-    // Level:
-    if (level) {
-      context.shadowOffsetX = 0;
-      // inspired by Material Design shadows, level from 1 to 5:
-      switch(level) {
-        case 1:
-          context.shadowOffsetY = 1.5;
-          context.shadowBlur = 4;
-          context.shadowColor = 'rgba(0,0,0,0.36)';
-          break;
-        case 2:
-          context.shadowOffsetY = 3;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.39)';
-          break;
-        case 3:
-          context.shadowOffsetY = 6;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.42)';
-          break;
-        case 4:
-          context.shadowOffsetY = 10;
-          context.shadowBlur = 20;
-          context.shadowColor = 'rgba(0,0,0,0.47)';
-          break;
-        case 5:
-          context.shadowOffsetY = 15;
-          context.shadowBlur = 24;
-          context.shadowColor = 'rgba(0,0,0,0.52)';
-          break;
-      }
-    }
 
     if (node.active) {
       // Color:
@@ -18954,7 +20788,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         color = settings('defaultNodeActiveColor') || color;
       }
 
-      // Border:
+      // Outer border:
       if (outerBorderSize > 0) {
         context.beginPath();
         context.fillStyle = settings('nodeOuterBorderColor') === 'node' ?
@@ -18964,17 +20798,23 @@ sigma.plugins.colorbrewer = {YlGn: {
         context.closePath();
         context.fill();
       }
-      if (borderSize > 0) {
-        context.beginPath();
-        context.fillStyle = settings('nodeBorderColor') === 'node' ?
-          (color || defaultNodeColor) :
-          settings('defaultNodeBorderColor');
-        drawEquilateral(node, x, y, size + borderSize, context);
-        context.closePath();
-        context.fill();
-      }
     }
 
+    // Border:
+    if (borderSize > 0) {
+      context.beginPath();
+      context.fillStyle = settings('nodeBorderColor') === 'node'
+        ? borderColor
+        : settings('defaultNodeBorderColor');
+      drawEquilateral(node, x, y, size + borderSize, context);
+      context.closePath();
+      context.fill();
+    }
+
+    // Level:
+    sigma.utils.canvas.setLevel(level, context);
+
+    // Shape:
     context.fillStyle = color;
     context.beginPath();
     drawEquilateral(node, x, y, size, context);
@@ -18983,19 +20823,19 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     // reset shadow
     if (level) {
-      context.shadowOffsetY = 0;
-      context.shadowBlur = 0;
-      context.shadowColor = '#000000'
+      sigma.utils.canvas.resetLevel(context);
     }
 
     // Image:
     if (node.image) {
-      drawImage(node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'));
+      sigma.utils.canvas.drawImage(
+        node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'), drawEquilateral
+      );
     }
 
     // Icon:
     if (node.icon) {
-      drawIcon(node, x, y, size, context, settings('iconThreshold'));
+      sigma.utils.canvas.drawIcon(node, x, y, size, context, settings('iconThreshold'));
     }
 
   };
@@ -19005,10 +20845,6 @@ sigma.plugins.colorbrewer = {YlGn: {
   'use strict';
 
   sigma.utils.pkg('sigma.canvas.nodes');
-
-  // incrementally scaled, not automatically resized for now
-  // (ie. possible memory leak if there are many graph load / unload)
-  var imgCache = {};
 
   var drawSquare = function(node, x, y, size, context) {
     // 45 deg rotation of a diamond shape
@@ -19026,81 +20862,8 @@ sigma.plugins.colorbrewer = {YlGn: {
         y - Math.cos(rotate + 2 * Math.PI * i / 4) * size
       );
     }
-  }
-
-  var drawImage = function (node, x, y, size, context, imgCrossOrigin, threshold) {
-    if(!node.image || !node.image.url || size < threshold) return;
-
-    var url = node.image.url;
-    var ih = node.image.h || 1; // 1 is arbitrary, anyway only the ratio counts
-    var iw = node.image.w || 1;
-    var scale = node.image.scale || 1;
-    var clip = node.image.clip || 1;
-
-    // create new IMG or get from imgCache
-    var image = imgCache[url];
-    if(!image) {
-      image = document.createElement('IMG');
-      image.setAttribute('crossOrigin', imgCrossOrigin);
-      image.src = url;
-      image.onload = function() {
-        window.dispatchEvent(new Event('resize'));
-      };
-      imgCache[url] = image;
-    }
-
-    // calculate position and draw
-    var xratio = (iw < ih) ? (iw / ih) : 1;
-    var yratio = (ih < iw) ? (ih / iw) : 1;
-    var r = size * scale;
-
-    // Draw the clipping square:
-    context.save(); // enter clipping mode
-    context.beginPath();
-    drawSquare(node, x, y, size, context);
-    context.closePath();
-    context.clip();
-
-    // Draw the actual image
-    context.drawImage(
-      image,
-      x + Math.sin(-3.142 / 4) * r * xratio,
-      y - Math.cos(-3.142 / 4) * r * yratio,
-      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
-      r * yratio * 2 * Math.cos(-3.142 / 4)
-    );
-    context.restore(); // exit clipping mode
   };
 
-  var drawIcon = function (node, x, y, size, context, threshold) {
-    if(!node.icon || size < threshold) return;
-
-    var font = node.icon.font || 'Arial',
-        fgColor = node.icon.color || '#F00',
-        text = node.icon.content || '?',
-        px = node.icon.x || 0.5,
-        py = node.icon.y || 0.5,
-        height = size,
-        width = size;
-
-
-    var fontSizeRatio = 0.70;
-    if (typeof node.icon.scale === "number") {
-      fontSizeRatio = Math.abs(Math.max(0.01, node.icon.scale));
-    }
-
-
-    var fontSize = Math.round(fontSizeRatio * height);
-
-    context.save();
-    context.fillStyle = fgColor;
-
-    context.font = '' + fontSize + 'px ' + font;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, x, y);
-    context.restore();
-  };
 
   /**
    * The node renderer renders the node as a square.
@@ -19118,43 +20881,13 @@ sigma.plugins.colorbrewer = {YlGn: {
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
+        borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
-
-    // Level:
-    if (level) {
-      context.shadowOffsetX = 0;
-      // inspired by Material Design shadows, level from 1 to 5:
-      switch(level) {
-        case 1:
-          context.shadowOffsetY = 1.5;
-          context.shadowBlur = 4;
-          context.shadowColor = 'rgba(0,0,0,0.36)';
-          break;
-        case 2:
-          context.shadowOffsetY = 3;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.39)';
-          break;
-        case 3:
-          context.shadowOffsetY = 6;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.42)';
-          break;
-        case 4:
-          context.shadowOffsetY = 10;
-          context.shadowBlur = 20;
-          context.shadowColor = 'rgba(0,0,0,0.47)';
-          break;
-        case 5:
-          context.shadowOffsetY = 15;
-          context.shadowBlur = 24;
-          context.shadowColor = 'rgba(0,0,0,0.52)';
-          break;
-      }
-    }
 
     if (node.active) {
       // Color:
@@ -19165,7 +20898,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         color = settings('defaultNodeActiveColor') || color;
       }
 
-      // Border:
+      // Outer border:
       if (outerBorderSize > 0) {
         context.beginPath();
         context.fillStyle = settings('nodeOuterBorderColor') === 'node' ?
@@ -19175,17 +20908,23 @@ sigma.plugins.colorbrewer = {YlGn: {
         context.closePath();
         context.fill();
       }
-      if (borderSize > 0) {
-        context.beginPath();
-        context.fillStyle = settings('nodeBorderColor') === 'node' ?
-          (color || defaultNodeColor) :
-          settings('defaultNodeBorderColor');
-        drawSquare(node, x, y, size + borderSize, context);
-        context.closePath();
-        context.fill();
-      }
     }
 
+    // Border:
+    if (borderSize > 0) {
+      context.beginPath();
+      context.fillStyle = settings('nodeBorderColor') === 'node'
+        ? borderColor
+        : settings('defaultNodeBorderColor');
+      drawSquare(node, x, y, size + borderSize, context);
+      context.closePath();
+      context.fill();
+    }
+
+    // Level:
+    sigma.utils.canvas.setLevel(level, context);
+
+    // Shape:
     context.fillStyle = color;
     context.beginPath();
     drawSquare(node, x, y, size, context);
@@ -19194,19 +20933,19 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     // reset shadow
     if (level) {
-      context.shadowOffsetY = 0;
-      context.shadowBlur = 0;
-      context.shadowColor = '#000000'
+      sigma.utils.canvas.resetLevel(context);
     }
 
     // Image:
     if (node.image) {
-      drawImage(node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'));
+      sigma.utils.canvas.drawImage(
+        node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'), drawSquare
+      );
     }
 
     // Icon:
     if (node.icon) {
-      drawIcon(node, x, y, size, context, settings('iconThreshold'));
+      sigma.utils.canvas.drawIcon(node, x, y, size, context, settings('iconThreshold'));
     }
 
   };
@@ -19216,10 +20955,6 @@ sigma.plugins.colorbrewer = {YlGn: {
   'use strict';
 
   sigma.utils.pkg('sigma.canvas.nodes');
-
-  // incrementally scaled, not automatically resized for now
-  // (ie. possible memory leak if there are many graph load / unload)
-  var imgCache = {};
 
   var drawStar = function(node, x, y, size, context) {
     var pcount = (node.star && node.star.numPoints) || 5,
@@ -19240,81 +20975,8 @@ sigma.plugins.colorbrewer = {YlGn: {
         y - Math.cos(2 * Math.PI * (i + 1) / pcount) * outR
       );
     }
-  }
-
-  var drawImage = function (node, x, y, size, context, imgCrossOrigin, threshold) {
-    if(!node.image || !node.image.url || size < threshold) return;
-
-    var url = node.image.url;
-    var ih = node.image.h || 1; // 1 is arbitrary, anyway only the ratio counts
-    var iw = node.image.w || 1;
-    var scale = node.image.scale || 1;
-    var clip = node.image.clip || 1;
-
-    // create new IMG or get from imgCache
-    var image = imgCache[url];
-    if(!image) {
-      image = document.createElement('IMG');
-      image.setAttribute('crossOrigin', imgCrossOrigin);
-      image.src = url;
-      image.onload = function() {
-        window.dispatchEvent(new Event('resize'));
-      };
-      imgCache[url] = image;
-    }
-
-    // calculate position and draw
-    var xratio = (iw < ih) ? (iw / ih) : 1;
-    var yratio = (ih < iw) ? (ih / iw) : 1;
-    var r = size * scale;
-
-    // Draw the clipping star:
-    context.save(); // enter clipping mode
-    context.beginPath();
-    drawStar(node, x, y, size, context);
-    context.closePath();
-    context.clip();
-
-    // Draw the actual image
-    context.drawImage(
-      image,
-      x + Math.sin(-3.142 / 4) * r * xratio,
-      y - Math.cos(-3.142 / 4) * r * yratio,
-      r * xratio * 2 * Math.sin(-3.142 / 4) * (-1),
-      r * yratio * 2 * Math.cos(-3.142 / 4)
-    );
-    context.restore(); // exit clipping mode
   };
 
-  var drawIcon = function (node, x, y, size, context, threshold) {
-    if(!node.icon || size < threshold) return;
-
-    var font = node.icon.font || 'Arial',
-        fgColor = node.icon.color || '#F00',
-        text = node.icon.content || '?',
-        px = node.icon.x || 0.5,
-        py = node.icon.y || 0.5,
-        height = size,
-        width = size;
-
-
-    var fontSizeRatio = 0.70;
-    if (typeof node.icon.scale === "number") {
-      fontSizeRatio = Math.abs(Math.max(0.01, node.icon.scale));
-    }
-
-
-    var fontSize = Math.round(fontSizeRatio * height);
-
-    context.save();
-    context.fillStyle = fgColor;
-
-    context.font = '' + fontSize + 'px ' + font;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, x, y);
-    context.restore();
-  };
 
   /**
    * The node renderer renders the node as a star.
@@ -19332,43 +20994,13 @@ sigma.plugins.colorbrewer = {YlGn: {
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = settings('borderSize'),
+        borderSize = node.border_size || settings('borderSize'),
         outerBorderSize = settings('outerBorderSize'),
         color = o.color || node.color || defaultNodeColor,
+        borderColor = settings('nodeBorderColor') === 'default'
+          ? settings('defaultNodeBorderColor')
+          : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
-
-    // Level:
-    if (level) {
-      context.shadowOffsetX = 0;
-      // inspired by Material Design shadows, level from 1 to 5:
-      switch(level) {
-        case 1:
-          context.shadowOffsetY = 1.5;
-          context.shadowBlur = 4;
-          context.shadowColor = 'rgba(0,0,0,0.36)';
-          break;
-        case 2:
-          context.shadowOffsetY = 3;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.39)';
-          break;
-        case 3:
-          context.shadowOffsetY = 6;
-          context.shadowBlur = 12;
-          context.shadowColor = 'rgba(0,0,0,0.42)';
-          break;
-        case 4:
-          context.shadowOffsetY = 10;
-          context.shadowBlur = 20;
-          context.shadowColor = 'rgba(0,0,0,0.47)';
-          break;
-        case 5:
-          context.shadowOffsetY = 15;
-          context.shadowBlur = 24;
-          context.shadowColor = 'rgba(0,0,0,0.52)';
-          break;
-      }
-    }
 
     if (node.active) {
       // Color:
@@ -19379,7 +21011,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         color = settings('defaultNodeActiveColor') || color;
       }
 
-      // Border:
+      // Outer border:
       if (outerBorderSize > 0) {
         context.beginPath();
         context.fillStyle = settings('nodeOuterBorderColor') === 'node' ?
@@ -19389,17 +21021,23 @@ sigma.plugins.colorbrewer = {YlGn: {
         context.closePath();
         context.fill();
       }
-      if (borderSize > 0) {
-        context.beginPath();
-        context.fillStyle = settings('nodeBorderColor') === 'node' ?
-          (color || defaultNodeColor) :
-          settings('defaultNodeBorderColor');
-        drawStar(node, x, y, size + borderSize, context);
-        context.closePath();
-        context.fill();
-      }
     }
 
+    // Border:
+    if (borderSize > 0) {
+      context.beginPath();
+      context.fillStyle = settings('nodeBorderColor') === 'node'
+        ? borderColor
+        : settings('defaultNodeBorderColor');
+      drawStar(node, x, y, size + borderSize, context);
+      context.closePath();
+      context.fill();
+    }
+
+    // Level:
+    sigma.utils.canvas.setLevel(level, context);
+
+    // Shape:
     context.fillStyle = color;
     context.beginPath();
     drawStar(node, x, y, size, context);
@@ -19408,19 +21046,19 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     // reset shadow
     if (level) {
-      context.shadowOffsetY = 0;
-      context.shadowBlur = 0;
-      context.shadowColor = '#000000'
+      sigma.utils.canvas.resetLevel(context);
     }
 
     // Image:
     if (node.image) {
-      drawImage(node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'));
+      sigma.utils.canvas.drawImage(
+        node, x, y, size, context, imgCrossOrigin, settings('imageThreshold'), drawStar
+      );
     }
 
     // Icon:
     if (node.icon) {
-      drawIcon(node, x, y, size, context, settings('iconThreshold'));
+      sigma.utils.canvas.drawIcon(node, x, y, size, context, settings('iconThreshold'));
     }
 
   };
@@ -19471,7 +21109,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     // {string} Indicates how to choose the nodes border color.
     //          Available values: "node", "default"
     nodeBorderColor: 'node,',
-    // defaultNodeBorderColor is already available in sigma.settings.
+    // defaultNodeBorderColor is set in sigma.settings.
     // {string} Indicates how to choose the nodes outer border color.
     //          Available values: "node", "default"
     nodeOuterBorderColor: '',
@@ -21315,483 +22953,6 @@ sigma.plugins.colorbrewer = {YlGn: {
   };
 })();
 
-;(function() {
-  'use strict';
-
-  sigma.utils.pkg('sigma.canvas.edgehovers');
-
-  /**
-   * This hover renderer will display the edge with a different color or size.
-   *
-   * @param  {object}                   edge         The edge object.
-   * @param  {object}                   source node  The edge source node.
-   * @param  {object}                   target node  The edge target node.
-   * @param  {CanvasRenderingContext2D} context      The canvas context.
-   * @param  {configurable}             settings     The settings function.
-   */
-  sigma.canvas.edgehovers.curve =
-    function(edge, source, target, context, settings) {
-    var color = edge.color,
-        prefix = settings('prefix') || '',
-        size = settings('edgeHoverSizeRatio') * (edge[prefix + 'size'] || 1),
-        count = edge.count || 0,
-        edgeColor = settings('edgeColor'),
-        defaultNodeColor = settings('defaultNodeColor'),
-        defaultEdgeColor = settings('defaultEdgeColor'),
-        cp = {},
-        sSize = source[prefix + 'size'],
-        sX = source[prefix + 'x'],
-        sY = source[prefix + 'y'],
-        tX = target[prefix + 'x'],
-        tY = target[prefix + 'y'];
-
-    cp = (source.id === target.id) ?
-      sigma.utils.getSelfLoopControlPoints(sX, sY, sSize, count) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, count);
-
-    if (!color)
-      switch (edgeColor) {
-        case 'source':
-          color = source.color || defaultNodeColor;
-          break;
-        case 'target':
-          color = target.color || defaultNodeColor;
-          break;
-        default:
-          color = defaultEdgeColor;
-          break;
-      }
-
-    if (settings('edgeHoverColor') === 'edge') {
-      color = edge.hover_color || color;
-    } else {
-      color = edge.hover_color || settings('defaultEdgeHoverColor') || color;
-    }
-
-    context.strokeStyle = color;
-    context.lineWidth = size;
-    context.beginPath();
-    context.moveTo(sX, sY);
-    if (source.id === target.id) {
-      context.bezierCurveTo(cp.x1, cp.y1, cp.x2, cp.y2, tX, tY);
-    } else {
-      context.quadraticCurveTo(cp.x, cp.y, tX, tY);
-    }
-    context.stroke();
-  };
-})();
-
-;(function() {
-  'use strict';
-
-  sigma.utils.pkg('sigma.canvas.edgehovers');
-
-  /**
-   * This hover renderer will display the edge with a different color or size.
-   *
-   * @param  {object}                   edge         The edge object.
-   * @param  {object}                   source node  The edge source node.
-   * @param  {object}                   target node  The edge target node.
-   * @param  {CanvasRenderingContext2D} context      The canvas context.
-   * @param  {configurable}             settings     The settings function.
-   */
-  sigma.canvas.edgehovers.curvedArrow =
-    function(edge, source, target, context, settings) {
-    var color = edge.color,
-        prefix = settings('prefix') || '',
-        edgeColor = settings('edgeColor'),
-        defaultNodeColor = settings('defaultNodeColor'),
-        defaultEdgeColor = settings('defaultEdgeColor'),
-        cp = {},
-        size = settings('edgeHoverSizeRatio') * (edge[prefix + 'size'] || 1),
-        count = edge.count || 0,
-        tSize = target[prefix + 'size'],
-        sX = source[prefix + 'x'],
-        sY = source[prefix + 'y'],
-        tX = target[prefix + 'x'],
-        tY = target[prefix + 'y'],
-        d,
-        aSize,
-        aX,
-        aY,
-        vX,
-        vY;
-
-    cp = (source.id === target.id) ?
-      sigma.utils.getSelfLoopControlPoints(sX, sY, tSize, count) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, count);
-
-    if (source.id === target.id) {
-      d = Math.sqrt(Math.pow(tX - cp.x1, 2) + Math.pow(tY - cp.y1, 2));
-      aSize = size * 2.5;
-      aX = cp.x1 + (tX - cp.x1) * (d - aSize - tSize) / d;
-      aY = cp.y1 + (tY - cp.y1) * (d - aSize - tSize) / d;
-      vX = (tX - cp.x1) * aSize / d;
-      vY = (tY - cp.y1) * aSize / d;
-    }
-    else {
-      d = Math.sqrt(Math.pow(tX - cp.x, 2) + Math.pow(tY - cp.y, 2));
-      aSize = size * 2.5;
-      aX = cp.x + (tX - cp.x) * (d - aSize - tSize) / d;
-      aY = cp.y + (tY - cp.y) * (d - aSize - tSize) / d;
-      vX = (tX - cp.x) * aSize / d;
-      vY = (tY - cp.y) * aSize / d;
-    }
-
-    if (!color)
-      switch (edgeColor) {
-        case 'source':
-          color = source.color || defaultNodeColor;
-          break;
-        case 'target':
-          color = target.color || defaultNodeColor;
-          break;
-        default:
-          color = defaultEdgeColor;
-          break;
-      }
-
-    if (settings('edgeHoverColor') === 'edge') {
-      color = edge.hover_color || color;
-    } else {
-      color = edge.hover_color || settings('defaultEdgeHoverColor') || color;
-    }
-
-    context.strokeStyle = color;
-    context.lineWidth = size;
-    context.beginPath();
-    context.moveTo(sX, sY);
-    if (source.id === target.id) {
-      context.bezierCurveTo(cp.x2, cp.y2, cp.x1, cp.y1, aX, aY);
-    } else {
-      context.quadraticCurveTo(cp.x, cp.y, aX, aY);
-    }
-    context.stroke();
-
-    context.fillStyle = color;
-    context.beginPath();
-    context.moveTo(aX + vX, aY + vY);
-    context.lineTo(aX + vY * 0.6, aY - vX * 0.6);
-    context.lineTo(aX - vY * 0.6, aY + vX * 0.6);
-    context.lineTo(aX + vX, aY + vY);
-    context.closePath();
-    context.fill();
-  };
-})();
-
-;(function() {
-  'use strict';
-
-  sigma.utils.pkg('sigma.canvas.edges');
-
-  /**
-   * This edge renderer will display edges as curves.
-   *
-   * @param  {object}                   edge         The edge object.
-   * @param  {object}                   source node  The edge source node.
-   * @param  {object}                   target node  The edge target node.
-   * @param  {CanvasRenderingContext2D} context      The canvas context.
-   * @param  {configurable}             settings     The settings function.
-   */
-  sigma.canvas.edges.curve = function(edge, source, target, context, settings) {
-    var color = edge.color,
-        prefix = settings('prefix') || '',
-        size = edge[prefix + 'size'] || 1,
-        count = edge.count || 0,
-        edgeColor = settings('edgeColor'),
-        defaultNodeColor = settings('defaultNodeColor'),
-        defaultEdgeColor = settings('defaultEdgeColor'),
-        cp = {},
-        sSize = source[prefix + 'size'],
-        sX = source[prefix + 'x'],
-        sY = source[prefix + 'y'],
-        tX = target[prefix + 'x'],
-        tY = target[prefix + 'y'];
-
-    cp = (source.id === target.id) ?
-      sigma.utils.getSelfLoopControlPoints(sX, sY, sSize, count) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, count);
-
-    if (!color)
-      switch (edgeColor) {
-        case 'source':
-          color = source.color || defaultNodeColor;
-          break;
-        case 'target':
-          color = target.color || defaultNodeColor;
-          break;
-        default:
-          color = defaultEdgeColor;
-          break;
-      }
-
-    context.strokeStyle = color;
-    context.lineWidth = size;
-    context.beginPath();
-    context.moveTo(sX, sY);
-    if (source.id === target.id) {
-      context.bezierCurveTo(cp.x1, cp.y1, cp.x2, cp.y2, tX, tY);
-    } else {
-      context.quadraticCurveTo(cp.x, cp.y, tX, tY);
-    }
-    context.stroke();
-  };
-})();
-
-;(function() {
-  'use strict';
-
-  sigma.utils.pkg('sigma.canvas.edges');
-
-  /**
-   * This edge renderer will display edges as curves with arrow heading.
-   *
-   * @param  {object}                   edge         The edge object.
-   * @param  {object}                   source node  The edge source node.
-   * @param  {object}                   target node  The edge target node.
-   * @param  {CanvasRenderingContext2D} context      The canvas context.
-   * @param  {configurable}             settings     The settings function.
-   */
-  sigma.canvas.edges.curvedArrow =
-    function(edge, source, target, context, settings) {
-    var color = edge.color,
-        prefix = settings('prefix') || '',
-        edgeColor = settings('edgeColor'),
-        defaultNodeColor = settings('defaultNodeColor'),
-        defaultEdgeColor = settings('defaultEdgeColor'),
-        cp = {},
-        size = edge[prefix + 'size'] || 1,
-        count = edge.count || 0,
-        tSize = target[prefix + 'size'],
-        sX = source[prefix + 'x'],
-        sY = source[prefix + 'y'],
-        tX = target[prefix + 'x'],
-        tY = target[prefix + 'y'],
-        aSize = Math.max(size * 2.5, settings('minArrowSize')),
-        d,
-        aX,
-        aY,
-        vX,
-        vY;
-
-    cp = (source.id === target.id) ?
-      sigma.utils.getSelfLoopControlPoints(sX, sY, tSize, count) :
-      sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, count);
-
-    if (source.id === target.id) {
-      d = Math.sqrt(Math.pow(tX - cp.x1, 2) + Math.pow(tY - cp.y1, 2));
-      aX = cp.x1 + (tX - cp.x1) * (d - aSize - tSize) / d;
-      aY = cp.y1 + (tY - cp.y1) * (d - aSize - tSize) / d;
-      vX = (tX - cp.x1) * aSize / d;
-      vY = (tY - cp.y1) * aSize / d;
-    }
-    else {
-      d = Math.sqrt(Math.pow(tX - cp.x, 2) + Math.pow(tY - cp.y, 2));
-      aX = cp.x + (tX - cp.x) * (d - aSize - tSize) / d;
-      aY = cp.y + (tY - cp.y) * (d - aSize - tSize) / d;
-      vX = (tX - cp.x) * aSize / d;
-      vY = (tY - cp.y) * aSize / d;
-    }
-
-    if (!color)
-      switch (edgeColor) {
-        case 'source':
-          color = source.color || defaultNodeColor;
-          break;
-        case 'target':
-          color = target.color || defaultNodeColor;
-          break;
-        default:
-          color = defaultEdgeColor;
-          break;
-      }
-
-    context.strokeStyle = color;
-    context.lineWidth = size;
-    context.beginPath();
-    context.moveTo(sX, sY);
-    if (source.id === target.id) {
-      context.bezierCurveTo(cp.x2, cp.y2, cp.x1, cp.y1, aX, aY);
-    } else {
-      context.quadraticCurveTo(cp.x, cp.y, aX, aY);
-    }
-    context.stroke();
-
-    context.fillStyle = color;
-    context.beginPath();
-    context.moveTo(aX + vX, aY + vY);
-    context.lineTo(aX + vY * 0.6, aY - vX * 0.6);
-    context.lineTo(aX - vY * 0.6, aY + vX * 0.6);
-    context.lineTo(aX + vX, aY + vY);
-    context.closePath();
-    context.fill();
-  };
-})();
-
-;(function(undefined) {
-  'use strict';
-
-  if (typeof sigma === 'undefined')
-    throw 'sigma is not declared';
-
-  // Initialize packages:
-  sigma.utils.pkg('sigma.canvas.edges.labels');
-
-  /**
-   * This label renderer will just display the label on the curve of the edge.
-   * The label is rendered at half distance of the edge extremities, and is
-   * always oriented from left to right on the top side of the curve.
-   *
-   * @param  {object}                   edge         The edge object.
-   * @param  {object}                   source node  The edge source node.
-   * @param  {object}                   target node  The edge target node.
-   * @param  {CanvasRenderingContext2D} context      The canvas context.
-   * @param  {configurable}             settings     The settings function.
-   */
-  sigma.canvas.edges.labels.curve =
-    function(edge, source, target, context, settings) {
-    if (typeof edge.label !== 'string')
-      return;
-
-    var prefix = settings('prefix') || '',
-        size = edge[prefix + 'size'] || 1;
-
-    if (size < settings('edgeLabelThreshold'))
-      return;
-
-    var fontSize,
-        sSize = source[prefix + 'size'],
-        count = edge.count || 0,
-        sX = source[prefix + 'x'],
-        sY = source[prefix + 'y'],
-        tX = target[prefix + 'x'],
-        tY = target[prefix + 'y'],
-        dX = tX - sX,
-        dY = tY - sY,
-        sign = (sX < tX) ? 1 : -1,
-        cp = {},
-        c,
-        angle,
-        t = 0.5;  //length of the curve
-
-    if (source.id === target.id) {
-      cp = sigma.utils.getSelfLoopControlPoints(sX, sY, sSize, count);
-      c = sigma.utils.getPointOnBezierCurve(
-        t, sX, sY, tX, tY, cp.x1, cp.y1, cp.x2, cp.y2
-      );
-      angle = Math.atan2(1, 1); // 45°
-    } else {
-      cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, count);
-      c = sigma.utils.getPointOnQuadraticCurve(t, sX, sY, tX, tY, cp.x, cp.y);
-      angle = Math.atan2(dY * sign, dX * sign);
-    }
-
-    // The font size is sublineraly proportional to the edge size, in order to
-    // avoid very large labels on screen.
-    // This is achieved by f(x) = x * x^(-1/ a), where 'x' is the size and 'a'
-    // is the edgeLabelSizePowRatio. Notice that f(1) = 1.
-    // The final form is:
-    // f'(x) = b * x * x^(-1 / a), thus f'(1) = b. Application:
-    // fontSize = defaultEdgeLabelSize if edgeLabelSizePowRatio = 1
-    fontSize = (settings('edgeLabelSize') === 'fixed') ?
-      settings('defaultEdgeLabelSize') :
-      settings('defaultEdgeLabelSize') *
-      size *
-      Math.pow(size, -1 / settings('edgeLabelSizePowRatio'));
-
-    context.save();
-
-
-    if (edge.active) {
-      context.font = [
-        settings('activeFontStyle'),
-        fontSize + 'px',
-        settings('activeFont') || settings('font')
-      ].join(' ');
-
-      context.fillStyle =
-        settings('edgeActiveColor') === 'edge' ?
-        (edge.active_color || settings('defaultEdgeActiveColor')) :
-        settings('defaultEdgeLabelActiveColor');
-    }
-    else {
-      context.font = [
-        settings('fontStyle'),
-        fontSize + 'px',
-        settings('font')
-      ].join(' ');
-
-      context.fillStyle =
-        (settings('edgeLabelColor') === 'edge') ?
-        (edge.color || settings('defaultEdgeColor')) :
-        settings('defaultEdgeLabelColor');
-    }
-
-    context.textAlign = 'center';
-    context.textBaseline = 'alphabetic';
-    context.translate(c.x, c.y);
-    context.rotate(angle);
-    context.fillText(
-      edge.label,
-      0,
-      (-size / 2) - 3
-    );
-
-    context.restore();
-  };
-}).call(this);
-
-;(function(undefined) {
-  'use strict';
-
-  if (typeof sigma === 'undefined')
-    throw 'sigma is not declared';
-
-  var _root = this;
-
-  // Initialize packages:
-  sigma.utils = sigma.utils || {};
-
-  /**
-   * Return the control point coordinates for a quadratic bezier curve.
-   *
-   * @param  {number} x1  The X coordinate of the start point.
-   * @param  {number} y1  The Y coordinate of the start point.
-   * @param  {number} x2  The X coordinate of the end point.
-   * @param  {number} y2  The Y coordinate of the end point.
-   * @param  {number} a   Modifier for the amplitude of the curve.
-   * @return {x,y}        The control point coordinates.
-   */
-  sigma.utils.getQuadraticControlPoint = function(x1, y1, x2, y2, a) {
-    a = a || 0;
-    return {
-      x: (x1 + x2) / 2 + (y2 - y1) / (60 / (15 + a)),
-      y: (y1 + y2) / 2 + (x1 - x2) / (60 / (15 + a))
-    };
-  };
-
-  /**
-   * Return the coordinates of the two control points for a self loop (i.e.
-   * where the start point is also the end point) computed as a cubic bezier
-   * curve.
-   *
-   * @param  {number} x    The X coordinate of the node.
-   * @param  {number} y    The Y coordinate of the node.
-   * @param  {number} size The node size.
-   * @param  {number} a    Modifier to the loop size.
-   * @return {x1,y1,x2,y2} The coordinates of the two control points.
-   */
-  sigma.utils.getSelfLoopControlPoints = function(x , y, size, a) {
-    a = a || 0;
-    return {
-      x1: x - (size + a) * 7,
-      y1: y,
-      x2: x,
-      y2: y + (size + a) * 7
-    };
-  };
-}).call(this);
-
 /**
 * This plugin computes HITS statistics (Authority and Hub measures) for each node of the graph.
 * It adds to the graph model a method called "HITS".
@@ -22367,8 +23528,8 @@ sigma.plugins.colorbrewer = {YlGn: {
      * @return {object}       Dictionary of node id => community id
      */
     core.getPartitions = function(level) {
-      if (level !== undefined && (level < 1 || level > dendogram.length - 1))
-        throw new RangeError('Invalid argument: "level" is not between 1 and ' + dendogram.length - 1 + ' included.');
+      if (level !== undefined && (level < 0 || level > dendogram.length - 1))
+        throw new RangeError('Invalid argument: "level" is not between 0 and ' + dendogram.length - 1 + ' included.');
 
       return partition_at_level(dendogram, level || dendogram.length - 1);
     };
