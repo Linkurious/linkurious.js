@@ -1,5 +1,15 @@
 ## linkurious.js - changelog:
 
+#### 1.3.0 (October 30, 2015)
+
+This release has BREAKING CHANGES regarding plugins.image and sigma.layout.*. Is also brings a new plugin that will provide nice legends to visualizations.
+
+**Plugins:**
+ - #303 layouts.forcelink: pinned nodes coord are updated if previously laid out while unpinned
+ - #240 Rename plugins.image -> exporters.image
+ - #239 Rename sigma.layout.* -> sigma.layouts.*
+ - #188 Add plugins.legend
+
 #### 1.2.0 (October 15, 2015)
 
 This release is greatly powered by the community. Multiple plugins are stabilized and important features are added for rendering and integration.
