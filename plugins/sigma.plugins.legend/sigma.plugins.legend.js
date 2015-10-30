@@ -221,14 +221,15 @@
   }
 
   /**
-   * Convert a SVG to a base64 encoded image url, so it can be drawn onto a canvas.
+   * Convert a widget's SVG to a base64 encoded image url, so it can be drawn onto a canvas.
    *
-   * @param {Object}    svg           SVG to convert
-   * @param {function}  onload        Function that will be called once the image is built
+   * @param {Object}    widget        Widget
+   * @param {function}  callback      Function that will be called once the image is built
    */
-  function buildImageFromSvg(widget, onload) {
+  function buildImageFromSvg(widget, callback) {
     if (!widget.svg) {
-      return null;
+      callback();
+      return;
     }
 
     var str = '';
@@ -239,10 +240,10 @@
     var src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(str)));
 
     if (widget.img.src !== src) {
-      widget.img.onload = onload;
+      widget.img.onload = callback;
       widget.img.src = src;
     } else {
-      onload();
+      callback();
     }
   }
 
@@ -255,29 +256,19 @@
       visualSettings.legendWidth + (visualSettings.legendBorderWidth + visualSettings.legendOuterMargin) * 2
   }
 
-
-  function getNonNullWidgetsNumber(legendPlugin) {
-    var nb = 0;
-    iterate(legendPlugin.widgets, function (widget) {
-      if (widget) {
-        ++nb;
-      }
-    });
-
-    return nb;
-  }
-
   /**
    *  Reconstruct the legend's svg (i.e. recreate the image representation of each widget).
+   *  @param {LegendPlugin} legendPlugin
+   *  @param {function}     callback
    */
   function buildLegendWidgets(legendPlugin, callback) {
-    var nbWidgetBuilt = 0,
-        nbWidgets = getNonNullWidgetsNumber(legendPlugin);
+    var nbWidgetsBuilt = 0,
+        nbWidgets = Object.keys(legendPlugin.widgets).length;
 
     iterate(legendPlugin.widgets, function (value) {
       buildWidget(value, function () {
-        ++nbWidgetBuilt;
-        if (callback && nbWidgetBuilt === nbWidgets) {
+        ++nbWidgetsBuilt;
+        if (callback && nbWidgetsBuilt === nbWidgets) {
           callback();
         }
       });
