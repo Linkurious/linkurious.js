@@ -154,7 +154,7 @@
         var endpoint = '/db/data/transaction/commit',
             data, cypherCallback;
 
-        // Data that will be send to the server
+        // Data that will be sent to the server
         data = JSON.stringify({
             "statements": [
                 {
