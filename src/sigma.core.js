@@ -703,7 +703,7 @@
   /**
    * The current version of sigma:
    */
-  sigma.version = '1.0.3';
+  sigma.version = '1.3.0';
 
 
 
