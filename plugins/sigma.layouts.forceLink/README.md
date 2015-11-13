@@ -80,6 +80,8 @@ sigma.layouts.isForceLinkRunning();
 * **barnesHutTheta** *number* `0.5`
 * **slowDown** *number* `1`
 
+Please read the [reference paper](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0098679) on ForceAtlas2 algorithm.
+
 *Rendering*
 
 * **startingIterations** *integer* `1`: number of iterations to be run before the first render.
