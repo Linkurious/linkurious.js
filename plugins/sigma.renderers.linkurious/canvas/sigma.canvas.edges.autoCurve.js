@@ -46,7 +46,14 @@
             return key;
           }
         }
-        this[key] = { i: 0, n: 0 };
+
+        if (sortByDirection && this[o.target + ',' + o.source]) {
+          // count a parallel edge if an opposite edge exists
+          this[key] = { i: 1, n: 1 };
+        }
+        else {
+          this[key] = { i: 0, n: 0 };
+        }
         return key;
       },
       inc: function(o) {
@@ -62,7 +69,8 @@
     edges.forEach(function(edge) {
       key = count.key(edge);
 
-      if (count[key].n > 1) {
+      // if the edge has parallel edges:
+      if (count[key].n > 1 || count[key].i > 0) {
         if (!edge.cc) {
           // update edge type:
           if (edge.type === 'arrow' || edge.type === 'tapered' ||
