@@ -63,20 +63,22 @@
       key = count.key(edge);
 
       if (count[key].n > 1) {
-        // update edge type:
-        if (edge.type === 'arrow' || edge.type === 'tapered' ||
-          defaultEdgeType === 'arrow' || defaultEdgeType === 'tapered') {
+        if (!edge.cc) {
+          // update edge type:
+          if (edge.type === 'arrow' || edge.type === 'tapered' ||
+            defaultEdgeType === 'arrow' || defaultEdgeType === 'tapered') {
 
-          if (!edge.cc_prev_type) {
-            edge.cc_prev_type = edge.type;
+            if (!edge.cc_prev_type) {
+              edge.cc_prev_type = edge.type;
+            }
+            edge.type = 'curvedArrow';
           }
-          edge.type = 'curvedArrow';
-        }
-        else {
-          if (!edge.cc_prev_type) {
-            edge.cc_prev_type = edge.type;
+          else {
+            if (!edge.cc_prev_type) {
+              edge.cc_prev_type = edge.type;
+            }
+            edge.type = 'curve';
           }
-          edge.type = 'curve';
         }
 
         // curvature coefficients
@@ -85,8 +87,8 @@
       else if (edge.cc) {
         // the edge is no longer a parallel edge
         edge.type = edge.cc_prev_type;
-        edge.cc_prev_type = null;
-        edge.cc = null;
+        edge.cc_prev_type = undefined;
+        edge.cc = undefined;
       }
     });
   };
