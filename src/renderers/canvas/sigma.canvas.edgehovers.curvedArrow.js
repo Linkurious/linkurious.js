@@ -39,7 +39,7 @@
 
     if (source.id === target.id) {
       d = Math.sqrt((tX - cp.x1) * (tX - cp.x1) + (tY - cp.y1) * (tY - cp.y1));
-      aSize = size * 2.5;
+      aSize = Math.max(size * 2.5, settings('minArrowSize'));
       aX = cp.x1 + (tX - cp.x1) * (d - aSize - tSize) / d;
       aY = cp.y1 + (tY - cp.y1) * (d - aSize - tSize) / d;
       vX = (tX - cp.x1) * aSize / d;

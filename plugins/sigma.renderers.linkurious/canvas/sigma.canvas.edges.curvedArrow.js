@@ -50,7 +50,7 @@
     }
     else {
       d = Math.sqrt(Math.pow(tX - cp.x, 2) + Math.pow(tY - cp.y, 2));
-      aSize = size * 2.5;
+      aSize = Math.max(size * 2.5, settings('minArrowSize'));
       aX = cp.x + (tX - cp.x) * (d - aSize - tSize) / d;
       aY = cp.y + (tY - cp.y) * (d - aSize - tSize) / d;
       vX = (tX - cp.x) * aSize / d;
