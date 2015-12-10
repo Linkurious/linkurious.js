@@ -18,10 +18,17 @@
      * @param   {string|object}     neo4j       The URL of neo4j server or a neo4j server object.
      * @param   {string}            endpoint    Endpoint of the neo4j server
      * @param   {string}            method      The calling method for the endpoint : 'GET' or 'POST'
-     * @param   {object|string}     data        Data that will be send to the server
+     * @param   {object|string}     data        Data that will be sent to the server
      * @param   {function}          callback    The callback function
+     * @param   {integer}           timeout     The amount of time in milliseconds that neo4j should run the query before
+     *                                          returning a timeout error.  Note, this will only work if the following
+     *                                          two settings are added to the neo4j property files:
+     *                                          To the file './conf/neo4j.properties' add 'execution_guard_enabled=true'.
+     *                                          To the file './conf/neo4j-server.properties' add 'org.neo4j.server.webserver.limit.executiontime={timeout_in_seconds}'.
+     *                                          Make sure the timeout in the above property file is greater then the timeout that
+     *                                          you want to send with the request, because neo4j will use whichever timeout is shorter.
      */
-    sigma.neo4j.send = function(neo4j, endpoint, method, data, callback) {
+    sigma.neo4j.send = function(neo4j, endpoint, method, data, callback, timeout=-1) {
         var xhr = sigma.utils.xhr(),
             url, user, password;
 
@@ -45,6 +52,9 @@
         }
         xhr.setRequestHeader('Accept', 'application/json');
         xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        if (timeout > 0) {
+        	xhr.setRequestHeader('max-execution-time', timeout);
+        }
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 // Call the callback if specified:
@@ -140,11 +150,11 @@
      *                                          with the related sigma instance as
      *                                          parameter.
      */
-    sigma.neo4j.cypher = function (neo4j, cypher, sig, callback) {
+    sigma.neo4j.cypher = function (neo4j, cypher, sig, callback, timeout=-1) {
         var endpoint = '/db/data/transaction/commit',
             data, cypherCallback;
 
-        // Data that will be send to the server
+        // Data that will be sent to the server
         data = JSON.stringify({
             "statements": [
                 {
@@ -190,7 +200,7 @@
         };
 
         // Let's call neo4j
-        sigma.neo4j.send(neo4j, endpoint, 'POST', data, cypherCallback(callback));
+        sigma.neo4j.send(neo4j, endpoint, 'POST', data, cypherCallback(callback), timeout);
     };
 
     /**
