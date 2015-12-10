@@ -183,9 +183,18 @@
     }
 
     function drawLabelBackground(alignment, context, fontSize, node, lines, maxLineLength) {
+      var labelWidth =
+        (maxLineLength > 1 && lines.length > 1) ?
+        0.6 * maxLineLength * fontSize :
+        sigma.utils.canvas.getTextWidth(
+          context,
+          settings('approximateLabelWidth'),
+          fontSize,
+          lines[0]
+        );
+
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
-          labelWidth = 0.6 * (maxLineLength > 1 ? maxLineLength : lines[0].length) * fontSize,
           w = Math.round(labelWidth + 4),
           h = h = ((fontSize + 1) * lines.length) + 4,
           e = Math.round(size + fontSize * 0.25);
