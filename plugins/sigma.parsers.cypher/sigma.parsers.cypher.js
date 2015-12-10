@@ -28,9 +28,13 @@
      *                                          Make sure the timeout in the above property file is greater then the timeout that
      *                                          you want to send with the request, because neo4j will use whichever timeout is shorter.
      */
-    sigma.neo4j.send = function(neo4j, endpoint, method, data, callback, timeout=-1) {
-        var xhr = sigma.utils.xhr(),
-            url, user, password;
+    sigma.neo4j.send = function(neo4j, endpoint, method, data, callback, timeout) {
+        var
+          xhr = sigma.utils.xhr(),
+          timeout = timeout || -1,
+          url,
+          user,
+          password;
 
         // if neo4j arg is not an object
         url = neo4j;
@@ -150,9 +154,12 @@
      *                                          with the related sigma instance as
      *                                          parameter.
      */
-    sigma.neo4j.cypher = function (neo4j, cypher, sig, callback, timeout=-1) {
-        var endpoint = '/db/data/transaction/commit',
-            data, cypherCallback;
+    sigma.neo4j.cypher = function (neo4j, cypher, sig, callback, timeout) {
+        var
+          endpoint = '/db/data/transaction/commit',
+          timeout = timeout || -1,
+          data,
+          cypherCallback;
 
         // Data that will be sent to the server
         data = JSON.stringify({
