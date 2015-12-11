@@ -132,6 +132,7 @@
         drawNodes = this.settings(options, 'drawNodes'),
         drawLabels = this.settings(options, 'drawLabels'),
         drawEdgeLabels = this.settings(options, 'drawEdgeLabels'),
+        defaultEdgeType = this.settings(options, 'defaultEdgeType'),
         embedSettings = this.settings.embedObjects(options, {
           prefix: this.options.prefix,
           forceLabels: this.options.forceLabels
@@ -247,7 +248,10 @@
           source = nodes(a[i].source);
           target = nodes(a[i].target);
 
-          e = (renderers[a[i].type] || renderers.def).create(
+          e = (renderers[a[i].type] ||
+            renderers[defaultEdgeType] ||
+            renderers.def
+          ).create(
             a[i],
             source,
             target,
@@ -260,7 +264,10 @@
           // Label
           if (drawEdgeLabels) {
 
-            e = (subrenderers[a[i].type] || subrenderers.def).create(
+            e = (subrenderers[a[i].type] ||
+              subrenderers[defaultEdgeType]  ||
+              subrenderers.def
+            ).create(
               a[i],
               embedSettings
             );
@@ -276,7 +283,10 @@
         source = nodes(a[i].source);
         target = nodes(a[i].target);
 
-        (renderers[a[i].type] || renderers.def).update(
+        (renderers[a[i].type] ||
+          renderers[defaultEdgeType] ||
+          renderers.def
+        ).update(
           a[i],
           this.domElements.edges[a[i].id],
           source,
@@ -286,7 +296,10 @@
 
         // Label
         if (drawEdgeLabels) {
-          (subrenderers[a[i].type] || subrenderers.def).update(
+          (subrenderers[a[i].type] ||
+            subrenderers[defaultEdgeType] ||
+            subrenderers.def
+          ).update(
             a[i],
             source,
             target,
