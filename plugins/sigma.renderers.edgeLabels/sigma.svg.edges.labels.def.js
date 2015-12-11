@@ -59,7 +59,6 @@
           y = Math.round((source[prefix + 'y'] + target[prefix + 'y']) / 2),
           dX,
           dY,
-          tX = 0,
           tY = 0,
           sign,
           angle = 0,
@@ -79,17 +78,13 @@
         dY = target[prefix + 'y'] - source[prefix + 'y'];
         sign = (source[prefix + 'x'] < target[prefix + 'x']) ? 1 : -1;
         angle = Math.atan2(dY * sign, dX * sign) * (180 / Math.PI); // deg
-        tX = 0;
-        tY = -1 - size;
-      }
-      else {
-        tX = -0.5 * text.getBBox().width;
+        tY = Math.round(-1 - size);
       }
 
       // Updating
       text.setAttributeNS(null, 'x', x);
       text.setAttributeNS(null, 'y', y);
-      text.setAttributeNS(null, 'transform', 'rotate('+angle+' '+x+' '+y+') translate('+tX+' '+tY+')');
+      text.setAttributeNS(null, 'transform', 'rotate('+angle+' '+x+' '+y+') translate(0 '+tY+')');
 
       // Showing
       text.style.display = '';
