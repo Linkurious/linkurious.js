@@ -4,9 +4,9 @@
   sigma.utils.pkg('sigma.svg.edges');
 
   /**
-   * The curve edge renderer. It renders the edge as a bezier curve.
+   * TODO add arrow
    */
-  sigma.svg.edges.curve = {
+  sigma.svg.edges.curvedArrow = {
 
     /**
      * SVG Element creation.

@@ -7,7 +7,7 @@ Contact: seb@linkurio.us
 
 ---
 ## General
-This plugin displays edge labels on **Canvas** only.
+This plugin displays edge labels on **Canvas** and **SVG (beta)**.
 
 See the following [example](../../examples/edge-renderers.html) for full usage.
 
@@ -95,7 +95,7 @@ This plugin provides the following edge label renderers:
 - `line` (default)
 - `arrow` (use default)
 - `curve`
-- `curvedArrow`
+- `curvedArrow` (use curve)
 
 ## Compatibility
 

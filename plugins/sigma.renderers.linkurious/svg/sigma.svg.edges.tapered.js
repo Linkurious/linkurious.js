@@ -4,9 +4,12 @@
   sigma.utils.pkg('sigma.svg.edges');
 
   /**
-   * The curve edge renderer. It renders the edge as a bezier curve.
+   * It renders the edge as a tapered line.
+   * Danny Holten, Petra Isenberg, Jean-Daniel Fekete, and J. Van Wijk (2010)
+   * Performance Evaluation of Tapered, Curved, and Animated Directed-Edge
+   * Representations in Node-Link Graphs. Research Report, Sep 2010.
    */
-  sigma.svg.edges.curve = {
+  sigma.svg.edges.tapered = {
 
     /**
      * SVG Element creation.
@@ -36,59 +39,49 @@
             break;
         }
 
-      var path = document.createElementNS(settings('xmlns'), 'path');
+      var polygon = document.createElementNS(settings('xmlns'), 'polygon');
 
       // Attributes
-      path.setAttributeNS(null, 'data-edge-id', edge.id);
-      path.setAttributeNS(null, 'class', settings('classPrefix') + '-edge');
-      path.setAttributeNS(null, 'stroke', color);
+      polygon.setAttributeNS(null, 'data-edge-id', edge.id);
+      polygon.setAttributeNS(null, 'class', settings('classPrefix') + '-edge');
+      polygon.setAttributeNS(null, 'fill', color);
+      polygon.setAttributeNS(null, 'fill-opacity', 0.6);
+      polygon.setAttributeNS(null, 'stroke-width', 0);
 
-      return path;
+      return polygon;
     },
 
     /**
      * SVG Element update.
      *
      * @param  {object}                   edge       The edge object.
-     * @param  {DOMElement}               path       The path DOM Element.
+     * @param  {DOMElement}               polygon    The polygon DOM Element.
      * @param  {object}                   source     The source node object.
      * @param  {object}                   target     The target node object.
      * @param  {configurable}             settings   The settings function.
      */
-    update: function(edge, path, source, target, settings) {
+    update: function(edge, polygon, source, target, settings) {
       var prefix = settings('prefix') || '',
-          sSize = source[prefix + 'size'],
-          sX = source[prefix + 'x'],
-          sY = source[prefix + 'y'],
-          tX = target[prefix + 'x'],
-          tY = target[prefix + 'y'],
-          cp,
-          p;
+        sX = source[prefix + 'x'],
+        sY = source[prefix + 'y'],
+        tX = target[prefix + 'x'],
+        tY = target[prefix + 'y'],
+        size = edge[prefix + 'size'] || 1,
+        dist = sigma.utils.getDistance(sX, sY, tX, tY),
+        c,
+        p;
 
-      path.setAttributeNS(null, 'stroke-width', edge[prefix + 'size'] || 1);
+      if (!dist) return; // should be a self-loop
 
-      if (source.id === target.id) {
-        cp = sigma.utils.getSelfLoopControlPoints(sX, sY, sSize);
-        // Path
-        p = 'M' + sX + ',' + sY + ' ' +
-            'C' + cp.x1 + ',' + cp.y1 + ' ' +
-            cp.x2 + ',' + cp.y2 + ' ' +
-            tX + ',' + tY;
-      }
-      else {
-        cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
-        // Path
-        p = 'M' + sX + ',' + sY + ' ' +
-            'Q' + cp.x + ',' + cp.y + ' ' +
-            tX + ',' + tY;
-      }
+      // Intersection points:
+      c = sigma.utils.getCircleIntersection(sX, sY, size, tX, tY, dist);
 
-      // Updating attributes
-      path.setAttributeNS(null, 'd', p);
-      path.setAttributeNS(null, 'fill', 'none');
+      // Path
+      p = tX+','+tY+' '+c.xi+','+c.yi+' '+c.xi_prime+','+c.yi_prime;
+      polygon.setAttributeNS(null, "points", p);
 
       // Showing
-      path.style.display = '';
+      polygon.style.display = '';
 
       return this;
     }

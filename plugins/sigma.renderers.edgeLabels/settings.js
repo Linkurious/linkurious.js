@@ -15,6 +15,9 @@
      * RENDERERS SETTINGS:
      * *******************
      */
+    // {string} Indicates how to choose the edge labels color. Available values:
+    //          "edge", "default"
+    edgelabelColor: 'default',
     // {string}
     defaultEdgeLabelColor: '#000',
     // {string}
