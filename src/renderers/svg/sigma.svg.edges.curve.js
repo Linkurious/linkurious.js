@@ -4,7 +4,7 @@
   sigma.utils.pkg('sigma.svg.edges');
 
   /**
-   * The curve edge renderer. It renders the node as a bezier curve.
+   * The curve edge renderer. It renders the edge as a bezier curve.
    */
   sigma.svg.edges.curve = {
 
@@ -50,7 +50,7 @@
      * SVG Element update.
      *
      * @param  {object}                   edge       The edge object.
-     * @param  {DOMElement}               line       The line DOM Element.
+     * @param  {DOMElement}               path       The path DOM Element.
      * @param  {object}                   source     The source node object.
      * @param  {object}                   target     The target node object.
      * @param  {configurable}             settings   The settings function.
