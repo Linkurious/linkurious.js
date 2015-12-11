@@ -37,7 +37,6 @@
 <script src="../src/renderers/svg/sigma.svg.edges.def.js"></script>
 <script src="../src/renderers/svg/sigma.svg.edges.curve.js"></script>
 <script src="../src/renderers/svg/sigma.svg.labels.def.js"></script>
-<script src="../src/renderers/svg/sigma.svg.edges.labels.def.js"></script>
 <script src="../src/renderers/svg/sigma.svg.hovers.def.js"></script>
 <script src="../src/middlewares/sigma.middlewares.rescale.js"></script>
 <script src="../src/middlewares/sigma.middlewares.copy.js"></script>
@@ -46,6 +45,9 @@
 <script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
+<script src="../plugins/sigma.renderers.linkurious/svg/sigma.svg.edges.tapered.js"></script>
+<script src="../plugins/sigma.renderers.edgeLabels/sigma.svg.edges.labels.def.js"></script>
+<script src="../plugins/sigma.renderers.edgeLabels/sigma.svg.edges.labels.curve.js"></script>
 <script src="../plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js"></script>
 <script src="../plugins/sigma.layouts.forceAtlas2/supervisor.js"></script>
 <script src="../plugins/sigma.layouts.forceAtlas2/worker.js"></script>
@@ -61,6 +63,7 @@
       background-color: #455660;
     }
     .sigma-edge {
+      /*fill: #14191C;*/ /*for tapered edges*/
       stroke: #14191C;
     }
     .sigma-node {
@@ -110,6 +113,7 @@ for (i = 0; i < E; i++)
     label: 'Edge ' + i,
     source: 'n' + (Math.random() * N | 0),
     target: 'n' + (Math.random() * N | 0),
+    //type: 'curve', // need to set curve type for self-loops
     size: Math.random(),
     color: '#ccc'
   });
@@ -119,7 +123,7 @@ s = new sigma({
   graph: g,
   settings: {
     minEdgeSize: 0.5,
-    maxEdgeSize: 1,
+    maxEdgeSize: 5,
     enableHovering: false,
     drawEdgeLabels: true,
     edgeLabelAlignment: 'auto',
