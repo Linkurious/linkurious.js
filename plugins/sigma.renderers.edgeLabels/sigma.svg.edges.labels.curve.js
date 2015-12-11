@@ -92,8 +92,13 @@
       }
 
       if ('auto' === settings('edgeLabelAlignment')) {
-        angle = Math.atan2(dY * sign, dX * sign) * (180 / Math.PI); // deg
         translateY = -1 - size;
+        if (source.id === target.id) {
+          angle = 45; // deg
+        }
+        else {
+          angle = Math.atan2(dY * sign, dX * sign) * (180 / Math.PI); // deg
+        }
       }
 
       // Updating
