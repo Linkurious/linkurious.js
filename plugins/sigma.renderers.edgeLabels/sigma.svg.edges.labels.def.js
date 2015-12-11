@@ -66,6 +66,9 @@
           settings('defaultLabelSize') :
           settings('labelSizeRatio') * size;
 
+      if (source.id === target.id)
+        return;
+
       // Case when we don't want to display the label
       if (!settings('forceLabels') && size < settings('edgeLabelThreshold'))
         return;
