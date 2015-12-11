@@ -431,12 +431,17 @@
    * @param  {?number}                height The new height of the container.
    * @return {sigma.renderers.svg}           Returns the instance itself.
    */
-  sigma.renderers.svg.prototype.resize = function() {
+  sigma.renderers.svg.prototype.resize = function(w, h) {
     var oldWidth = this.width,
         oldHeight = this.height;
 
-    this.width = this.container.offsetWidth;
-    this.height = this.container.offsetHeight;
+    if (w !== undefined && h !== undefined) {
+      this.width = w;
+      this.height = h;
+    } else {
+      this.width = this.container.offsetWidth;
+      this.height = this.container.offsetHeight;
+    }
 
     if (oldWidth !== this.width || oldHeight !== this.height) {
       this.domElements.graph.style.width = this.width + 'px';
