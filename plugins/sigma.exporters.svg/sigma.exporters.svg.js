@@ -172,6 +172,10 @@
     container.setAttribute('height', h);
     container.setAttribute('style', 'position:absolute; top: 0px; left:0px; width: ' + w + 'px; height: ' + h + 'px;');
 
+    // Fit graph to viewport
+    var autoRescale = this.settings('autoRescale');
+    this.settings('autoRescale', true);
+
     // Creating a camera
     var camera = this.addCamera();
 
@@ -190,6 +194,9 @@
     // Dropping camera and renderers before something nasty happens
     this.killRenderer(renderer);
     this.killCamera(camera);
+
+    // reset setting
+    this.settings('autoRescale', autoRescale);
 
     // Retrieving svg
     var svg = container.querySelector('svg');
