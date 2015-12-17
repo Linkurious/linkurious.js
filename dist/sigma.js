@@ -703,7 +703,7 @@
   /**
    * The current version of sigma:
    */
-  sigma.version = '1.0.3';
+  sigma.version = '1.3.0';
 
 
 
@@ -3246,10 +3246,6 @@
      * GLOBAL SETTINGS:
      * ****************
      */
-    // {boolean} Determines whether the instance has to refresh itself
-    //           automatically when a "resize" event is dispatched from the
-    //           window object.
-    autoResize: true,
     // {boolean} Determines whether the "rescale" middleware has to be called
     //           automatically for each camera on refresh.
     autoRescale: true,
@@ -7559,6 +7555,7 @@
       nodes: {},
       edges: {},
       labels: {},
+      edgelabels: {},
       hovers: {}
     };
     this.measurementCanvas = null;
@@ -7645,6 +7642,8 @@
         drawEdges = this.settings(options, 'drawEdges'),
         drawNodes = this.settings(options, 'drawNodes'),
         drawLabels = this.settings(options, 'drawLabels'),
+        drawEdgeLabels = this.settings(options, 'drawEdgeLabels'),
+        defaultEdgeType = this.settings(options, 'defaultEdgeType'),
         embedSettings = this.settings.embedObjects(options, {
           prefix: this.options.prefix,
           forceLabels: this.options.forceLabels
@@ -7670,6 +7669,7 @@
     this.hideDOMElements(this.domElements.nodes);
     this.hideDOMElements(this.domElements.edges);
     this.hideDOMElements(this.domElements.labels);
+    this.hideDOMElements(this.domElements.edgelabels);
 
     // Find which nodes are on screen
     this.edgesOnScreen = [];
@@ -7711,13 +7711,15 @@
           this.domElements.groups.nodes.appendChild(e);
 
           // Label
-          e = (subrenderers[a[i].type] || subrenderers.def).create(
-            a[i],
-            embedSettings
-          );
+          if (drawLabels) {
+            e = (subrenderers[a[i].type] || subrenderers.def).create(
+              a[i],
+              embedSettings
+            );
 
-          this.domElements.labels[a[i].id] = e;
-          this.domElements.groups.labels.appendChild(e);
+            this.domElements.labels[a[i].id] = e;
+            this.domElements.groups.labels.appendChild(e);
+          }
         }
       }
 
@@ -7736,16 +7738,19 @@
         );
 
         // Label
-        (subrenderers[a[i].type] || subrenderers.def).update(
-          a[i],
-          this.domElements.labels[a[i].id],
-          embedSettings
-        );
+        if (drawLabels) {
+          (subrenderers[a[i].type] || subrenderers.def).update(
+            a[i],
+            this.domElements.labels[a[i].id],
+            embedSettings
+          );
+        }
       }
 
     // Display edges
     //---------------
     renderers = sigma.svg.edges;
+    subrenderers = sigma.svg.edges.labels;
 
     //-- First we create the edges which are not already created
     if (drawEdges)
@@ -7754,7 +7759,10 @@
           source = nodes(a[i].source);
           target = nodes(a[i].target);
 
-          e = (renderers[a[i].type] || renderers.def).create(
+          e = (renderers[a[i].type] ||
+            renderers[defaultEdgeType] ||
+            renderers.def
+          ).create(
             a[i],
             source,
             target,
@@ -7763,6 +7771,20 @@
 
           this.domElements.edges[a[i].id] = e;
           this.domElements.groups.edges.appendChild(e);
+
+          // Label
+          if (drawEdgeLabels) {
+
+            e = (subrenderers[a[i].type] ||
+              subrenderers[defaultEdgeType]  ||
+              subrenderers.def
+            ).create(
+              a[i],
+              embedSettings
+            );
+            this.domElements.edgelabels[a[i].id] = e;
+            this.domElements.groups.edgelabels.appendChild(e);
+          }
         }
        }
 
@@ -7772,13 +7794,30 @@
         source = nodes(a[i].source);
         target = nodes(a[i].target);
 
-        (renderers[a[i].type] || renderers.def).update(
+        (renderers[a[i].type] ||
+          renderers[defaultEdgeType] ||
+          renderers.def
+        ).update(
           a[i],
           this.domElements.edges[a[i].id],
           source,
           target,
           embedSettings
         );
+
+        // Label
+        if (drawEdgeLabels) {
+          (subrenderers[a[i].type] ||
+            subrenderers[defaultEdgeType] ||
+            subrenderers.def
+          ).update(
+            a[i],
+            source,
+            target,
+            this.domElements.edgelabels[a[i].id],
+            embedSettings
+          );
+        }
        }
 
     this.dispatchEvent('render');
@@ -7817,7 +7856,7 @@
     this.domElements.graph = this.container.appendChild(dom);
 
     // Creating groups
-    var groups = ['edges', 'nodes', 'labels', 'hovers'];
+    var groups = ['edges', 'nodes', 'edgelabels', 'labels', 'hovers'];
     for (i = 0, l = groups.length; i < l; i++) {
       g = document.createElementNS(this.settings('xmlns'), 'g');
 
@@ -7946,12 +7985,17 @@
    * @param  {?number}                height The new height of the container.
    * @return {sigma.renderers.svg}           Returns the instance itself.
    */
-  sigma.renderers.svg.prototype.resize = function() {
+  sigma.renderers.svg.prototype.resize = function(w, h) {
     var oldWidth = this.width,
         oldHeight = this.height;
 
-    this.width = this.container.offsetWidth;
-    this.height = this.container.offsetHeight;
+    if (w !== undefined && h !== undefined) {
+      this.width = w;
+      this.height = h;
+    } else {
+      this.width = this.container.offsetWidth;
+      this.height = this.container.offsetHeight;
+    }
 
     if (oldWidth !== this.width || oldHeight !== this.height) {
       this.domElements.graph.style.width = this.width + 'px';
@@ -7972,6 +8016,7 @@
   sigma.utils.pkg('sigma.svg.nodes');
   sigma.utils.pkg('sigma.svg.edges');
   sigma.utils.pkg('sigma.svg.labels');
+  sigma.utils.pkg('sigma.svg.edgelabels');
 }).call(this);
 
 ;(function(global) {
@@ -9443,11 +9488,20 @@
     }
 
     function drawHoverBorder(alignment, context, fontSize, node, lines, maxLineLength) {
+      var labelWidth =
+        (maxLineLength > 1 && lines.length > 1) ?
+        0.6 * maxLineLength * fontSize :
+        sigma.utils.canvas.getTextWidth(
+          context,
+          settings('approximateLabelWidth'),
+          fontSize,
+          lines[0]
+        );
+
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
           h = ((fontSize + 1) * lines.length) + 4,
           e = Math.round(size + fontSize / 4),
-          labelWidth = 0.6 * (maxLineLength > 1 ? maxLineLength : lines[0].length) * fontSize,
           w = Math.round(labelWidth + size + 1.5 + fontSize / 3);
 
       if (node.label && typeof node.label === 'string') {
@@ -10024,7 +10078,7 @@
 
     size = (edge.hover) ?
       settings('edgeHoverSizeRatio') * size : size;
-    var aSize = size * 2.5,
+    var aSize = Math.max(size * 2.5, settings('minArrowSize')),
         d = Math.sqrt((tX - sX) * (tX - sX) + (tY - sY) * (tY - sY)),
         aX = sX + (tX - sX) * (d - aSize - tSize) / d,
         aY = sY + (tY - sY) * (d - aSize - tSize) / d,
@@ -10112,7 +10166,7 @@
 
     if (source.id === target.id) {
       d = Math.sqrt((tX - cp.x1) * (tX - cp.x1) + (tY - cp.y1) * (tY - cp.y1));
-      aSize = size * 2.5;
+      aSize = Math.max(size * 2.5, settings('minArrowSize'));
       aX = cp.x1 + (tX - cp.x1) * (d - aSize - tSize) / d;
       aY = cp.y1 + (tY - cp.y1) * (d - aSize - tSize) / d;
       vX = (tX - cp.x1) * aSize / d;
@@ -10378,7 +10432,7 @@
   sigma.utils.pkg('sigma.svg.edges');
 
   /**
-   * The curve edge renderer. It renders the node as a bezier curve.
+   * The curve edge renderer. It renders the edge as a bezier curve.
    */
   sigma.svg.edges.curve = {
 
@@ -10424,26 +10478,135 @@
      * SVG Element update.
      *
      * @param  {object}                   edge       The edge object.
-     * @param  {DOMElement}               line       The line DOM Element.
+     * @param  {DOMElement}               path       The path DOM Element.
      * @param  {object}                   source     The source node object.
      * @param  {object}                   target     The target node object.
      * @param  {configurable}             settings   The settings function.
      */
     update: function(edge, path, source, target, settings) {
-      var prefix = settings('prefix') || '';
+      var prefix = settings('prefix') || '',
+          sSize = source[prefix + 'size'],
+          sX = source[prefix + 'x'],
+          sY = source[prefix + 'y'],
+          tX = target[prefix + 'x'],
+          tY = target[prefix + 'y'],
+          cp,
+          p;
 
       path.setAttributeNS(null, 'stroke-width', edge[prefix + 'size'] || 1);
 
-      // Control point
-      var cx = (source[prefix + 'x'] + target[prefix + 'x']) / 2 +
-        (target[prefix + 'y'] - source[prefix + 'y']) / 4,
-          cy = (source[prefix + 'y'] + target[prefix + 'y']) / 2 +
-        (source[prefix + 'x'] - target[prefix + 'x']) / 4;
+      if (source.id === target.id) {
+        cp = sigma.utils.getSelfLoopControlPoints(sX, sY, sSize);
+        // Path
+        p = 'M' + sX + ',' + sY + ' ' +
+            'C' + cp.x1 + ',' + cp.y1 + ' ' +
+            cp.x2 + ',' + cp.y2 + ' ' +
+            tX + ',' + tY;
+      }
+      else {
+        cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
+        // Path
+        p = 'M' + sX + ',' + sY + ' ' +
+            'Q' + cp.x + ',' + cp.y + ' ' +
+            tX + ',' + tY;
+      }
 
-      // Path
-      var p = 'M' + source[prefix + 'x'] + ',' + source[prefix + 'y'] + ' ' +
-              'Q' + cx + ',' + cy + ' ' +
-              target[prefix + 'x'] + ',' + target[prefix + 'y'];
+      // Updating attributes
+      path.setAttributeNS(null, 'd', p);
+      path.setAttributeNS(null, 'fill', 'none');
+
+      // Showing
+      path.style.display = '';
+
+      return this;
+    }
+  };
+})();
+
+;(function() {
+  'use strict';
+
+  sigma.utils.pkg('sigma.svg.edges');
+
+  /**
+   * TODO add arrow
+   */
+  sigma.svg.edges.curvedArrow = {
+
+    /**
+     * SVG Element creation.
+     *
+     * @param  {object}                   edge       The edge object.
+     * @param  {object}                   source     The source node object.
+     * @param  {object}                   target     The target node object.
+     * @param  {configurable}             settings   The settings function.
+     */
+    create: function(edge, source, target, settings) {
+      var color = edge.color,
+          prefix = settings('prefix') || '',
+          edgeColor = settings('edgeColor'),
+          defaultNodeColor = settings('defaultNodeColor'),
+          defaultEdgeColor = settings('defaultEdgeColor');
+
+      if (!color)
+        switch (edgeColor) {
+          case 'source':
+            color = source.color || defaultNodeColor;
+            break;
+          case 'target':
+            color = target.color || defaultNodeColor;
+            break;
+          default:
+            color = defaultEdgeColor;
+            break;
+        }
+
+      var path = document.createElementNS(settings('xmlns'), 'path');
+
+      // Attributes
+      path.setAttributeNS(null, 'data-edge-id', edge.id);
+      path.setAttributeNS(null, 'class', settings('classPrefix') + '-edge');
+      path.setAttributeNS(null, 'stroke', color);
+
+      return path;
+    },
+
+    /**
+     * SVG Element update.
+     *
+     * @param  {object}                   edge       The edge object.
+     * @param  {DOMElement}               path       The path DOM Element.
+     * @param  {object}                   source     The source node object.
+     * @param  {object}                   target     The target node object.
+     * @param  {configurable}             settings   The settings function.
+     */
+    update: function(edge, path, source, target, settings) {
+      var prefix = settings('prefix') || '',
+          sSize = source[prefix + 'size'],
+          sX = source[prefix + 'x'],
+          sY = source[prefix + 'y'],
+          tX = target[prefix + 'x'],
+          tY = target[prefix + 'y'],
+          cp,
+          p;
+
+      path.setAttributeNS(null, 'stroke-width', edge[prefix + 'size'] || 1);
+
+      if (source.id === target.id) {
+        cp = sigma.utils.getSelfLoopControlPoints(sX, sY, sSize);
+        // Path
+        p = 'M' + sX + ',' + sY + ' ' +
+            'C' + cp.x1 + ',' + cp.y1 + ' ' +
+            cp.x2 + ',' + cp.y2 + ' ' +
+            tX + ',' + tY;
+      }
+      else {
+        cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
+        // Path
+        p = 'M' + sX + ',' + sY + ' ' +
+            'Q' + cp.x + ',' + cp.y + ' ' +
+            tX + ',' + tY;
+      }
 
       // Updating attributes
       path.setAttributeNS(null, 'd', p);

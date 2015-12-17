@@ -1454,6 +1454,7 @@
     size: '1000',
     width: '1000',
     height: '1000',
+    margin: 0.05,
     classes: true,
     labels: true,
     data: false,
@@ -1545,13 +1546,22 @@
 
     var prefix = this.settings('classPrefix'),
         w = params.size || params.width || DEFAULTS.size,
-        h = params.size || params.height || DEFAULTS.size;
+        h = params.size || params.height || DEFAULTS.size,
+        margin = params.margin || DEFAULTS.margin;
 
     // Creating a dummy container
     var container = document.createElement('div');
     container.setAttribute('width', w);
     container.setAttribute('height', h);
     container.setAttribute('style', 'position:absolute; top: 0px; left:0px; width: ' + w + 'px; height: ' + h + 'px;');
+
+    // Add margin to deal with curved edges
+    var sideMargin = this.settings('sideMargin');
+    this.settings('sideMargin', margin);
+
+    // Fit graph to viewport
+    var autoRescale = this.settings('autoRescale');
+    this.settings('autoRescale', true);
 
     // Creating a camera
     var camera = this.addCamera();
@@ -1571,6 +1581,10 @@
     // Dropping camera and renderers before something nasty happens
     this.killRenderer(renderer);
     this.killCamera(camera);
+
+    // reset setting
+    this.settings('sideMargin', sideMargin);
+    this.settings('autoRescale', autoRescale);
 
     // Retrieving svg
     var svg = container.querySelector('svg');
@@ -6472,12 +6486,23 @@
      * @param   {string|object}     neo4j       The URL of neo4j server or a neo4j server object.
      * @param   {string}            endpoint    Endpoint of the neo4j server
      * @param   {string}            method      The calling method for the endpoint : 'GET' or 'POST'
-     * @param   {object|string}     data        Data that will be send to the server
+     * @param   {object|string}     data        Data that will be sent to the server
      * @param   {function}          callback    The callback function
+     * @param   {integer}           timeout     The amount of time in milliseconds that neo4j should run the query before
+     *                                          returning a timeout error.  Note, this will only work if the following
+     *                                          two settings are added to the neo4j property files:
+     *                                          To the file './conf/neo4j.properties' add 'execution_guard_enabled=true'.
+     *                                          To the file './conf/neo4j-server.properties' add 'org.neo4j.server.webserver.limit.executiontime={timeout_in_seconds}'.
+     *                                          Make sure the timeout in the above property file is greater then the timeout that
+     *                                          you want to send with the request, because neo4j will use whichever timeout is shorter.
      */
-    sigma.neo4j.send = function(neo4j, endpoint, method, data, callback) {
-        var xhr = sigma.utils.xhr(),
-            url, user, password;
+    sigma.neo4j.send = function(neo4j, endpoint, method, data, callback, timeout) {
+        var
+          xhr = sigma.utils.xhr(),
+          timeout = timeout || -1,
+          url,
+          user,
+          password;
 
         // if neo4j arg is not an object
         url = neo4j;
@@ -6499,6 +6524,9 @@
         }
         xhr.setRequestHeader('Accept', 'application/json');
         xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        if (timeout > 0) {
+        	xhr.setRequestHeader('max-execution-time', timeout);
+        }
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 // Call the callback if specified:
@@ -6594,11 +6622,14 @@
      *                                          with the related sigma instance as
      *                                          parameter.
      */
-    sigma.neo4j.cypher = function (neo4j, cypher, sig, callback) {
-        var endpoint = '/db/data/transaction/commit',
-            data, cypherCallback;
+    sigma.neo4j.cypher = function (neo4j, cypher, sig, callback, timeout) {
+        var
+          endpoint = '/db/data/transaction/commit',
+          timeout = timeout || -1,
+          data,
+          cypherCallback;
 
-        // Data that will be send to the server
+        // Data that will be sent to the server
         data = JSON.stringify({
             "statements": [
                 {
@@ -6644,7 +6675,7 @@
         };
 
         // Let's call neo4j
-        sigma.neo4j.send(neo4j, endpoint, 'POST', data, cypherCallback(callback));
+        sigma.neo4j.send(neo4j, endpoint, 'POST', data, cypherCallback(callback), timeout);
     };
 
     /**
@@ -17007,6 +17038,9 @@ sigma.plugins.colorbrewer = {YlGn: {
      * RENDERERS SETTINGS:
      * *******************
      */
+    // {string} Indicates how to choose the edge labels color. Available values:
+    //          "edge", "default"
+    edgelabelColor: 'default',
     // {string}
     defaultEdgeLabelColor: '#000',
     // {string}
@@ -17425,6 +17459,241 @@ sigma.plugins.colorbrewer = {YlGn: {
   }    
   };
 }).call(this);
+;(function(undefined) {
+  'use strict';
+
+  if (typeof sigma === 'undefined')
+    throw 'sigma is not declared';
+
+  // Initialize packages:
+  sigma.utils.pkg('sigma.svg.edges.labels');
+
+  /**
+   * The label renderer for curved edges. It renders the label as a simple text.
+   */
+  sigma.svg.edges.labels.curve = {
+
+    /**
+     * SVG Element creation.
+     *
+     * @param  {object}                   edge       The edge object.
+     * @param  {configurable}             settings   The settings function.
+     */
+    create: function(edge, settings) {
+      var prefix = settings('prefix') || '',
+          size = edge[prefix + 'size'],
+          text = document.createElementNS(settings('xmlns'), 'text');
+
+      var fontSize = (settings('labelSize') === 'fixed') ?
+        settings('defaultLabelSize') :
+        settings('labelSizeRatio') * size;
+
+      var fontColor = (settings('edgeLabelColor') === 'edge') ?
+        (edge.color || settings('defaultEdgeColor')) :
+        settings('defaultEdgeLabelColor');
+
+      text.setAttributeNS(null, 'data-label-target', edge.id);
+      text.setAttributeNS(null, 'class', settings('classPrefix') + '-label');
+      text.setAttributeNS(null, 'font-size', fontSize);
+      text.setAttributeNS(null, 'font-family', settings('font'));
+      text.setAttributeNS(null, 'fill', fontColor);
+
+      text.innerHTML = edge.label;
+      text.textContent = edge.label;
+
+      return text;
+    },
+
+    /**
+     * SVG Element update.
+     *
+     * @param  {object}                   edge     The edge object.
+     * @param  {object}                   source   The source node object.
+     * @param  {object}                   target   The target node object.
+     * @param  {DOMElement}               text     The label DOM element.
+     * @param  {configurable}             settings The settings function.
+     */
+    update: function(edge, source, target, text, settings) {
+      var prefix = settings('prefix') || '',
+          size = edge[prefix + 'size'],
+          sSize = source[prefix + 'size'],
+          x = Math.round((source[prefix + 'x'] + target[prefix + 'x']) / 2),
+          y = Math.round((source[prefix + 'y'] + target[prefix + 'y']) / 2),
+          sX = source[prefix + 'x'],
+          sY = source[prefix + 'y'],
+          tX = target[prefix + 'x'],
+          tY = target[prefix + 'y'],
+          dX = tX - sX,
+          dY = tY - sY,
+          translateY = 0,
+          sign = (sX < tX) ? 1 : -1,
+          angle = 0,
+          t = 0.5,  //length of the curve
+          cp = {},
+          c,
+          fontSize = (settings('labelSize') === 'fixed') ?
+          settings('defaultLabelSize') :
+          settings('labelSizeRatio') * size;
+
+      // Case when we don't want to display the label
+      if (!settings('forceLabels') && size < settings('edgeLabelThreshold'))
+        return;
+
+      if (typeof edge.label !== 'string')
+        return;
+
+      if (source.id === target.id) {
+        cp = sigma.utils.getSelfLoopControlPoints(sX, sY, sSize);
+        c = sigma.utils.getPointOnBezierCurve(
+          t, sX, sY, tX, tY, cp.x1, cp.y1, cp.x2, cp.y2
+        );
+      } else {
+        cp = sigma.utils.getQuadraticControlPoint(sX, sY, tX, tY, edge.cc);
+        c = sigma.utils.getPointOnQuadraticCurve(t, sX, sY, tX, tY, cp.x, cp.y);
+      }
+
+      if ('auto' === settings('edgeLabelAlignment')) {
+        translateY = -1 - size;
+        if (source.id === target.id) {
+          angle = 45; // deg
+        }
+        else {
+          angle = Math.atan2(dY * sign, dX * sign) * (180 / Math.PI); // deg
+        }
+      }
+
+      // Updating
+      text.setAttributeNS(null, 'x', c.x);
+      text.setAttributeNS(null, 'y', c.y);
+      text.setAttributeNS(
+        null,
+        'transform',
+        'rotate('+angle+' '+c.x+' '+c.y+') translate(0 '+translateY+')'
+      );
+
+      // Showing
+      text.style.display = '';
+
+      return this;
+    }
+  };
+}).call(this);
+
+;(function(undefined) {
+  'use strict';
+
+  if (typeof sigma === 'undefined')
+    throw 'sigma is not declared';
+
+  // Initialize packages:
+  sigma.utils.pkg('sigma.svg.edges.labels');
+
+  /**
+   * The label renderer for curved arrow edges. It renders the label as a simple text.
+   */
+  sigma.svg.edges.labels.curvedArrow = sigma.svg.edges.labels.curve;
+
+}).call(this);
+
+;(function(undefined) {
+  'use strict';
+
+  if (typeof sigma === 'undefined')
+    throw 'sigma is not declared';
+
+  // Initialize packages:
+  sigma.utils.pkg('sigma.svg.edges.labels');
+
+  /**
+   * The default edge label renderer. It renders the label as a simple text.
+   */
+  sigma.svg.edges.labels.def = {
+
+    /**
+     * SVG Element creation.
+     *
+     * @param  {object}                   edge       The edge object.
+     * @param  {configurable}             settings   The settings function.
+     */
+    create: function(edge, settings) {
+      var prefix = settings('prefix') || '',
+          size = edge[prefix + 'size'],
+          text = document.createElementNS(settings('xmlns'), 'text');
+
+      var fontSize = (settings('labelSize') === 'fixed') ?
+        settings('defaultLabelSize') :
+        settings('labelSizeRatio') * size;
+
+      var fontColor = (settings('edgeLabelColor') === 'edge') ?
+        (edge.color || settings('defaultEdgeColor')) :
+        settings('defaultEdgeLabelColor');
+
+      text.setAttributeNS(null, 'data-label-target', edge.id);
+      text.setAttributeNS(null, 'class', settings('classPrefix') + '-label');
+      text.setAttributeNS(null, 'font-size', fontSize);
+      text.setAttributeNS(null, 'font-family', settings('font'));
+      text.setAttributeNS(null, 'fill', fontColor);
+
+      text.innerHTML = edge.label;
+      text.textContent = edge.label;
+
+      return text;
+    },
+
+    /**
+     * SVG Element update.
+     *
+     * @param  {object}                   edge     The edge object.
+     * @param  {object}                   source   The source node object.
+     * @param  {object}                   target   The target node object.
+     * @param  {DOMElement}               text     The label DOM element.
+     * @param  {configurable}             settings The settings function.
+     */
+    update: function(edge, source, target, text, settings) {
+      var prefix = settings('prefix') || '',
+          size = edge[prefix + 'size'],
+          x = Math.round((source[prefix + 'x'] + target[prefix + 'x']) / 2),
+          y = Math.round((source[prefix + 'y'] + target[prefix + 'y']) / 2),
+          dX,
+          dY,
+          tY = 0,
+          sign,
+          angle = 0,
+          fontSize = (settings('labelSize') === 'fixed') ?
+          settings('defaultLabelSize') :
+          settings('labelSizeRatio') * size;
+
+      if (source.id === target.id)
+        return;
+
+      // Case when we don't want to display the label
+      if (!settings('forceLabels') && size < settings('edgeLabelThreshold'))
+        return;
+
+      if (typeof edge.label !== 'string')
+        return;
+
+      if ('auto' === settings('edgeLabelAlignment')) {
+        dX = target[prefix + 'x'] - source[prefix + 'x'];
+        dY = target[prefix + 'y'] - source[prefix + 'y'];
+        sign = (source[prefix + 'x'] < target[prefix + 'x']) ? 1 : -1;
+        angle = Math.atan2(dY * sign, dX * sign) * (180 / Math.PI); // deg
+        tY = Math.round(-1 - size);
+      }
+
+      // Updating
+      text.setAttributeNS(null, 'x', x);
+      text.setAttributeNS(null, 'y', y);
+      text.setAttributeNS(null, 'transform', 'rotate('+angle+' '+x+' '+y+') translate(0 '+tY+')');
+
+      // Showing
+      text.style.display = '';
+
+      return this;
+    }
+  };
+}).call(this);
+
 ;(function(undefined) {
   'use strict';
 
@@ -18019,7 +18288,7 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     size = (edge.hover) ?
       settings('edgeHoverSizeRatio') * size : size;
-    var aSize = size * 2.5,
+    var aSize = Math.max(size * 2.5, settings('minArrowSize')),
         d = Math.sqrt(Math.pow(tX - sX, 2) + Math.pow(tY - sY, 2)),
         aX = sX + (tX - sX) * (d - aSize - tSize) / d,
         aY = sY + (tY - sY) * (d - aSize - tSize) / d,
@@ -18282,7 +18551,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     }
     else {
       d = Math.sqrt(Math.pow(tX - cp.x, 2) + Math.pow(tY - cp.y, 2));
-      aSize = size * 2.5;
+      aSize = Math.max(size * 2.5, settings('minArrowSize'));
       aX = cp.x + (tX - cp.x) * (d - aSize - tSize) / d;
       aY = cp.y + (tY - cp.y) * (d - aSize - tSize) / d;
       vX = (tX - cp.x) * aSize / d;
@@ -18997,7 +19266,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         tX = target[prefix + 'x'],
         tY = target[prefix + 'y'];
 
-    var aSize = size * 2.5,
+    var aSize = Math.max(size * 2.5, settings('minArrowSize')),
         d = Math.sqrt(Math.pow(tX - sX, 2) + Math.pow(tY - sY, 2)),
         aX = sX + (tX - sX) * (d - aSize - tSize) / d,
         aY = sY + (tY - sY) * (d - aSize - tSize) / d,
@@ -19134,7 +19403,14 @@ sigma.plugins.colorbrewer = {YlGn: {
             return key;
           }
         }
-        this[key] = { i: 0, n: 0 };
+
+        if (sortByDirection && this[o.target + ',' + o.source]) {
+          // count a parallel edge if an opposite edge exists
+          this[key] = { i: 1, n: 1 };
+        }
+        else {
+          this[key] = { i: 0, n: 0 };
+        }
         return key;
       },
       inc: function(o) {
@@ -19150,21 +19426,24 @@ sigma.plugins.colorbrewer = {YlGn: {
     edges.forEach(function(edge) {
       key = count.key(edge);
 
-      if (count[key].n > 1) {
-        // update edge type:
-        if (edge.type === 'arrow' || edge.type === 'tapered' ||
-          defaultEdgeType === 'arrow' || defaultEdgeType === 'tapered') {
+      // if the edge has parallel edges:
+      if (count[key].n > 1 || count[key].i > 0) {
+        if (!edge.cc) {
+          // update edge type:
+          if (edge.type === 'arrow' || edge.type === 'tapered' ||
+            defaultEdgeType === 'arrow' || defaultEdgeType === 'tapered') {
 
-          if (!edge.cc_prev_type) {
-            edge.cc_prev_type = edge.type;
+            if (!edge.cc_prev_type) {
+              edge.cc_prev_type = edge.type;
+            }
+            edge.type = 'curvedArrow';
           }
-          edge.type = 'curvedArrow';
-        }
-        else {
-          if (!edge.cc_prev_type) {
-            edge.cc_prev_type = edge.type;
+          else {
+            if (!edge.cc_prev_type) {
+              edge.cc_prev_type = edge.type;
+            }
+            edge.type = 'curve';
           }
-          edge.type = 'curve';
         }
 
         // curvature coefficients
@@ -19173,8 +19452,8 @@ sigma.plugins.colorbrewer = {YlGn: {
       else if (edge.cc) {
         // the edge is no longer a parallel edge
         edge.type = edge.cc_prev_type;
-        edge.cc_prev_type = null;
-        edge.cc = null;
+        edge.cc_prev_type = undefined;
+        edge.cc = undefined;
       }
     });
   };
@@ -19343,7 +19622,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     }
     else {
       d = Math.sqrt(Math.pow(tX - cp.x, 2) + Math.pow(tY - cp.y, 2));
-      aSize = size * 2.5;
+      aSize = Math.max(size * 2.5, settings('minArrowSize'));
       aX = cp.x + (tX - cp.x) * (d - aSize - tSize) / d;
       aY = cp.y + (tY - cp.y) * (d - aSize - tSize) / d;
       vX = (tX - cp.x) * aSize / d;
@@ -20056,11 +20335,13 @@ sigma.plugins.colorbrewer = {YlGn: {
         borderColor = settings('nodeBorderColor') === 'default'
           ? settings('defaultNodeBorderColor')
           : (node.border_color || defaultNodeColor),
-        level = settings('nodeHoverLevel');
+        maxLineLength = settings('maxNodeLabelLineLength') || 0,
+        level = settings('nodeHoverLevel'),
+        lines = getLines(node.label, maxLineLength);
 
     if (alignment !== 'center') {
       prepareLabelBackground(context);
-      drawLabelBackground(alignment, context, fontSize, node);
+      drawLabelBackground(alignment, context, fontSize, node, lines, maxLineLength);
     }
 
     // Level:
@@ -20126,7 +20407,7 @@ sigma.plugins.colorbrewer = {YlGn: {
 
     if (alignment === 'center') {
       prepareLabelBackground(context);
-      drawLabelBackground(alignment, context, fontSize, node);
+      drawLabelBackground(alignment, context, fontSize, node, lines, maxLineLength);
     }
 
     // Display the label:
@@ -20175,11 +20456,12 @@ sigma.plugins.colorbrewer = {YlGn: {
       }
 
       if (shouldRender) {
-        context.fillText(
-          node.label,
-          Math.round(node[prefix + 'x'] + labelOffsetX),
-          Math.round(node[prefix + 'y'] + labelOffsetY)
-        );
+        var baseX = node[prefix + 'x'] + labelOffsetX,
+            baseY = Math.round(node[prefix + 'y'] + labelOffsetY);
+
+        for (var i = 0; i < lines.length; ++i) {
+          context.fillText(lines[i], baseX, baseY + i * (fontSize + 1));
+        }
       }
     }
 
@@ -20200,13 +20482,21 @@ sigma.plugins.colorbrewer = {YlGn: {
       }
     }
 
-    function drawLabelBackground(alignment, context, fontSize, node) {
+    function drawLabelBackground(alignment, context, fontSize, node, lines, maxLineLength) {
+      var labelWidth =
+        (maxLineLength > 1 && lines.length > 1) ?
+        0.6 * maxLineLength * fontSize :
+        sigma.utils.canvas.getTextWidth(
+          context,
+          settings('approximateLabelWidth'),
+          fontSize,
+          lines[0]
+        );
+
       var x = Math.round(node[prefix + 'x']),
           y = Math.round(node[prefix + 'y']),
-          labelWidth = sigma.utils.canvas.getTextWidth(context,
-            settings('approximateLabelWidth'), fontSize, node.label),
           w = Math.round(labelWidth + 4),
-          h = fontSize + 4,
+          h = h = ((fontSize + 1) * lines.length) + 4,
           e = Math.round(size + fontSize * 0.25);
 
       if (node.label && typeof node.label === 'string') {
@@ -20268,6 +20558,75 @@ sigma.plugins.colorbrewer = {YlGn: {
       context.shadowOffsetY = 0;
       context.shadowBlur = 0;
     }
+
+    /**
+     * Split a text into several lines. Each line won't be longer than the specified maximum length.
+     * @param {string}  text            Text to split
+     * @param {number}  maxLineLength   Maximum length of a line. A value <= 1 will be treated as "infinity".
+     * @returns {Array<string>}         List of lines
+     */
+    function getLines(text, maxLineLength) {
+      if (maxLineLength <= 1) {
+        return [text];
+      }
+
+      var words = text.split(' '),
+        lines = [],
+        lineLength = 0,
+        lineIndex = -1,
+        lineList = [],
+        lineFull = true;
+
+      for (var i = 0; i < words.length; ++i) {
+        if (lineFull) {
+          if (words[i].length > maxLineLength) {
+            var parts = splitWord(words[i], maxLineLength);
+            for (var j = 0; j < parts.length; ++j) {
+              lines.push([parts[j]]);
+              ++lineIndex;
+            }
+            lineLength = parts[parts.length - 1].length;
+          } else {
+            lines.push([words[i]
+            ]);
+            ++lineIndex;
+            lineLength = words[i].length + 1;
+          }
+          lineFull = false;
+        } else if (lineLength + words[i].length <= maxLineLength) {
+          lines[lineIndex].push(words[i]);
+          lineLength += words[i].length + 1;
+        } else {
+          lineFull = true;
+          --i;
+        }
+      }
+
+      for (i = 0; i < lines.length; ++i) {
+        lineList.push(lines[i].join(' '))
+      }
+
+      return lineList;
+    }
+
+    /**
+     * Split a word into several lines (with a '-' at the end of each line but the last).
+     * @param {string} word       Word to split
+     * @param {number} maxLength  Maximum length of a line
+     * @returns {Array<string>}   List of lines
+     */
+    function splitWord(word, maxLength) {
+      var parts = [];
+
+      for (var i = 0; i < word.length; i += maxLength - 1) {
+        parts.push(word.substr(i, maxLength - 1) + '-');
+      }
+
+      var lastPartLen = parts[parts.length - 1].length;
+      parts[parts.length - 1] = parts[parts.length - 1].substr(0, lastPartLen - 1) + ' ';
+
+      return parts;
+    }
   };
 }).call(this);
 
@@ -20297,6 +20656,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         borderSize = node.active ?
           settings('borderSize') + settings('outerBorderSize') : 0,
         labelWidth,
+        maxLineLength = settings('maxNodeLabelLineLength') || 0,
         labelOffsetX,
         labelOffsetY,
         shouldRender = true,
@@ -20376,13 +20736,84 @@ sigma.plugins.colorbrewer = {YlGn: {
     }
 
     if (shouldRender) {
-      context.fillText(
-        node.label,
-        Math.round(node[prefix + 'x'] + labelOffsetX),
-        Math.round(node[prefix + 'y'] + labelOffsetY)
-      );
+      var lines = getLines(node.label, maxLineLength),
+        baseX = node[prefix + 'x'] + labelOffsetX,
+        baseY = Math.round(node[prefix + 'y'] + labelOffsetY);
+
+      for (var i = 0; i < lines.length; ++i) {
+        context.fillText(lines[i], baseX, baseY + i * (fontSize + 1));
+      }
     }
   };
+
+  /**
+  * Split a text into several lines. Each line won't be longer than the specified maximum length.
+  * @param {string}  text            Text to split
+  * @param {number}  maxLineLength   Maximum length of a line. A value <= 1 will be treated as "infinity".
+  * @returns {Array<string>}         List of lines
+  */
+  function getLines(text, maxLineLength) {
+    if (maxLineLength <= 1) {
+      return [text];
+    }
+
+    var words = text.split(' '),
+      lines = [],
+      lineLength = 0,
+      lineIndex = -1,
+      lineList = [],
+      lineFull = true;
+
+    for (var i = 0; i < words.length; ++i) {
+      if (lineFull) {
+        if (words[i].length > maxLineLength) {
+          var parts = splitWord(words[i], maxLineLength);
+          for (var j = 0; j < parts.length; ++j) {
+            lines.push([parts[j]]);
+            ++lineIndex;
+          }
+          lineLength = parts[parts.length - 1].length;
+        } else {
+          lines.push([words[i]
+          ]);
+          ++lineIndex;
+          lineLength = words[i].length + 1;
+        }
+        lineFull = false;
+      } else if (lineLength + words[i].length <= maxLineLength) {
+        lines[lineIndex].push(words[i]);
+        lineLength += words[i].length + 1;
+      } else {
+        lineFull = true;
+        --i;
+      }
+    }
+
+    for (i = 0; i < lines.length; ++i) {
+      lineList.push(lines[i].join(' '))
+    }
+
+    return lineList;
+  }
+
+  /**
+   * Split a word into several lines (with a '-' at the end of each line but the last).
+   * @param {string} word       Word to split
+   * @param {number} maxLength  Maximum length of a line
+   * @returns {Array<string>}   List of lines
+   */
+  function splitWord(word, maxLength) {
+    var parts = [];
+
+    for (var i = 0; i < word.length; i += maxLength - 1) {
+      parts.push(word.substr(i, maxLength - 1) + '-');
+    }
+
+    var lastPartLen = parts[parts.length - 1].length;
+    parts[parts.length - 1] = parts[parts.length - 1].substr(0, lastPartLen - 1) + ' ';
+
+    return parts;
+  }
 }).call(this);
 
 ;(function() {
@@ -21153,6 +21584,96 @@ sigma.plugins.colorbrewer = {YlGn: {
   sigma.settings = sigma.utils.extend(sigma.settings || {}, settings);
 
 }).call(this);
+
+;(function() {
+  'use strict';
+
+  sigma.utils.pkg('sigma.svg.edges');
+
+  /**
+   * It renders the edge as a tapered line.
+   * Danny Holten, Petra Isenberg, Jean-Daniel Fekete, and J. Van Wijk (2010)
+   * Performance Evaluation of Tapered, Curved, and Animated Directed-Edge
+   * Representations in Node-Link Graphs. Research Report, Sep 2010.
+   */
+  sigma.svg.edges.tapered = {
+
+    /**
+     * SVG Element creation.
+     *
+     * @param  {object}                   edge       The edge object.
+     * @param  {object}                   source     The source node object.
+     * @param  {object}                   target     The target node object.
+     * @param  {configurable}             settings   The settings function.
+     */
+    create: function(edge, source, target, settings) {
+      var color = edge.color,
+          prefix = settings('prefix') || '',
+          edgeColor = settings('edgeColor'),
+          defaultNodeColor = settings('defaultNodeColor'),
+          defaultEdgeColor = settings('defaultEdgeColor');
+
+      if (!color)
+        switch (edgeColor) {
+          case 'source':
+            color = source.color || defaultNodeColor;
+            break;
+          case 'target':
+            color = target.color || defaultNodeColor;
+            break;
+          default:
+            color = defaultEdgeColor;
+            break;
+        }
+
+      var polygon = document.createElementNS(settings('xmlns'), 'polygon');
+
+      // Attributes
+      polygon.setAttributeNS(null, 'data-edge-id', edge.id);
+      polygon.setAttributeNS(null, 'class', settings('classPrefix') + '-edge');
+      polygon.setAttributeNS(null, 'fill', color);
+      polygon.setAttributeNS(null, 'fill-opacity', 0.6);
+      polygon.setAttributeNS(null, 'stroke-width', 0);
+
+      return polygon;
+    },
+
+    /**
+     * SVG Element update.
+     *
+     * @param  {object}                   edge       The edge object.
+     * @param  {DOMElement}               polygon    The polygon DOM Element.
+     * @param  {object}                   source     The source node object.
+     * @param  {object}                   target     The target node object.
+     * @param  {configurable}             settings   The settings function.
+     */
+    update: function(edge, polygon, source, target, settings) {
+      var prefix = settings('prefix') || '',
+        sX = source[prefix + 'x'],
+        sY = source[prefix + 'y'],
+        tX = target[prefix + 'x'],
+        tY = target[prefix + 'y'],
+        size = edge[prefix + 'size'] || 1,
+        dist = sigma.utils.getDistance(sX, sY, tX, tY),
+        c,
+        p;
+
+      if (!dist) return; // should be a self-loop
+
+      // Intersection points:
+      c = sigma.utils.getCircleIntersection(sX, sY, size, tX, tY, dist);
+
+      // Path
+      p = tX+','+tY+' '+c.xi+','+c.yi+' '+c.xi_prime+','+c.yi_prime;
+      polygon.setAttributeNS(null, "points", p);
+
+      // Showing
+      polygon.style.display = '';
+
+      return this;
+    }
+  };
+})();
 
 ;(function() {
   'use strict';
