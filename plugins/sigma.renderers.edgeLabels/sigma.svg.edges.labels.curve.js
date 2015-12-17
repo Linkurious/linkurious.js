@@ -8,7 +8,7 @@
   sigma.utils.pkg('sigma.svg.edges.labels');
 
   /**
-   * The default edge label renderer. It renders the label as a simple text.
+   * The label renderer for curved edges. It renders the label as a simple text.
    */
   sigma.svg.edges.labels.curve = {
 
