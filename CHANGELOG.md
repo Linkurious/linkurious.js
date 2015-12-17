@@ -1,5 +1,25 @@
 ## linkurious.js - changelog:
 
+#### 1.4.0 (December 17, 2015)
+
+This release fixes multiple rendering issues. It provides better support to SVG renderers and export.
+
+**Core:**
+- #321 Add curved edges for SVG
+- #321 SVG edge renderer handles defaultEdgeType setting
+- #321 Exported SVG is rescaled automatically to the specified size
+- Fix #319 sigma.renderers.svg.resize doesn't take arguments into account
+- Fix #316 Two parallel edges with opposite directions overlap
+- Fix #315 The last parallel edge after dropping the other edges remains curved
+- #295 Multi-line node labels on Canvas
+- Fix #266 'minArrowSize' settings not work (thanks @bkkoo)
+
+**Plugins:**
+- #322 Add a margin to exporters.svg
+- #289 renderers.linkurious: Add tapered edges for SVG
+- Fix #286 sigma.statistics.louvain Uncaught RangeError: NaN included (thanks @partizanos)
+- #131 renderers.edgeLabels: Add edge labels for SVG
+
 #### 1.3.0 (October 30, 2015)
 
 This release has BREAKING CHANGES regarding plugins.image and sigma.layout.*. Is also brings a new plugin that will provide nice legends to visualizations.
