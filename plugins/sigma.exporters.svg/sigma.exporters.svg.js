@@ -73,6 +73,7 @@
     size: '1000',
     width: '1000',
     height: '1000',
+    margin: 0.05,
     classes: true,
     labels: true,
     data: false,
@@ -164,13 +165,18 @@
 
     var prefix = this.settings('classPrefix'),
         w = params.size || params.width || DEFAULTS.size,
-        h = params.size || params.height || DEFAULTS.size;
+        h = params.size || params.height || DEFAULTS.size,
+        margin = params.margin || DEFAULTS.margin;
 
     // Creating a dummy container
     var container = document.createElement('div');
     container.setAttribute('width', w);
     container.setAttribute('height', h);
     container.setAttribute('style', 'position:absolute; top: 0px; left:0px; width: ' + w + 'px; height: ' + h + 'px;');
+
+    // Add margin to deal with curved edges
+    var sideMargin = this.settings('sideMargin');
+    this.settings('sideMargin', margin);
 
     // Fit graph to viewport
     var autoRescale = this.settings('autoRescale');
@@ -196,6 +202,7 @@
     this.killCamera(camera);
 
     // reset setting
+    this.settings('sideMargin', sideMargin);
     this.settings('autoRescale', autoRescale);
 
     // Retrieving svg

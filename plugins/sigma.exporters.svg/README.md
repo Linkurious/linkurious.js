@@ -34,6 +34,7 @@ sigInst.toSVG({
 * **size** *?integer* [`1000`]: size of the svg canvas in pixels.
 * **height** *?integer* [`1000`]: height of the svg canvas in pixels (useful only if you want a height different from the width).
 * **width** *?integer* [`1000`]: width of the svg canvas in pixels (useful only if you want a width different from the height).
+* **margin** *?float* [`0.05`]: side margin.
 * **classes** *?boolean* [`true`]: should the exporter try to optimize the svg document by creating classes?
 * **labels** *?boolean* [`false`]: should the labels be included in the svg file?
 * **data** *?boolean* [`false`]: should additional data (node ids for instance) be included in the svg file?
