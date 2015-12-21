@@ -63,8 +63,8 @@
        * ***************
        * These indexes just index data by ids.
        */
-      nodesIndex: Object.create(null),
-      edgesIndex: Object.create(null),
+      nodesIndex: new sigma.utils.map(),
+      edgesIndex: new sigma.utils.map(),
 
       /**
        * LOCAL INDEXES:
@@ -72,13 +72,9 @@
        * These indexes refer from node to nodes. Each key is an id, and each
        * value is the array of the ids of related nodes.
        */
-      inNeighborsIndex: Object.create(null),
-      outNeighborsIndex: Object.create(null),
-      allNeighborsIndex: Object.create(null),
-
-      inNeighborsCount: Object.create(null),
-      outNeighborsCount: Object.create(null),
-      allNeighborsCount: Object.create(null)
+      inNeighborsIndex: new sigma.utils.map(),
+      outNeighborsIndex: new sigma.utils.map(),
+      allNeighborsIndex: new sigma.utils.map()
     };
 
     // Execute bindings:
@@ -377,7 +373,7 @@
     if (typeof node.id !== 'string' && typeof node.id !== 'number')
       throw 'The node must have a string or number id.';
 
-    if (this.nodesIndex[node.id])
+    if (this.nodesIndex.get(node.id))
       throw 'The node "' + node.id + '" already exists.';
 
     var k,
@@ -402,17 +398,13 @@
       validNode.id = id;
 
     // Add empty containers for edges indexes:
-    this.inNeighborsIndex[id] = Object.create(null);
-    this.outNeighborsIndex[id] = Object.create(null);
-    this.allNeighborsIndex[id] = Object.create(null);
-
-    this.inNeighborsCount[id] = 0;
-    this.outNeighborsCount[id] = 0;
-    this.allNeighborsCount[id] = 0;
+    this.inNeighborsIndex.set(id, new sigma.utils.map());
+    this.outNeighborsIndex.set(id, new sigma.utils.map());
+    this.allNeighborsIndex.set(id, new sigma.utils.map());
 
     // Add the node to indexes:
     this.nodesArray.push(validNode);
-    this.nodesIndex[validNode.id] = validNode;
+    this.nodesIndex.set(validNode.id, validNode);
 
     // Return the current instance:
     return this;
@@ -441,14 +433,14 @@
       throw 'The edge must have a string or number id.';
 
     if ((typeof edge.source !== 'string' && typeof edge.source !== 'number') ||
-        !this.nodesIndex[edge.source])
+        !this.nodesIndex.get(edge.source))
       throw 'The edge source must have an existing node id.';
 
     if ((typeof edge.target !== 'string' && typeof edge.target !== 'number') ||
-        !this.nodesIndex[edge.target])
+        !this.nodesIndex.get(edge.target))
       throw 'The edge target must have an existing node id.';
 
-    if (this.edgesIndex[edge.id])
+    if (this.edgesIndex.get(edge.id))
       throw 'The edge "' + edge.id + '" already exists.';
 
     var k,
@@ -486,39 +478,33 @@
 
     // Add the edge to indexes:
     this.edgesArray.push(validEdge);
-    this.edgesIndex[validEdge.id] = validEdge;
+    this.edgesIndex.set(validEdge.id, validEdge);
 
-    if (!this.inNeighborsIndex[validEdge.target][validEdge.source])
-      this.inNeighborsIndex[validEdge.target][validEdge.source] =
-        Object.create(null);
-    this.inNeighborsIndex[validEdge.target][validEdge.source][validEdge.id] =
-      validEdge;
+    if (!this.inNeighborsIndex.get(validEdge.target).get(validEdge.source))
+      this.inNeighborsIndex.get(validEdge.target).set(validEdge.source,
+        new sigma.utils.map());
+    this.inNeighborsIndex.get(validEdge.target).get(validEdge.source).set(validEdge.id,
+      validEdge);
 
-    if (!this.outNeighborsIndex[validEdge.source][validEdge.target])
-      this.outNeighborsIndex[validEdge.source][validEdge.target] =
-        Object.create(null);
-    this.outNeighborsIndex[validEdge.source][validEdge.target][validEdge.id] =
-      validEdge;
+    if (!this.outNeighborsIndex.get(validEdge.source).get(validEdge.target))
+      this.outNeighborsIndex.get(validEdge.source).set(validEdge.target,
+        new sigma.utils.map());
+    this.outNeighborsIndex.get(validEdge.source).get(validEdge.target).set(validEdge.id,
+      validEdge);
 
-    if (!this.allNeighborsIndex[validEdge.source][validEdge.target])
-      this.allNeighborsIndex[validEdge.source][validEdge.target] =
-        Object.create(null);
-    this.allNeighborsIndex[validEdge.source][validEdge.target][validEdge.id] =
-      validEdge;
+    if (!this.allNeighborsIndex.get(validEdge.source).get(validEdge.target))
+      this.allNeighborsIndex.get(validEdge.source).set(validEdge.target,
+        new sigma.utils.map());
+    this.allNeighborsIndex.get(validEdge.source).get(validEdge.target).set(validEdge.id,
+      validEdge);
 
     if (validEdge.target !== validEdge.source) {
-      if (!this.allNeighborsIndex[validEdge.target][validEdge.source])
-        this.allNeighborsIndex[validEdge.target][validEdge.source] =
-          Object.create(null);
-      this.allNeighborsIndex[validEdge.target][validEdge.source][validEdge.id] =
-        validEdge;
+      if (!this.allNeighborsIndex.get(validEdge.target).get(validEdge.source))
+        this.allNeighborsIndex.get(validEdge.target).set(validEdge.source,
+          new sigma.utils.map());
+      this.allNeighborsIndex.get(validEdge.target).get(validEdge.source).set(validEdge.id,
+        validEdge);
     }
-
-    // Keep counts up to date:
-    this.inNeighborsCount[validEdge.target]++;
-    this.outNeighborsCount[validEdge.source]++;
-    this.allNeighborsCount[validEdge.target]++;
-    this.allNeighborsCount[validEdge.source]++;
 
     return this;
   });
@@ -537,13 +523,13 @@
         arguments.length !== 1)
       throw 'dropNode: Wrong arguments.';
 
-    if (!this.nodesIndex[id])
+    if (!this.nodesIndex.get(id))
       throw 'The node "' + id + '" does not exist.';
 
     var i, k, l;
 
     // Remove the node from indexes:
-    delete this.nodesIndex[id];
+    this.nodesIndex.delete(id);
     for (i = 0, l = this.nodesArray.length; i < l; i++)
       if (this.nodesArray[i].id === id) {
         this.nodesArray.splice(i, 1);
@@ -556,19 +542,16 @@
         this.dropEdge(this.edgesArray[i].id);
 
     // Remove related edge indexes:
-    delete this.inNeighborsIndex[id];
-    delete this.outNeighborsIndex[id];
-    delete this.allNeighborsIndex[id];
+    this.inNeighborsIndex.delete(id);
+    this.outNeighborsIndex.delete(id);
+    this.allNeighborsIndex.delete(id);
 
-    delete this.inNeighborsCount[id];
-    delete this.outNeighborsCount[id];
-    delete this.allNeighborsCount[id];
-
-    for (k in this.nodesIndex) {
-      delete this.inNeighborsIndex[k][id];
-      delete this.outNeighborsIndex[k][id];
-      delete this.allNeighborsIndex[k][id];
-    }
+    var self = this;
+    this.nodesIndex.forEach(function(n, k) {
+      self.inNeighborsIndex.get(k).delete(id);
+      self.outNeighborsIndex.get(k).delete(id);
+      self.allNeighborsIndex.get(k).delete(id);
+    });
 
     return this;
   });
@@ -586,42 +569,37 @@
         arguments.length !== 1)
       throw 'dropEdge: Wrong arguments.';
 
-    if (!this.edgesIndex[id])
+    if (!this.edgesIndex.get(id))
       throw 'The edge "' + id + '" does not exist.';
 
     var i, l, edge;
 
     // Remove the edge from indexes:
-    edge = this.edgesIndex[id];
-    delete this.edgesIndex[id];
+    edge = this.edgesIndex.get(id);
+    this.edgesIndex.delete(id);
     for (i = 0, l = this.edgesArray.length; i < l; i++)
       if (this.edgesArray[i].id === id) {
         this.edgesArray.splice(i, 1);
         break;
       }
 
-    delete this.inNeighborsIndex[edge.target][edge.source][edge.id];
-    if (!Object.keys(this.inNeighborsIndex[edge.target][edge.source]).length)
-      delete this.inNeighborsIndex[edge.target][edge.source];
+    this.inNeighborsIndex.get(edge.target).get(edge.source).delete(edge.id);
+    if (this.inNeighborsIndex.get(edge.target).get(edge.source).size == 0)
+      this.inNeighborsIndex.get(edge.target).delete(edge.source);
 
-    delete this.outNeighborsIndex[edge.source][edge.target][edge.id];
-    if (!Object.keys(this.outNeighborsIndex[edge.source][edge.target]).length)
-      delete this.outNeighborsIndex[edge.source][edge.target];
+    this.outNeighborsIndex.get(edge.source).get(edge.target).delete(edge.id);
+    if (this.outNeighborsIndex.get(edge.source).get(edge.target).size == 0)
+      this.outNeighborsIndex.get(edge.source).delete(edge.target);
 
-    delete this.allNeighborsIndex[edge.source][edge.target][edge.id];
-    if (!Object.keys(this.allNeighborsIndex[edge.source][edge.target]).length)
-      delete this.allNeighborsIndex[edge.source][edge.target];
+    this.allNeighborsIndex.get(edge.source).get(edge.target).delete(edge.id);
+    if (this.allNeighborsIndex.get(edge.source).get(edge.target).size == 0)
+      this.allNeighborsIndex.get(edge.source).delete(edge.target);
 
     if (edge.target !== edge.source) {
-      delete this.allNeighborsIndex[edge.target][edge.source][edge.id];
-      if (!Object.keys(this.allNeighborsIndex[edge.target][edge.source]).length)
-        delete this.allNeighborsIndex[edge.target][edge.source];
+      this.allNeighborsIndex.get(edge.target).get(edge.source).delete(edge.id);
+      if (this.allNeighborsIndex.get(edge.target).get(edge.source).size == 0)
+        this.allNeighborsIndex.get(edge.target).delete(edge.source);
     }
-
-    this.inNeighborsCount[edge.target]--;
-    this.outNeighborsCount[edge.source]--;
-    this.allNeighborsCount[edge.source]--;
-    this.allNeighborsCount[edge.target]--;
 
     return this;
   });
@@ -643,9 +621,6 @@
     delete this.inNeighborsIndex;
     delete this.outNeighborsIndex;
     delete this.allNeighborsIndex;
-    delete this.inNeighborsCount;
-    delete this.outNeighborsCount;
-    delete this.allNeighborsCount;
   });
 
   /**
@@ -661,15 +636,12 @@
     // Due to GC issues, I prefer not to create new object. These objects are
     // only available from the methods and attached functions, but still, it is
     // better to prevent ghost references to unrelevant data...
-    __emptyObject(this.nodesIndex);
-    __emptyObject(this.edgesIndex);
-    __emptyObject(this.nodesIndex);
-    __emptyObject(this.inNeighborsIndex);
-    __emptyObject(this.outNeighborsIndex);
-    __emptyObject(this.allNeighborsIndex);
-    __emptyObject(this.inNeighborsCount);
-    __emptyObject(this.outNeighborsCount);
-    __emptyObject(this.allNeighborsCount);
+    this.nodesIndex.clear();
+    this.edgesIndex.clear();
+    this.nodesIndex.clear();
+    this.inNeighborsIndex.clear();
+    this.outNeighborsIndex.clear();
+    this.allNeighborsIndex.clear();
 
     return this;
   });
@@ -738,7 +710,7 @@
     // Return the related node:
     if (arguments.length === 1 &&
         (typeof v === 'string' || typeof v === 'number'))
-      return this.nodesIndex[v];
+      return this.nodesIndex.get(v);
 
     // Return an array of the related node:
     if (
@@ -751,7 +723,7 @@
 
       for (i = 0, l = v.length; i < l; i++)
         if (typeof v[i] === 'string' || typeof v[i] === 'number')
-          a.push(this.nodesIndex[v[i]]);
+          a.push(this.nodesIndex.get(v[i]));
         else
           throw 'nodes: Wrong arguments.';
 
@@ -774,13 +746,13 @@
   graph.addMethod('degree', function(v, which) {
     // Check which degree is required:
     which = {
-      'in': this.inNeighborsCount,
-      'out': this.outNeighborsCount
-    }[which || ''] || this.allNeighborsCount;
+      'in': this.inNeighborsIndex,
+      'out': this.outNeighborsIndex
+    }[which || ''] || this.allNeighborsIndex;
 
     // Return the related node:
     if (typeof v === 'string' || typeof v === 'number')
-      return which[v];
+      return which.get(v).size;
 
     // Return an array of the related node:
     if (Object.prototype.toString.call(v) === '[object Array]') {
@@ -790,7 +762,7 @@
 
       for (i = 0, l = v.length; i < l; i++)
         if (typeof v[i] === 'string' || typeof v[i] === 'number')
-          a.push(which[v[i]]);
+          a.push(which.get(v[i]).size);
         else
           throw 'degree: Wrong arguments.';
 
@@ -819,7 +791,7 @@
     // Return the related edge:
     if (arguments.length === 1 &&
         (typeof v === 'string' || typeof v === 'number'))
-      return this.edgesIndex[v];
+      return this.edgesIndex.get(v);
 
     // Return an array of the related edge:
     if (
@@ -832,7 +804,7 @@
 
       for (i = 0, l = v.length; i < l; i++)
         if (typeof v[i] === 'string' || typeof v[i] === 'number')
-          a.push(this.edgesIndex[v[i]]);
+          a.push(this.edgesIndex.get(v[i]));
         else
           throw 'edges: Wrong arguments.';
 
