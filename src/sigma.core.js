@@ -706,6 +706,10 @@
   sigma.version = '1.3.0';
 
 
+  /**
+   * Disable ES6 features if true:
+   */
+  sigma.forceES5 = false;
 
 
   /**
