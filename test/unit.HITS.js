@@ -176,7 +176,7 @@ test('Stats computation', function() {
   var stats = myGraph.HITS(true)
 
 
-  ok( stats['n2'].hub > stats['n1'].hub, 'test 6')
+  equal( stats['n2'].hub, stats['n1'].hub, 'test 6')
 
 
   myGraph.clear()
