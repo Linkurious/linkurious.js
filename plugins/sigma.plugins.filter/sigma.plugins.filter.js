@@ -25,7 +25,7 @@
       var target,
           nodes = [];
       for(target in this.allNeighborsIndex[id]) {
-        nodes.push(this.nodesIndex[target]);
+        nodes.push(this.nodesIndex.get(target));
       }
       return nodes;
     });

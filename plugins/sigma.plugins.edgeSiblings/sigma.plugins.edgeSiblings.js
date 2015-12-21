@@ -51,10 +51,10 @@
     //   has siblings and container has different id
 
     if (sibling = this.siblingEdgesIndex[id]) {
-      edges = this.allNeighborsIndex[sibling.source][sibling.target];
+      edges = this.allNeighborsIndex.get(sibling.source).get(sibling.target);
 
-      if (Object.keys(edges).length === 1) {
-        e = this.edges(Object.keys(edges)[0]);
+      if (edges.size === 1) {
+        e = this.edges(edges.keyList()[0]);
         if (e.type !== 'parallel')
           throw new Error('The sibling container must be of type "parallel", was ' + e.type);
 
@@ -69,30 +69,31 @@
 
         return e;
       }
-      else if (Object.keys(edges).length > 1) {
+      else if (edges.size > 1) {
         // We have parallel edges in the graph structure, maybe because
         // graph.addEdge() has been called directly.
-        var eid;
-        for (eid in edges) {
-          e = this.edges(eid);
+        var edgeFound;
+        edges.forEach(function(e, eid) {
           if (e.type === 'parallel' && e.siblings !== undefined) {
             // The edge contains siblings, but does it contain our sibling?
             if (Object.keys(e.siblings).length) {
               if (e.siblings[id] !== undefined) {
-                return e;
+                edgeFound = e;
               }
             }
             else
               throw new Error('Edge sibling found but its container is missing.');
           }
-        };
+        });
+        if (edgeFound !== undefined)
+          return edgeFound;
         throw new Error('Edge sibling found but its container is missing.');
       }
-      else // Object.keys(edges).length == 0
+      else // edges.size == 0
         throw new Error('Edge sibling found but its container is missing.');
     }
     else
-      return this.edgesIndex[id];
+      return this.edgesIndex.get(id);
   };
 
 
@@ -249,22 +250,22 @@
       if (typeof edge.id !== 'number' && typeof edge.id !== 'string')
         throw new TypeError('Invalid argument key: "edge.id" is not a string or a number, was ' + edge.id);
 
-      if ((typeof edge.source !== 'number' && typeof edge.source !== 'string') || !this.nodesIndex[edge.source])
+      if ((typeof edge.source !== 'number' && typeof edge.source !== 'string') || !this.nodesIndex.get(edge.source))
         throw new Error('Invalid argument key: "edge.source" is not an existing node id, was ' + edge.source);
 
-      if ((typeof edge.target !== 'number' && typeof edge.target !== 'string') || !this.nodesIndex[edge.target])
+      if ((typeof edge.target !== 'number' && typeof edge.target !== 'string') || !this.nodesIndex.get(edge.target))
         throw new Error('Invalid argument key: "edge.target" is not an existing node id, was ' + edge.target);
 
-      if (this.edgesIndex[edge.id])
+      if (this.edgesIndex.get(edge.id))
         throw new Error('Invalid argument: an edge of id "' + edge.id + '" already exists.');
 
       if (this.siblingEdgesIndex[edge.id])
         throw new Error('Invalid argument: an edge sibling of id "' + edge.id + '" already exists.');
 
-      var edges = this.allNeighborsIndex[edge.source][edge.target];
-      if (edges !== undefined && Object.keys(edges).length) {
+      var edges = this.allNeighborsIndex.get(edge.source).get(edge.target);
+      if (edges !== undefined && edges.size) {
         // An edge already exists, we make it a container and add a sibling:
-        var otherEdge = this.edges(edges[Object.keys(edges)[0]].id);
+        var otherEdge = this.edges(edges.get(edges.keyList()[0]).id);
         add.call(
           this,
           otherEdge,

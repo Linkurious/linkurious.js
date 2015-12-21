@@ -25,7 +25,7 @@
     'sigma.helpers.graph.addNode',
     function(n) {
       if (n.fixed) {
-        _fixedNodesIndex[n.id] = this.nodesIndex[n.id];
+        _fixedNodesIndex[n.id] = this.nodesIndex.get(n.id);
       }
     }
   );
@@ -35,7 +35,7 @@
     'dropNode',
     'sigma.helpers.graph.dropNode',
     function(id) {
-      delete _fixedNodesIndex[id];
+      _fixedNodesIndex[id] = undefined;
     }
   );
 
@@ -61,9 +61,9 @@
    */
   if (!sigma.classes.graph.hasMethod('fixNode'))
     sigma.classes.graph.addMethod('fixNode', function(id) {
-      if (this.nodesIndex[id]) {
-        this.nodesIndex[id].fixed = true;
-        _fixedNodesIndex[id] = this.nodesIndex[id];
+      if (this.nodesIndex.get(id)) {
+        this.nodesIndex.get(id).fixed = true;
+        _fixedNodesIndex[id] = this.nodesIndex.get(id);
       }
       return this;
     });
@@ -75,9 +75,9 @@
    */
   if (!sigma.classes.graph.hasMethod('unfixNode'))
     sigma.classes.graph.addMethod('unfixNode', function(id) {
-      if (this.nodesIndex[id]) {
-        delete this.nodesIndex[id].fixed;
-        delete _fixedNodesIndex[id];
+      if (this.nodesIndex.get(id)) {
+        this.nodesIndex.get(id).fixed = undefined;
+        _fixedNodesIndex[id] = undefined;
       }
       return this;
     });
@@ -92,7 +92,9 @@
       var nid,
           nodes = [];
       for(nid in _fixedNodesIndex) {
-        nodes.push(this.nodesIndex[nid]);
+        if (_fixedNodesIndex[nid] !== undefined) {
+          nodes.push(this.nodesIndex.get(nid));
+        }
       }
       return nodes;
     });
@@ -176,15 +178,15 @@
           target,
           edgeNotHidden,
           nodes = [];
-      for(target in this.allNeighborsIndex[id]) {
+      (this.allNeighborsIndex.get(id) || []).forEach(function(map, target) {
         if (options.withHidden) {
-          nodes.push(this.nodesIndex[target]);
+          nodes.push(self.nodesIndex.get(target));
         }
-        else if (!this.nodes(target).hidden) {
+        else if (!self.nodes(target).hidden) {
           // check if at least one non-hidden edge exists
           // between the node and the target node:
           edgeNotHidden =
-            Object.keys(this.allNeighborsIndex[id][target]).map(function(eid) {
+            self.allNeighborsIndex.get(id).get(target).keyList().map(function(eid) {
               return self.edges(eid);
             })
             .filter(function(e) {
@@ -193,10 +195,11 @@
             .length != 0;
 
           if (edgeNotHidden) {
-            nodes.push(this.nodesIndex[target]);
+            nodes.push(self.nodesIndex.get(target));
           }
         }
-      }
+      });
+
       return nodes;
     });
 
@@ -218,17 +221,19 @@
       if (typeof id !== 'string' && typeof id !== 'number')
         throw new TypeError('The node id is not a string or a number, was ' + id);
 
-      var a = this.allNeighborsIndex[id],
+      var self = this,
+          a = this.allNeighborsIndex.get(id) || [],
           eid,
-          target,
           edges = [];
-      for(target in a) {
-        for(eid in a[target]) {
-          if (options.withHidden || !this.edges(eid).hidden) {
-            edges.push(a[target][eid]);
+
+      a.forEach(function(map, target) {
+        a.get(target).forEach(function(map2, eid) {
+          if (options.withHidden || !self.edges(eid).hidden) {
+            edges.push(self.edges(eid));
           }
-        }
-      }
+        });
+      });
+
       return edges;
     });
 
