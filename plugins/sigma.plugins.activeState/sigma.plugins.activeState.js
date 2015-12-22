@@ -399,10 +399,7 @@
     if (!('adjacentNodes' in _g))
       throw new Error('Missing method graph.adjacentNodes');
 
-    var a,
-        id;
-
-    a = _activeNodesIndex.keyList();
+    var a = _activeNodesIndex.keyList();
 
     _activeNodesIndex.forEach(function(n, id) {
       _g.adjacentNodes(id).forEach(function (adj) {

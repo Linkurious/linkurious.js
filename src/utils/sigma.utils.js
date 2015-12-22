@@ -73,7 +73,10 @@
     };
 
     SigmaMap.prototype.keyList = function () {
-      return Object.keys(this.objects);
+      var self = this;
+      return Object.keys(this.objects).filter(function(key) {
+        return self.objects[key] !== undefined;
+      });
     };
 
     sigma.utils.map = SigmaMap;
