@@ -15,70 +15,71 @@
 
 
   /**
-   * SigmaMap wraps an ES6 Map or an Object if Map is not available.
-   * In this case, only a subset of Map methods are available.
+   * SigmaMap wraps an ES6 Object. Methods set, get, has, forEach, delete, and clear
+   * have the same signature than the corresponding Map methods.
    */
+  function SigmaMap() {
+    this.objects = Object.create(null);
+    this.size = 0;
+  }
+
+  SigmaMap.prototype.set = function (key, value) {
+    if (this.objects[key] === undefined) this.size++;
+
+    this.objects[key] = value;
+  };
+
+  SigmaMap.prototype.get = function (key) {
+    return this.objects[key];
+  };
+
+  SigmaMap.prototype.has = function (key) {
+    return this.objects[key] !== undefined;
+  };
+
+  SigmaMap.prototype.forEach = function (func) {
+    var keys = Object.keys(this.objects);
+    for (var i = 0; i < keys.length; ++i) {
+      var key = keys[i],
+          obj = this.objects[key];
+
+      if (typeof obj !== 'undefined') {
+        func(obj, key);
+      }
+    }
+  };
+
+  SigmaMap.prototype.delete = function (key) {
+    var value = this.objects[key];
+    this.objects[key] = undefined;
+
+    if (value !== undefined) this.size--;
+
+    return value;
+  };
+
+  SigmaMap.prototype.clear = function () {
+    for (var k in this.objects)
+      if (!('hasOwnProperty' in this.objects) || this.objects.hasOwnProperty(k))
+        delete this.objects[k];
+
+    this.size = 0;
+  };
+
+  SigmaMap.prototype.keyList = function () {
+    var self = this;
+    return Object.keys(this.objects).filter(function(key) {
+      return self.objects[key] !== undefined;
+    });
+  };
+
+
   if (!sigma.forceES5 && Map !== undefined && Map.prototype.keys !== undefined) {
     sigma.utils.map = Map;
     Map.prototype.keyList = function () {
       return Array.from(this.keys());
     }
   } else {
-    function SigmaMap() {
-      this.objects = Object.create(null);
-      this.size = 0;
-    }
-
-    SigmaMap.prototype.set = function (key, value) {
-      if (this.objects[key] === undefined) this.size++;
-
-      this.objects[key] = value;
-    };
-
-    SigmaMap.prototype.get = function (key) {
-      return this.objects[key];
-    };
-
-    SigmaMap.prototype.has = function (key) {
-      return this.objects[key] !== undefined;
-    };
-
-    SigmaMap.prototype.forEach = function (func) {
-      var keys = Object.keys(this.objects);
-      for (var i = 0; i < keys.length; ++i) {
-        var key = keys[i],
-            obj = this.objects[key];
-
-        if (typeof obj !== 'undefined') {
-          func(obj, key);
-        }
-      }
-    };
-
-    SigmaMap.prototype.delete = function (key) {
-      var value = this.objects[key];
-      this.objects[key] = undefined;
-
-      if (value !== undefined) this.size--;
-
-      return value;
-    };
-
-    SigmaMap.prototype.clear = function () {
-      for (var k in this.objects)
-        if (!('hasOwnProperty' in this.objects) || this.objects.hasOwnProperty(k))
-          delete this.objects[k];
-
-      this.size = 0;
-    };
-
-    SigmaMap.prototype.keyList = function () {
-      var self = this;
-      return Object.keys(this.objects).filter(function(key) {
-        return self.objects[key] !== undefined;
-      });
-    };
-
     sigma.utils.map = SigmaMap;
   }
 
