@@ -73,14 +73,13 @@
     });
   };
 
+  sigma.utils.map = SigmaMap;
 
-  if (!sigma.forceES5 && Map !== undefined && Map.prototype.keys !== undefined) {
+  if (!sigma.forceES5 && typeof Map !== 'undefined' && Map.prototype.keys !== undefined && Array.from !== undefined) {
     sigma.utils.map = Map;
     Map.prototype.keyList = function () {
       return Array.from(this.keys());
-    }
-  } else {
-    sigma.utils.map = SigmaMap;
+    };
   }
 
 
