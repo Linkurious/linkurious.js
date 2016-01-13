@@ -2,6 +2,16 @@
   'use strict';
 
   var __instances = {};
+  
+  // Deal with resize:
+  window.addEventListener('resize', function() {
+    for (var key in __instances) {
+      if (__instances.hasOwnProperty(key)) {
+        var graph = __instances[key];
+        graph.refresh();
+      }
+    }
+  });
 
   /**
    * This is the sigma instances constructor. One instance of sigma represent
@@ -74,8 +84,7 @@
 
     // Private attributes:
     // *******************
-    var _self = this,
-        _conf = conf || {};
+    var _conf = conf || {};
 
     // Little shortcut:
     // ****************
@@ -220,11 +229,6 @@
       this.refresh();
     }
 
-    // Deal with resize:
-    window.addEventListener('resize', function() {
-      if (_self.settings)
-        _self.refresh();
-    });
   };
 
 
