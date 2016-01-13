@@ -7,8 +7,8 @@
   window.addEventListener('resize', function() {
     for (var key in __instances) {
       if (__instances.hasOwnProperty(key)) {
-        var graph = __instances[key];
-        graph.refresh();
+        var instance = __instances[key];
+        instance.refresh();
       }
     }
   });
