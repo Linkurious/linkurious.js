@@ -267,6 +267,7 @@
     }
 
     camera.bind('coordinatesUpdated', function(e) {
+      self.dispatchEvent('coordinatesUpdated');
       self.renderCamera(camera);
     });
 
