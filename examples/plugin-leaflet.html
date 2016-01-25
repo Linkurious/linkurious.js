@@ -61,6 +61,9 @@
       right: 0;
       position: absolute;
     }
+    #map-container {
+      transition: visibility 0.3s, opacity 0.3s linear;
+    }
   </style>
   <!-- IMPORTANT ORDER: -->
   <div id="map-container"></div>
@@ -77,6 +80,7 @@ var sigmaInstance,
         latitude: 51.505, // mandatory field
         longitude: -0.09, // mandatory field
         size: 5,
+        // hidden: true,
         color: '#000'
       },{
         id: 'n1',
@@ -135,22 +139,54 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 //   accessToken: 'pk.eyJ1Ijoic2hleW1hbm4iLCJhIjoiY2lqNGZmanhpMDAxaHc4bTNhZGFrcHZleiJ9.VliJNQs7QBK5e5ZmYl9RTw'
 // }).addTo(map);
 
+
 // Instantiate Sigma plugin for Leaflet
 var leafletPlugin = sigma.plugins.leaflet(sigmaInstance, map);
 
+leafletPlugin.enable();
+
 // Fit the view to the graph
 // leafletPlugin.fitBounds();
+
 
 // Listen to some map events
 map.on("click dblclick contextmenu", function (e) {
   console.log(e);
 });
 
+
 // Add reference markers
 L.marker([51.505, -0.09]).addTo(map);
 L.marker([48.853, 2.349]).addTo(map)
   .bindPopup('A Leaflet popup.')
   .openPopup();
+
+
+// How to add a node and update its coordinates
+sigmaInstance.graph.addNode({
+  id: 'n2',
+  label: 'Berlin',
+  x: Math.random(),
+  y: Math.random(),
+  latitude: 52.524, // mandatory field
+  longitude: 13.41, // mandatory field
+  size: 5,
+  color: '#000'
+});
+
+sigmaInstance.graph.addEdge({
+  id: 'e1',
+  source: 'n0',
+  target: 'n2',
+  size: 2,
+  color: '#333'
+});
+
+leafletPlugin.syncNodes('n2');
+
+
+// We can disable the integration
+// leafletPlugin.disable();
 
 // We can kill and restart the plugin at will
 // sigma.plugins.killLeafletPlugin(sigmaInstance);

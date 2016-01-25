@@ -5,13 +5,19 @@
     throw new Error('sigma is not declared');
 
   if (typeof L === 'undefined')
-    console.warn('to use the leaflet plugin, '
-      +'you have to include leaflet');
+    console.warn('Include leaflet to use the leaflet plugin for sigma.');
 
   // Initialize package:
   sigma.utils.pkg('sigma.plugins.leaflet');
 
 
+  /**
+   * Create a new MouseEvent object with the same properties as the specified
+   * event object.
+   *
+   * @param  {MouseEvent} e
+   * @return {MouseEvent}
+   */
   function cloneMouseEvent(e) {
     // http://stackoverflow.com/a/12752970/738167
     // It doesn't handle WheelEvent.
@@ -20,6 +26,17 @@
       e.screenY, e.clientX, e.clientY, e.ctrlKey, e.altKey, e.shiftKey, e.metaKey,
       e.button, e.relatedTarget);
     return evt;
+  }
+
+  /**
+   * Return true if the node has latitude and longitude coordinates.
+   *
+   * @param  {object} node
+   * @return {boolean}
+   */
+  function hasGeoCoordinates(node) {
+    return node.latitude != undefined && node.longitude != undefined &&
+      typeof node.latitude === 'number' && typeof node.longitude === 'number';
   }
 
 
@@ -50,6 +67,8 @@
     touchInertiaRatio: 1
   };
 
+  // List of events received by the graph container
+  // and copied to the map container
   var forwardedEvents = [
     'click',
     'mousedown',
@@ -77,37 +96,87 @@
     var _self = this,
       _s = sigInst,
       _map = leafletMap,
-      _renderer = sigRenderer || sigInst.renderers[0],
+      _renderer = sigRenderer || _s.renderers[0],
       _sigmaSettings = {},
+
+      // Plugin state
+      _bound = false,
+      _settingsApplied = false,
 
       // Cache camera properties
       _sigmaCamera = {
-        x: sigInst.camera.x,
-        y: sigInst.camera.y,
-        ratio: sigInst.camera.ratio
+        x: _s.camera.x,
+        y: _s.camera.y,
+        ratio: _s.camera.ratio
       };
 
+    // Accessors to pin/unpin nodes
+    var fixNode, unfixNode;
+    if (typeof _s.graph.fixNode === 'function') {
+      fixNode = _s.graph.fixNode;
+    } else {
+      fixNode = function(n) { n.fixed = true; }
+    }
+    if (typeof _s.graph.unfixNode === 'function') {
+      unfixNode = _s.graph.unfixNode;
+    } else {
+      unfixNode = function(n) { n.fixed = false; }
+    }
+
     /**
-     * Set nodes positions from spatial coordinates and refresh sigma.
+     * Update nodes positions from geospatial coordinates and refresh sigma.
+     * All nodes will be updated if no parameter is specified.
+     *
+     * @param {?number|string|array} v One node id or a list of node ids.
      */
-    this.syncGraph = function() {
-      var
-        center = _map.project(_map.getCenter()),
-        nodes = _s.graph.nodes(),
+    this.syncNodes = function(v) {
+      var center = _map.project(_map.getCenter()),
+        nodes,
         node,
         point;
 
+      if (typeof v === 'string' || typeof v === 'number' || Array.isArray(v)) {
+        nodes = _s.graph.nodes(v);
+      }
+      else {
+        nodes = _s.graph.nodes();
+      }
+
+      if (!Array.isArray(nodes)) {
+        nodes = [nodes];
+      }
+
       for (var i = 0; i < nodes.length; i++) {
         node = nodes[i];
-        if (node.hidden || node.latitude == undefined || node.longitude == undefined) {
-          continue; // skip node
+
+        if (hasGeoCoordinates(node)) {
+          // Pin node
+          fixNode(node);
+          // Store current cartesian coordinates
+          if (node.leafletX === undefined) {
+            node.leafletX = node.x;
+          }
+          if (node.leafletY === undefined) {
+            node.leafletY = node.y;
+          }
+
+          // Apply new cartesian coordinates
+          // TODO animate
+          point = _map.project([node.latitude, node.longitude]);
+          node.x = point.x - center.x + _s.camera.x;
+          node.y = point.y - center.y + _s.camera.y;
         }
-        point = _map.project([node.latitude, node.longitude]);
-        node.x = point.x - center.x + sigInst.camera.x;
-        node.y = point.y - center.y + sigInst.camera.y;
+        else {
+          // Hide node because it doesn't have geo coordinates
+          // and store current "hidden" state
+          if (node.leafletHidden === undefined) {
+            node.leafletHidden = !!node.hidden;
+          }
+          node.hidden = true;
+        }
       }
       _s.refresh();
-    }
+    };
 
     /**
      * Set the map center and zoom after changes of the Sigma camera.
@@ -138,27 +207,37 @@
           animate: false // the map will stick to the graph
         });
       }
-    }
+    };
 
     /**
-     * Apply mandatory settings to sigma for the integration to work.
-     * Cache overriden sigma settings to be restored when the plugin is killed.
+     * Apply mandatory Sigma settings, update node coordinates from their
+     * geospatial coordinates, and bind all event listeners.
      */
-    this.applySigmaSettings = function() {
-      Object.keys(settings).forEach(function(key) {
-        _sigmaSettings[key] = _s.settings(key);
-        _s.settings(key, settings[key]);
-      });
-    }
+    this.enable = function() {
+      showMapContainer();
+      applySigmaSettings();
+
+      // Reset camera cache
+      _sigmaCamera = {
+        x: _s.camera.x,
+        y: _s.camera.y,
+        ratio: _s.camera.ratio
+      };
+
+      _self.bindAll();
+      _self.syncNodes();
+    };
 
     /**
-     * Restore overriden sigma settings
+     * Restore the original Sigma settings and node coordinates,
+     * and unbind event listeners.
      */
-    this.restoreSigmaSettings = function() {
-      Object.keys(settings).forEach(function(key) {
-        _s.settings(key, _sigmaSettings[key]);
-      });
-    }
+    this.disable = function() {
+      hideMapContainer();
+      _self.unbindAll();
+      restoreSigmaSettings();
+      restoreGraph();
+    };
 
     /**
      * Fit the view to the nodes.
@@ -167,36 +246,48 @@
      */
     this.fitBounds = function(nodes) {
       _map.fitBounds(_self.utils.geoBoundaries(nodes || _s.graph.nodes()));
-    }
+    };
 
+    /**
+     * Bind all event listeners.
+     *
+     */
     this.bindAll = function() {
+      if (_bound) return;
+      _bound = true;
       forwardEvents();
       _s.bind('coordinatesUpdated', _self.syncMap);
       _map
-        .on('zoomstart', hideContainer)
-        .on('zoomend', showContainer);
-    }
+        .on('zoomstart', hideGraphContainer)
+        .on('zoomend', showGraphContainer);
+    };
 
+    /**
+     * Unbind all event listeners.
+     */
     this.unbindAll = function() {
+      if (!_bound) return;
+      _bound = false;
       cancelForwardEvents();
       _s.unbind('coordinatesUpdated', _self.syncMap);
       _map
-        .off('zoomstart', hideContainer)
-        .off('zoomend', showContainer);
+        .off('zoomstart', hideGraphContainer)
+        .off('zoomend', showGraphContainer);
     };
 
+    /**
+     * Unbind all event listeners, restore Sigma settings and delete all
+     * references to Sigma and the Leaflet map.
+     */
     this.kill = function() {
       _self.unbindAll();
-      _self.restoreSigmaSettings();
+      hideMapContainer();
+      restoreSigmaSettings();
       _s = undefined;
       _renderer = undefined;
       _map = undefined;
       _sigmaCamera = undefined;
     };
-
-    this.applySigmaSettings();
-    this.bindAll();
-    this.syncGraph();
 
     this.utils = {};
 
@@ -216,7 +307,7 @@
 
       for (var i = 0, l = nodes.length; i < l; i++) {
         node = nodes[i];
-        if (node.hidden || node.latitude == undefined || node.longitude == undefined) {
+        if (node.hidden || !hasGeoCoordinates(node)) {
           continue; // skip node
         }
         maxLat = Math.max(node.latitude, maxLat);
@@ -228,7 +319,69 @@
       return L.latLngBounds(L.latLng(minLat, minLng), L.latLng(maxLat, maxLng));
     };
 
+
     // PRIVATE FUNCTIONS
+
+    /**
+     * Restore original cartesian coordinates of the nodes and "hidden" state.
+     * Unpin all nodes.
+     */
+    function restoreGraph() {
+      var nodes = _s.graph.nodes(),
+        node;
+
+      for (var i = 0; i < nodes.length; i++) {
+        node = nodes[i];
+
+        // Unpin node
+        unfixNode(node);
+
+        if (node.leafletHidden !== undefined) {
+          node.hidden = node.leafletHidden;
+          node.leafletHidden = undefined;
+        }
+
+        // TODO animate
+        if (node.leafletX !== undefined) {
+          node.x = node.leafletX;
+          node.leafletX = undefined;
+        }
+        if (node.leafletY !== undefined) {
+          node.y = node.leafletY;
+          node.leafletY = undefined;
+        }
+      }
+      _s.refresh();
+    };
+
+    /**
+     * Apply mandatory settings to sigma for the integration to work.
+     * Cache overriden sigma settings to be restored when the plugin is killed.
+     * Reset zoom ratio.
+     */
+    function applySigmaSettings() {
+      if (_settingsApplied) return;
+      _settingsApplied = true;
+
+      Object.keys(settings).forEach(function(key) {
+        _sigmaSettings[key] = _s.settings(key);
+        _s.settings(key, settings[key]);
+      });
+
+      _s.camera.ratio = 1;
+    };
+
+    /**
+     * Restore overriden sigma settings.
+     */
+    function restoreSigmaSettings() {
+      if (!_settingsApplied) return;
+      _settingsApplied = false;
+
+      Object.keys(settings).forEach(function(key) {
+        _s.settings(key, _sigmaSettings[key]);
+      });
+    };
 
     /**
      * Forward a subset of mouse events from the sigma container to the Leaflet map.
@@ -250,13 +403,23 @@
       _map.getContainer().dispatchEvent(cloneMouseEvent(e));
     }
 
-    function hideContainer() {
+    function hideGraphContainer() {
       _renderer.container.style.visibility = 'hidden';
     }
 
-    function showContainer() {
+    function showGraphContainer() {
       _renderer.container.style.visibility = '';
-      _self.syncGraph();
+      _self.syncNodes();
+    }
+
+    function hideMapContainer() {
+      _map.getContainer().style.opacity = 0;
+      _map.getContainer().style.visibility = 'hidden';
+    }
+
+    function showMapContainer() {
+      _map.getContainer().style.opacity = 1;
+      _map.getContainer().style.visibility = '';
     }
   }
 
