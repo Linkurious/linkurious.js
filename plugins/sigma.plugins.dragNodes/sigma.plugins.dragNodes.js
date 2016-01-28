@@ -217,8 +217,8 @@
         if(_a) {
           var activeNodes = _a.nodes();
           for(var i = 0; i < activeNodes.length; i++) {
-            delete activeNodes[i].alphaX;
-            delete activeNodes[i].alphaY;
+            activeNodes[i].alphaX = undefined;
+            activeNodes[i].alphaY = undefined;
           }
         }
 
@@ -312,7 +312,7 @@
         if(_a) {
           activeNodes = _a.nodes();
 
-          // If hovered node is active, drag active nodes nodes
+          // If hovered node is active, drag active nodes
           isHoveredNodeActive = (-1 < activeNodes.map(function(node) {
             return node.id;
           }).indexOf(_node.id));
@@ -321,8 +321,8 @@
             for(var i = 0; i < activeNodes.length; i++) {
               // Delete old reference
               if(_draggingNode != _node) {
-                activeNodes[i].alphaX = null;
-                activeNodes[i].alphaY = null;
+                activeNodes[i].alphaX = undefined;
+                activeNodes[i].alphaY = undefined;
               }
 
               // Calcul first position of activeNodes
