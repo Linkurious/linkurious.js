@@ -53,7 +53,7 @@
       _a = a,
       _body = document.body,
       _renderer = renderer,
-      _mouse = renderer.container.lastChild,
+      _mouse = renderer.container.getElementsByClassName('sigma-mouse')[0],
       _prefix = renderer.options.prefix,
       _node = null,
       _draggingNode = null,
