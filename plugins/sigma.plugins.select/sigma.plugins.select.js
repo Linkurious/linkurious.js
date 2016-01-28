@@ -199,6 +199,7 @@
       var newTargets = difference(targets, actives);
 
       a.dropNodes();
+      _nodeReference = null;
 
       if (_spacebar) {
         var existingTargets = difference(targets, newTargets);
