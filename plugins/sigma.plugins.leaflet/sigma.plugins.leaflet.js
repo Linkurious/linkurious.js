@@ -105,7 +105,7 @@
       _easeEnabled = false,
       _easing = options.easing,
       _duration = options.duration,
-      _isAnimating = false,
+      _isAnimated = false,
 
       // Plugin state
       _bound = false,
@@ -300,7 +300,7 @@
      * @return {sigma.plugins.leaflet} The plugin instance.
      */
     this.fitBounds = function(nodes) {
-      if (_isAnimating) {
+      if (_isAnimated) {
         _s.bind('animate.end', fitGeoBounds);
       }
       else {
@@ -367,7 +367,7 @@
         }
       }
       return _self;
-    }
+    };
 
     /**
      * Bind all event listeners.
@@ -543,7 +543,7 @@
      * Toggle the node animation state.
      */
     function toggleAnimating() {
-      _isAnimating = !_isAnimating;
+      _isAnimated = !_isAnimated;
     }
 
     function animate(nodes) {
