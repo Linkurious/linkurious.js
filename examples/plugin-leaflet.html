@@ -50,7 +50,9 @@
 <script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
+<script src="../plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
 <script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
+
 <script src="../plugins/sigma.plugins.leaflet/sigma.plugins.leaflet.js"></script>
 <div id="container">
   <style>
@@ -78,8 +80,8 @@ var sigmaInstance,
         label: 'London',
         x: Math.random(),
         y: Math.random(),
-        latitude: 51.505, // mandatory field
-        longitude: -0.09, // mandatory field
+        lat: 51.505, // mandatory field
+        lng: -0.09, // mandatory field
         size: 5,
         // hidden: true,
         color: '#000'
@@ -88,8 +90,8 @@ var sigmaInstance,
         label: 'Paris',
         x: Math.random(),
         y: Math.random(),
-        latitude: 48.853, // mandatory field
-        longitude: 2.349, // mandatory field
+        lat: 48.853, // mandatory field
+        lng: 2.349, // mandatory field
         size: 5,
         color: '#000'
       }],
@@ -101,6 +103,9 @@ var sigmaInstance,
         color: '#333'
       }]
     };
+
+// mandatory if we use the dragNodes plugin:
+sigma.renderers.def = sigma.renderers.canvas;
 
 // Instantiate sigma
 sigmaInstance = new sigma({
@@ -153,6 +158,14 @@ leafletPlugin.enable();
 leafletPlugin.fitBounds();
 
 
+// Initialize the dragNodes plugin:
+var dragListener = sigma.plugins.dragNodes(sigmaInstance, sigmaInstance.renderers[0]);
+
+// The geographical coordinates of the dragged nodes will be updated
+// to their new location to preserve their position during zoom.
+leafletPlugin.bindDragListener(dragListener);
+
+
 // Listen to some map events
 map.on("click dblclick contextmenu", function (e) {
   console.log(e);
@@ -172,8 +185,8 @@ sigmaInstance.graph.addNode({
   label: 'Berlin',
   x: Math.random(),
   y: Math.random(),
-  latitude: 52.524, // mandatory field
-  longitude: 13.41, // mandatory field
+  lat: 52.524, // mandatory field
+  lng: 13.41, // mandatory field
   size: 5,
   color: '#000'
 });

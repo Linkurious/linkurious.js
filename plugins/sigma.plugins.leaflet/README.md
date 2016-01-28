@@ -54,7 +54,7 @@ The containers must exactly overlap on the page. We recommend use the same CSS r
 }
 ```
 
-:warning: Nodes of the graph must have geospatial coordinates (`latitude` and `longitude`).
+:warning: Nodes of the graph must have geographical coordinates `lat` (latitude) and `lng` (longitude).
 
 ## Public methods
 
@@ -68,7 +68,7 @@ The containers must exactly overlap on the page. We recommend use the same CSS r
  * The method will fit the view to the nodes. If nodes are currently animated, it will postpone the execution after the end of the animation.
 
 **syncNodes(?*array*|*number*|*string*)** : *sigma.plugins.leaflet*
- * The method will update the cartesian coordinates of the specified node ids from their geospatial coordinates and refresh the Sigma instance. All nodes will be updated if no parameter is specified.
+ * The method will update the cartesian coordinates of the given node ids from their geospatial coordinates and refresh the Sigma instance. All nodes will be updated if no parameter is given.
  * Apply this method after the addition of new nodes to the graph.
 
 **syncMap()** : *sigma.plugins.leaflet*
@@ -76,22 +76,42 @@ The containers must exactly overlap on the page. We recommend use the same CSS r
  * It will decrement the zoom level of the map by 1 if the zoom ratio of Sigma has been increased.
  * It will update the Leaflet map center if the zoom ratio of Sigma is the same.
 
-**bindAll()**
+**bindDragListener()** : *sigma.plugins.leaflet*
+ * The method will bind the given instance of the dragNodes listener. The geographical coordinates of the dragged nodes will be updated to their new location to preserve their position during zoom.
+
+**unbindDragListener()** : *sigma.plugins.leaflet*
+ * The method will unbind the instance of the dragNodes listener.
+
+**resetDraggedNodesLatLng()** : *sigma.plugins.leaflet*
+ * The method will reset the geographical coordinates of the nodes that have been dragged. You must call `.syncNodes()` to apply the changes on the map.
+
+**bindAll()** : *sigma.plugins.leaflet*
  * The method will bind all event listeners.
 
-**unbindAll()**
+**unbindAll()** : *sigma.plugins.leaflet*
  * The method will unbind all event listeners.
 
 **kill()**
  * The method will unbind all event listeners, restore Sigma settings and remove all references to Sigma and the Leaflet map.
 
+**utils.sigmaPointToLatLng(*node*|*leaflet<Point>*)** : *leaflet<LatLng>*
+ * The method will return the geographical coordinates of a given Sigma point x,y.
+
+**utils.latLngToSigmaPoint(*node*|*leaflet<LatLng>*)** : *leaflet<LatLng>*
+ * The method will return the cartesian coordinates of a Leaflet map layer point.
+
 **utils.geoBoundaries(*array*)** : *leaflet<LatLngBounds>*
- * The method will compute the spatial boundaries of the specified nodes. It will ignore hidden nodes and nodes with missing latitude or longitude coordinates.
+ * The method will compute the spatial boundaries of the given nodes. It will ignore hidden nodes and nodes with missing `lat` (latitude) or `lng` (longitude) coordinates.
 
 
 ## Compatibility
 
 The plugin is compatible with [Leaflet v0.7.7](https://github.com/Leaflet/Leaflet/releases/tag/v0.7.7) (current stable release).
+
+* Sigma nodes are compatible with [Leaflet Point](http://leafletjs.com/reference.html#point) objects because they contain `x` and `y` coordinates.
+* Sigma nodes are compatible with [Leaflet LatLng](http://leafletjs.com/reference.html#latlng) objects when they contain `lat` and `lng` coordinates.
+
+The plugin is compatible with sigma.plugins.dragNodes.
 
 ## Limitations
 
