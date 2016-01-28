@@ -50,6 +50,14 @@
           obj.size = obj.viz.size;
           obj.color = obj.viz.color;
         }
+
+        if (obj.attributes) {
+          if (obj.attributes.latitude)
+            obj.lat = obj.attributes.latitude;
+
+          if (obj.attributes.longitude)
+            obj.lng = obj.attributes.longitude;
+        }
       }
 
       arr = graph.edges;
