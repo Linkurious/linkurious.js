@@ -87,17 +87,25 @@
    *
    * @param {sigma}     sigInst     The Sigma instance.
    * @param {leaflet}   leafletMap  The Leaflet map instance.
-   * @param {renderer?} sigRenderer The sigma renderer instance.
+   * @param {?object}   options     The options.
    */
-  function LeafletPlugin(sigInst, leafletMap, sigRenderer) {
+  function LeafletPlugin(sigInst, leafletMap, options) {
     if (typeof L === 'undefined')
       throw new Error('leaflet is not declared');
+
+    options = options || {};
 
     var _self = this,
       _s = sigInst,
       _map = leafletMap,
-      _renderer = sigRenderer || _s.renderers[0],
+      _renderer = options.renderer || _s.renderers[0],
       _sigmaSettings = {},
+
+      // Easing parameters (can be applied only at enable/disable)
+      _easeEnabled = false,
+      _easing = options.easing,
+      _duration = options.duration,
+      _isAnimating = false,
 
       // Plugin state
       _bound = false,
@@ -123,17 +131,60 @@
       unfixNode = function(n) { n.fixed = false; }
     }
 
+    if (_easing && (!sigma.plugins || typeof sigma.plugins.animate === 'undefined')) {
+      throw new Error('sigma.plugins.animate is not declared');
+    }
+
     /**
-     * Update nodes positions from geospatial coordinates and refresh sigma.
+     * Apply mandatory Sigma settings, update node coordinates from their
+     * geospatial coordinates, and bind all event listeners.
+     */
+    this.enable = function() {
+      showMapContainer();
+      applySigmaSettings();
+
+      // Reset camera cache
+      _sigmaCamera = {
+        x: _s.camera.x,
+        y: _s.camera.y,
+        ratio: _s.camera.ratio
+      };
+
+      _self.bindAll();
+
+      _easeEnabled = !!_easing;
+      _self.syncNodes();
+      _easeEnabled = false;
+
+      return _self;
+    };
+
+    /**
+     * Restore the original Sigma settings and node coordinates,
+     * and unbind event listeners.
+     */
+    this.disable = function() {
+      hideMapContainer();
+      _self.unbindAll();
+      restoreSigmaSettings();
+
+      _easeEnabled = !!_easing;
+      restoreGraph();
+      _easeEnabled = false;
+
+      return _self;
+    };
+
+    /**
+     * Update the cartesian coordinates of the specified node ids from their geospatial
+     * coordinates and refresh sigma.
      * All nodes will be updated if no parameter is specified.
      *
      * @param {?number|string|array} v One node id or a list of node ids.
      */
     this.syncNodes = function(v) {
       var center = _map.project(_map.getCenter()),
-        nodes,
-        node,
-        point;
+        nodes, node, point, x, y;
 
       if (typeof v === 'string' || typeof v === 'number' || Array.isArray(v)) {
         nodes = _s.graph.nodes(v);
@@ -152,6 +203,7 @@
         if (hasGeoCoordinates(node)) {
           // Pin node
           fixNode(node);
+
           // Store current cartesian coordinates
           if (node.leafletX === undefined) {
             node.leafletX = node.x;
@@ -160,11 +212,25 @@
             node.leafletY = node.y;
           }
 
-          // Apply new cartesian coordinates
-          // TODO animate
+          // Compute new cartesian coordinates
           point = _map.project([node.latitude, node.longitude]);
-          node.x = point.x - center.x + _s.camera.x;
-          node.y = point.y - center.y + _s.camera.y;
+          x = point.x - center.x + _s.camera.x;
+          y = point.y - center.y + _s.camera.y;
+
+          if (_easeEnabled) {
+            // Set current position on screen
+            node.x = node['read_cam0:x'] || node.x;
+            node.y = node['read_cam0:y'] || node.y;
+
+            // Store new cartesian coordinates for animation
+            node.leaflet_x_easing = x;
+            node.leaflet_y_easing = y;
+          }
+          else {
+            // Apply new cartesian coordinates
+            node.x = x;
+            node.y = y;
+          }
         }
         else {
           // Hide node because it doesn't have geo coordinates
@@ -175,11 +241,22 @@
           node.hidden = true;
         }
       }
-      _s.refresh();
+
+      if (_easeEnabled) {
+        animate(nodes);
+      }
+      else {
+        _s.refresh();
+      }
+      return _self;
     };
 
     /**
-     * Set the map center and zoom after changes of the Sigma camera.
+     * It will increment the zoom level of the map by 1
+     * if the zoom ratio of Sigma has been decreased.
+     * It will decrement the zoom level of the map by 1
+     * if the zoom ratio of Sigma has been increased.
+     * It will update the Leaflet map center if the zoom ratio of Sigma is the same.
      */
     this.syncMap = function() {
       // update map zoom
@@ -193,6 +270,7 @@
         else {
           _map.zoomOut();
         }
+        // Reset zoom ratio of Sigma
         _s.camera.ratio = 1;
       }
       else {
@@ -207,45 +285,32 @@
           animate: false // the map will stick to the graph
         });
       }
+      return _self;
     };
 
     /**
-     * Apply mandatory Sigma settings, update node coordinates from their
-     * geospatial coordinates, and bind all event listeners.
-     */
-    this.enable = function() {
-      showMapContainer();
-      applySigmaSettings();
-
-      // Reset camera cache
-      _sigmaCamera = {
-        x: _s.camera.x,
-        y: _s.camera.y,
-        ratio: _s.camera.ratio
-      };
-
-      _self.bindAll();
-      _self.syncNodes();
-    };
-
-    /**
-     * Restore the original Sigma settings and node coordinates,
-     * and unbind event listeners.
-     */
-    this.disable = function() {
-      hideMapContainer();
-      _self.unbindAll();
-      restoreSigmaSettings();
-      restoreGraph();
-    };
-
-    /**
-     * Fit the view to the nodes.
+     * Fit the view to the nodes. If nodes are currently animated, it will postpone
+     * the execution after the end of the animation.
      *
      * @param  {?array}   nodes The set of nodes. Fit to all nodes otherwise.
      */
     this.fitBounds = function(nodes) {
-      _map.fitBounds(_self.utils.geoBoundaries(nodes || _s.graph.nodes()));
+      if (_isAnimating) {
+        _s.bind('animate.end', fitGeoBounds);
+      }
+      else {
+        _map.fitBounds(_self.utils.geoBoundaries(nodes || _s.graph.nodes()));
+      }
+
+      function fitGeoBounds() {
+        _map.fitBounds(_self.utils.geoBoundaries(nodes || _s.graph.nodes()));
+        // handler removes itself
+        setTimeout(function() {
+          _s.unbind('animate.end', fitGeoBounds);
+        }, 0);
+      }
+
+      return _self;
     };
 
     /**
@@ -260,6 +325,12 @@
       _map
         .on('zoomstart', hideGraphContainer)
         .on('zoomend', showGraphContainer);
+
+      // Toggle animation state
+      _s.bind('animate.start', toggleAnimating);
+      _s.bind('animate.end', toggleAnimating);
+
+      return _self;
     };
 
     /**
@@ -273,10 +344,16 @@
       _map
         .off('zoomstart', hideGraphContainer)
         .off('zoomend', showGraphContainer);
+
+      // Toggle animation state
+      _s.unbind('animate.start', toggleAnimating);
+      _s.unbind('animate.end', toggleAnimating);
+
+      return _self;
     };
 
     /**
-     * Unbind all event listeners, restore Sigma settings and delete all
+     * Unbind all event listeners, restore Sigma settings and remove all
      * references to Sigma and the Leaflet map.
      */
     this.kill = function() {
@@ -292,7 +369,7 @@
     this.utils = {};
 
     /**
-     * Compute the spatial boundaries of the nodes.
+     * Compute the spatial boundaries of the specified nodes.
      * Ignore hidden nodes and nodes with missing latitude or longitude coordinates.
      *
      * @param  {array}   nodes The nodes of the graph.
@@ -341,18 +418,61 @@
           node.leafletHidden = undefined;
         }
 
-        // TODO animate
-        if (node.leafletX !== undefined) {
-          node.x = node.leafletX;
+        if (node.leafletX !== undefined && node.leafletY !== undefined) {
+          if (_easeEnabled) {
+            // Set current position on screen
+            node.x = node['read_cam0:x'] || node.x;
+            node.y = node['read_cam0:y'] || node.y;
+
+            // Store new cartesian coordinates for animation
+            node.leaflet_x_easing = node.leafletX;
+            node.leaflet_y_easing = node.leafletY;
+          }
+          else {
+            node.x = node.leafletX;
+            node.y = node.leafletY;
+          }
+
           node.leafletX = undefined;
-        }
-        if (node.leafletY !== undefined) {
-          node.y = node.leafletY;
           node.leafletY = undefined;
         }
       }
-      _s.refresh();
-    };
+
+      if (_easeEnabled) {
+        animate(nodes);
+      }
+      else {
+        _s.refresh();
+      }
+    }
+
+    /**
+     * Toggle the node animation state.
+     */
+    function toggleAnimating() {
+      _isAnimating = !_isAnimating;
+    }
+
+    function animate(nodes) {
+      sigma.plugins.animate(
+        _s,
+        {
+          x: 'leaflet_x_easing',
+          y: 'leaflet_y_easing'
+        },
+        {
+          easing: _easing,
+          onComplete: function() {
+            _s.refresh();
+            for (var i = 0; i < nodes.length; i++) {
+              nodes[i].leaflet_x_easing = null;
+              nodes[i].leaflet_y_easing = null;
+            }
+          },
+          duration: _duration
+        }
+      );
+    }
 
     /**
      * Apply mandatory settings to sigma for the integration to work.
@@ -369,7 +489,7 @@
       });
 
       _s.camera.ratio = 1;
-    };
+    }
 
     /**
      * Restore overriden sigma settings.
@@ -381,7 +501,7 @@
       Object.keys(settings).forEach(function(key) {
         _s.settings(key, _sigmaSettings[key]);
       });
-    };
+    }
 
     /**
      * Forward a subset of mouse events from the sigma container to the Leaflet map.
@@ -428,22 +548,40 @@
    * Interface
    * ------------------
    *
-   * > var leafletPlugin = sigma.plugins.leaflet(s, map, s.renderers[0]);
+   * > var leafletPlugin = sigma.plugins.leaflet(s, map, { easing: 'cubicInOut' });
    */
   var _instance = {};
 
   /**
-   * @param  {sigma}                      s        The related sigma instance.
-   * @param  {renderer}                   renderer The related renderer instance.
-   * @param  {?sigma.plugins.activeState} a        The activeState plugin instance.
+   * This function provides geospatial features to Sigma by intergrating Leaflet.
+   *
+   * Recognized options:
+   * **********************
+   * Here is the exhaustive list of every accepted parameters in the settings
+   * object:
+   *
+   *   {?sigma.renderer}    renderer   The instance of the sigma renderer.
+   *   {?(function|string)} easing     Either the name of an easing in the
+   *                                   sigma.utils.easings package or a
+   *                                   function. If not specified, the
+   *                                   quadraticInOut easing from this package
+   *                                   will be used instead.
+   *   {?number}            duration   The duration of the animation. If not
+   *                                   specified, the "animationsTime" setting
+   *                                   value of the sigma instance will be used
+   *                                   instead.
+   *
+   * @param {sigma}   sigInst    The related sigma instance.
+   * @param {leaflet} leafletMap The Leaflet map instance.
+   * @param {?object} options    The configuration options.
    */
-  sigma.plugins.leaflet = function(sigInst, leafletMap, sigRenderer) {
+  sigma.plugins.leaflet = function(sigInst, leafletMap, options) {
     if (!sigInst) throw new Error('Missing argument: "sigInst"');
     if (!leafletMap) throw new Error('Missing argument: "leafletMap"');
 
     // Create instance if undefined
     if (!_instance[sigInst.id]) {
-      _instance[sigInst.id] = new LeafletPlugin(sigInst, leafletMap, sigRenderer);
+      _instance[sigInst.id] = new LeafletPlugin(sigInst, leafletMap, options);
 
       // Binding on kill to clear the references
       sigInst.bind('kill', function() {

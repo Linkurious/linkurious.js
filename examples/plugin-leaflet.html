@@ -50,6 +50,7 @@
 <script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
+<script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
 <script src="../plugins/sigma.plugins.leaflet/sigma.plugins.leaflet.js"></script>
 <div id="container">
   <style>
@@ -104,8 +105,8 @@ var sigmaInstance,
 // Instantiate sigma
 sigmaInstance = new sigma({
   graph: g,
-  container: 'graph-container',
-  // THESE SETTINGS ARE APPLIED BY THE PLUGIN:
+  container: 'graph-container'
+  // THESE SETTINGS ARE APPLIED BY THE PLUGIN WHEN IT IS ENABLED:
   // settings: {
   //   // Leaflet zoom is discrete while Sigma zoom is continuous!
   //   // We use sigma zoom ratio as a binary switch.
@@ -140,13 +141,16 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 // }).addTo(map);
 
 
-// Instantiate Sigma plugin for Leaflet
-var leafletPlugin = sigma.plugins.leaflet(sigmaInstance, map);
+// Instantiate Sigma plugin for Leaflet with optional animation settings
+var leafletPlugin = sigma.plugins.leaflet(sigmaInstance, map, {
+  easing: 'cubicInOut',
+  duration: 800
+});
 
 leafletPlugin.enable();
 
 // Fit the view to the graph
-// leafletPlugin.fitBounds();
+leafletPlugin.fitBounds();
 
 
 // Listen to some map events
@@ -184,11 +188,11 @@ sigmaInstance.graph.addEdge({
 
 leafletPlugin.syncNodes('n2');
 
-
 // We can disable the integration
 // leafletPlugin.disable();
 
-// We can kill and restart the plugin at will
+// We can kill and restart the plugin at will.
+// Notice that the Leaflet map itself is not killed.
 // sigma.plugins.killLeafletPlugin(sigmaInstance);
 
 </script>
