@@ -73,6 +73,9 @@
   <div id="graph-container"></div>
 </div>
 <script>
+// Faster dragging with canvas renderer
+sigma.renderers.def = sigma.renderers.canvas;
+
 // Instantiate sigma
 var sigmaInstance = new sigma({
   container: 'graph-container'
