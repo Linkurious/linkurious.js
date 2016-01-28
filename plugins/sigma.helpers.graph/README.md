@@ -27,6 +27,9 @@ This plugin extends the [Graph API](https://github.com/jacomyal/sigma.js/wiki/Gr
 **unfixNode( *string|number* )** : *graph*
  * This methods will set the value of `fixed` to `false` on a specified node. The method must be called with the ID of a node.
 
+**hasFixedNodes()** : *boolean*
+ * This methods returns true if fixed nodes exist.
+
 **getFixedNodes()** : *array*
  * This methods returns the list of fixed nodes.
 

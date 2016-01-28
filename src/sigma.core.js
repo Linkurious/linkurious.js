@@ -2,7 +2,7 @@
   'use strict';
 
   var __instances = {};
-  
+
   // Deal with resize:
   window.addEventListener('resize', function() {
     for (var key in __instances) {

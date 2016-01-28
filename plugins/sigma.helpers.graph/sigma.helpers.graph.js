@@ -4,7 +4,7 @@
   if (typeof sigma === 'undefined')
     throw new Error('sigma is not declared');
 
-  var _fixedNodesIndex = Object.create(null);
+  var _fixedNodesIndex = new sigma.utils.map();
 
   /**
    * Sigma Graph Helpers
@@ -25,7 +25,7 @@
     'sigma.helpers.graph.addNode',
     function(n) {
       if (n.fixed) {
-        _fixedNodesIndex[n.id] = this.nodesIndex.get(n.id);
+        _fixedNodesIndex.set(n.id, this.nodesIndex.get(n.id));
       }
     }
   );
@@ -35,7 +35,7 @@
     'dropNode',
     'sigma.helpers.graph.dropNode',
     function(id) {
-      _fixedNodesIndex[id] = undefined;
+      _fixedNodesIndex.delete(id);
     }
   );
 
@@ -44,13 +44,8 @@
     'clear',
     'sigma.helpers.graph.clear',
     function() {
-      var k;
-
-      for (k in _fixedNodesIndex)
-        if (!('hasOwnProperty' in _fixedNodesIndex) || _fixedNodesIndex.hasOwnProperty(k))
-          delete _fixedNodesIndex[k];
-
-      _fixedNodesIndex = Object.create(null);
+      _fixedNodesIndex.clear();
+      _fixedNodesIndex = new sigma.utils.map();
     }
   );
 
@@ -63,7 +58,7 @@
     sigma.classes.graph.addMethod('fixNode', function(id) {
       if (this.nodesIndex.get(id)) {
         this.nodesIndex.get(id).fixed = true;
-        _fixedNodesIndex[id] = this.nodesIndex.get(id);
+        _fixedNodesIndex.set(id, this.nodesIndex.get(id));
       }
       return this;
     });
@@ -77,7 +72,7 @@
     sigma.classes.graph.addMethod('unfixNode', function(id) {
       if (this.nodesIndex.get(id)) {
         this.nodesIndex.get(id).fixed = undefined;
-        _fixedNodesIndex[id] = undefined;
+        _fixedNodesIndex.delete(id);
       }
       return this;
     });
@@ -89,14 +84,21 @@
    */
   if (!sigma.classes.graph.hasMethod('getFixedNodes'))
     sigma.classes.graph.addMethod('getFixedNodes', function() {
-      var nid,
-          nodes = [];
-      for(nid in _fixedNodesIndex) {
-        if (_fixedNodesIndex[nid] !== undefined) {
-          nodes.push(this.nodesIndex.get(nid));
-        }
-      }
+      var nodes = [];
+      _fixedNodesIndex.forEach(function(n, id) {
+        nodes.push(n);
+      });
       return nodes;
+    });
+
+  /**
+   * This methods returns true if fixed nodes exist.
+   *
+   * @return {boolean}
+   */
+  if (!sigma.classes.graph.hasMethod('hasFixedNodes'))
+    sigma.classes.graph.addMethod('hasFixedNodes', function() {
+      return _fixedNodesIndex.size != 0;
     });
 
 
