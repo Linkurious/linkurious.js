@@ -60,6 +60,8 @@
     doubleClickZoomDuration: 0,
     // Disable automatic fit-to-screen:
     autoRescale: ['nodeSize', 'edgeSize'],
+    // Disable zoom on mouse location:
+    zoomOnLocation: false,
     // Disable inertia because of inaccurate node position:
     mouseInertiaDuration: 0,
     mouseInertiaRatio: 1,
@@ -640,10 +642,12 @@
     }
 
     function hideGraphContainer() {
+      _s.settings('enableCamera', false);
       _renderer.container.style.visibility = 'hidden';
     }
 
     function showGraphContainer() {
+      _s.settings('enableCamera', true);
       _renderer.container.style.visibility = '';
       _self.syncNodes();
     }
