@@ -69,6 +69,18 @@
     touchInertiaRatio: 1
   };
 
+  var locateAnimationSettings = {
+    node: {
+      duration: 0
+    },
+    edge: {
+      duration: 0
+    },
+    center: {
+      duration: 0
+    }
+  };
+
   // List of events received by the graph container
   // and copied to the map container
   var forwardedEvents = [
@@ -101,7 +113,8 @@
       _map = leafletMap,
       _renderer = options.renderer || _s.renderers[0],
       _dragListener,
-      _sigmaSettings = {},
+      _sigmaSettings = Object.create(null),
+      _locateAnimationSettings = Object.create(null),
 
       // Easing parameters (can be applied only at enable/disable)
       _easeEnabled = false,
@@ -112,6 +125,7 @@
       // Plugin state
       _bound = false,
       _settingsApplied = false,
+      _locateSettingsApplied = false,
 
       // Cache camera properties
       _sigmaCamera = {
@@ -122,12 +136,12 @@
 
     // Accessors to pin/unpin nodes
     var fixNode, unfixNode;
-    if (typeof _s.graph.fixNode === 'function') {
+    if (sigma.classes.graph.hasMethod('fixNode')) {
       fixNode = _s.graph.fixNode;
     } else {
       fixNode = function(n) { n.fixed = true; }
     }
-    if (typeof _s.graph.unfixNode === 'function') {
+    if (sigma.classes.graph.hasMethod('unfixNode')) {
       unfixNode = _s.graph.unfixNode;
     } else {
       unfixNode = function(n) { n.fixed = false; }
@@ -146,6 +160,7 @@
     this.enable = function() {
       showMapContainer();
       applySigmaSettings();
+      applyLocatePluginSettings();
 
       // Reset camera cache
       _sigmaCamera = {
@@ -173,6 +188,7 @@
       hideMapContainer();
       _self.unbindAll();
       restoreSigmaSettings();
+      restoreLocatePluginSettings();
 
       _easeEnabled = !!_easing;
       restoreGraph();
@@ -499,6 +515,8 @@
      * Unpin all nodes.
      */
     function restoreGraph() {
+      if (!_s) return;
+
       var nodes = _s.graph.nodes(),
         node;
 
@@ -622,6 +640,41 @@
     }
 
     /**
+     * Apply mandatory settings to sigma.plugins.locate for the integration to work.
+     * Cache overriden settings to be restored when the plugin is killed.
+     */
+    function applyLocatePluginSettings() {
+      if (_locateSettingsApplied || typeof sigma.plugins.locate === 'undefined') return;
+      _locateSettingsApplied = true;
+
+      // locate plugin must be instanciated before!
+      var locateAnim = sigma.plugins.locate(_s).settings.animation;
+
+      _locateAnimationSettings.nodeDuration = locateAnim.node.duration;
+      _locateAnimationSettings.edgeDuration = locateAnim.edge.duration;
+      _locateAnimationSettings.centerDuration = locateAnim.center.duration;
+
+      locateAnim.node.duration = 0;
+      locateAnim.edge.duration = 0;
+      locateAnim.center.duration = 0;
+    }
+
+    /**
+     * Restore overriden sigma.plugins.locate settings.
+     */
+    function restoreLocatePluginSettings() {
+      if (!_locateSettingsApplied || typeof sigma.plugins.locate === 'undefined') return;
+      _locateSettingsApplied = false;
+
+      // locate plugin must be instanciated before!
+      var locateAnim = sigma.plugins.locate(_s).settings.animation;
+
+      locateAnim.node.duration = _locateAnimationSettings.nodeDuration;
+      locateAnim.edge.duration = _locateAnimationSettings.edgeDuration;
+      locateAnim.center.duration = _locateAnimationSettings.centerDuration;
+    }
+
+    /**
      * Forward a subset of mouse events from the sigma container to the Leaflet map.
      */
     function forwardEvents() {
@@ -653,13 +706,17 @@
     }
 
     function hideMapContainer() {
-      _map.getContainer().style.opacity = 0;
-      _map.getContainer().style.visibility = 'hidden';
+      if (_map) {
+        _map.getContainer().style.opacity = 0;
+        _map.getContainer().style.visibility = 'hidden';
+      }
     }
 
     function showMapContainer() {
-      _map.getContainer().style.opacity = 1;
-      _map.getContainer().style.visibility = '';
+      if (_map) {
+        _map.getContainer().style.opacity = 1;
+        _map.getContainer().style.visibility = '';
+      }
     }
   }
 
