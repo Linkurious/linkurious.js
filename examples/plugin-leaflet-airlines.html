@@ -82,7 +82,12 @@ var sigmaInstance = new sigma({
 });
 
 // Instantiate Leaflet
-var map = L.map('map-container');
+var map = L.map('map-container', {
+  // avoid unexpected center moves:
+  scrollWheelZoom: 'center',
+  doubleClickZoom: 'center',
+  bounceAtZoomLimits: false
+});
 
 // Instantiate Sigma plugin for Leaflet with optional animation settings
 var leafletPlugin = sigma.plugins.leaflet(sigmaInstance, map);

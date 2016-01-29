@@ -82,7 +82,7 @@ var sigmaInstance,
         y: Math.random(),
         lat: 51.505, // mandatory field
         lng: -0.09, // mandatory field
-        size: 5,
+        size: 1,
         // hidden: true,
         color: '#000'
       },{
@@ -92,14 +92,14 @@ var sigmaInstance,
         y: Math.random(),
         lat: 48.853, // mandatory field
         lng: 2.349, // mandatory field
-        size: 5,
+        size: 1,
         color: '#000'
       }],
       edges: [{
         id: 'e0',
         source: 'n0',
         target: 'n1',
-        size: 2,
+        size: 1,
         color: '#333'
       }]
     };
@@ -132,7 +132,12 @@ sigmaInstance = new sigma({
 });
 
 // Instantiate Leaflet
-var map = L.map('map-container').setView([48.853, 2.349], 7); // Init view centered on Paris
+var map = L.map('map-container', {
+  // avoid unexpected center moves:
+  scrollWheelZoom: 'center',
+  doubleClickZoom: 'center',
+  bounceAtZoomLimits: false
+}).setView([48.853, 2.349], 7); // Init view centered on Paris
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -187,7 +192,7 @@ sigmaInstance.graph.addNode({
   y: Math.random(),
   lat: 52.524, // mandatory field
   lng: 13.41, // mandatory field
-  size: 5,
+  size: 1,
   color: '#000'
 });
 
@@ -195,7 +200,7 @@ sigmaInstance.graph.addEdge({
   id: 'e1',
   source: 'n0',
   target: 'n2',
-  size: 2,
+  size: 1,
   color: '#333'
 });
 

@@ -18,7 +18,12 @@ var latitude = 48.853;
 var longitude = 2.349;
 var zoom = 7; // integer
 
-var map = L.map('map-container').setView([latitude, longitude], zoom);
+var map = L.map('map-container', {
+  // avoid unexpected center moves:
+  scrollWheelZoom: 'center',
+  doubleClickZoom: 'center',
+  bounceAtZoomLimits: false
+}).setView([latitude, longitude], zoom);
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
