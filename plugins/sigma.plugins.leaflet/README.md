@@ -9,7 +9,7 @@ Contact: seb@linkurio.us
 ## General
 This plugin provides geospatial features to Sigma by intergrating [Leaflet](http://leafletjs.com/). Leaflet is the leading open-source JavaScript library for mobile-friendly interactive maps.
 
-See the following [example code](../../examples/plugin-leaflet.html) for full usage.
+See the following [example code](../../examples/plugin-leaflet.html) for full usage, and a demo of the US airlines dataset [here](../../examples/plugin-leaflet-airlines.html).
 
 To use, include all .js files under this folder. Then instanciate a Leaflet map and the sigma plugin as follows:
 
