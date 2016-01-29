@@ -54,7 +54,8 @@
     var i,
         l,
         c = coordinates || {},
-        keys = ['x', 'y', 'ratio', 'angle'];
+        keys = ('ratio' in coordinates && !this.settings('zoomOnLocation'))
+          ? ['ratio', 'angle'] : ['x', 'y', 'ratio', 'angle'];
 
     for (i = 0, l = keys.length; i < l; i++)
       if (c[keys[i]] !== undefined) {

@@ -187,6 +187,8 @@
     zoomMin: 0.0625,
     // {number} The maximum zooming level.
     zoomMax: 2,
+    // {boolean} Defines whether the zoom focuses on the mouse location.
+    zoomOnLocation: true,
     // {number} The duration of animations following a mouse scrolling.
     mouseZoomDuration: 200,
     // {number} The duration of animations following a mouse double click.
