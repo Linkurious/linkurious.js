@@ -75,7 +75,7 @@
     'mouseover',
     'mouseout',
     'mousemove',
-    'contextmenu',
+    // 'contextmenu', // conflict with sigma.plugins.tooltips
     'focus',
     'blur'
   ];
