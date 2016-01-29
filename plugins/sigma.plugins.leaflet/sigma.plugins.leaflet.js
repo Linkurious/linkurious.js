@@ -59,7 +59,7 @@
     mouseZoomDuration: 0,
     doubleClickZoomDuration: 0,
     // Disable automatic fit-to-screen:
-    autoRescale: false,
+    autoRescale: ['nodeSize', 'edgeSize'],
     // Disable inertia because of inaccurate node position:
     mouseInertiaDuration: 0,
     mouseInertiaRatio: 1,
