@@ -1,0 +1,211 @@
+<!-- LEAFLET -->
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+
+<!-- START SIGMA IMPORTS -->
+<script src="../src/sigma.core.js"></script>
+<script src="../src/conrad.js"></script>
+<script src="../src/utils/sigma.utils.js"></script>
+<script src="../src/utils/sigma.polyfills.js"></script>
+<script src="../src/sigma.settings.js"></script>
+<script src="../src/classes/sigma.classes.dispatcher.js"></script>
+<script src="../src/classes/sigma.classes.configurable.js"></script>
+<script src="../src/classes/sigma.classes.graph.js"></script>
+<script src="../src/classes/sigma.classes.camera.js"></script>
+<script src="../src/classes/sigma.classes.quad.js"></script>
+<script src="../src/captors/sigma.captors.mouse.js"></script>
+<script src="../src/captors/sigma.captors.touch.js"></script>
+<script src="../src/renderers/sigma.renderers.canvas.js"></script>
+<script src="../src/renderers/sigma.renderers.webgl.js"></script>
+<script src="../src/renderers/sigma.renderers.svg.js"></script>
+<script src="../src/renderers/sigma.renderers.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.nodes.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.fast.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.utils.js"></script>
+<script src="../src/renderers/svg/sigma.svg.nodes.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.curve.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.curvedArrow.js"></script>
+<script src="../src/renderers/svg/sigma.svg.labels.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.hovers.def.js"></script>
+<script src="../src/middlewares/sigma.middlewares.rescale.js"></script>
+<script src="../src/middlewares/sigma.middlewares.copy.js"></script>
+<script src="../src/misc/sigma.misc.animation.js"></script>
+<script src="../src/misc/sigma.misc.bindEvents.js"></script>
+<script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
+<script src="../src/misc/sigma.misc.drawHovers.js"></script>
+<!-- END SIGMA IMPORTS -->
+<script src="../plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
+<script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
+
+<script src="../plugins/sigma.plugins.leaflet/sigma.plugins.leaflet.js"></script>
+<div id="container">
+  <style>
+    #map-container,
+    #graph-container {
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      position: absolute;
+    }
+    #map-container {
+      transition: visibility 0.3s, opacity 0.3s linear;
+    }
+  </style>
+  <!-- IMPORTANT ORDER: -->
+  <div id="map-container"></div>
+  <div id="graph-container"></div>
+</div>
+<script>
+var sigmaInstance,
+    g = {
+      nodes: [{
+        id: 'n0',
+        label: 'London',
+        x: Math.random(),
+        y: Math.random(),
+        lat: 51.505, // mandatory field
+        lng: -0.09, // mandatory field
+        size: 5,
+        // hidden: true,
+        color: '#000'
+      },{
+        id: 'n1',
+        label: 'Paris',
+        x: Math.random(),
+        y: Math.random(),
+        lat: 48.853, // mandatory field
+        lng: 2.349, // mandatory field
+        size: 5,
+        color: '#000'
+      }],
+      edges: [{
+        id: 'e0',
+        source: 'n0',
+        target: 'n1',
+        size: 2,
+        color: '#333'
+      }]
+    };
+
+// mandatory if we use the dragNodes plugin:
+sigma.renderers.def = sigma.renderers.canvas;
+
+// Instantiate sigma
+sigmaInstance = new sigma({
+  graph: g,
+  container: 'graph-container'
+  // THESE SETTINGS ARE APPLIED BY THE PLUGIN WHEN IT IS ENABLED:
+  // settings: {
+  //   // Leaflet zoom is discrete while Sigma zoom is continuous!
+  //   // We use sigma zoom ratio as a binary switch.
+  //   // It will zoom to the center of the view regardless of where the mouse was.
+  //   zoomingRatio: 0.999999999,
+  //   doubleClickZoomingRatio: 0.999999999,
+  //   // Non-instant zoom can trigger the coordinatesUpdated event multiple times:
+  //   mouseZoomDuration: 0,
+  //   doubleClickZoomDuration: 0,
+  //   // Disable automatic fit-to-screen:
+  //   autoRescale: false,
+  //   // Disable inertia because of inaccurate node position:
+  //   mouseInertiaDuration: 0,
+  //   mouseInertiaRatio: 1,
+  //   touchInertiaDuration: 0,
+  //   touchInertiaRatio: 1
+  // }
+});
+
+// Instantiate Leaflet
+var map = L.map('map-container').setView([48.853, 2.349], 7); // Init view centered on Paris
+
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+// MapBox example:
+// L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+//   attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+//   id: 'mapbox.streets',
+//   accessToken: 'pk.eyJ1Ijoic2hleW1hbm4iLCJhIjoiY2lqNGZmanhpMDAxaHc4bTNhZGFrcHZleiJ9.VliJNQs7QBK5e5ZmYl9RTw'
+// }).addTo(map);
+
+
+// Instantiate Sigma plugin for Leaflet with optional animation settings
+var leafletPlugin = sigma.plugins.leaflet(sigmaInstance, map, {
+  easing: 'cubicInOut',
+  duration: 800
+});
+
+leafletPlugin.enable();
+
+// Fit the view to the graph
+leafletPlugin.fitBounds();
+
+
+// Initialize the dragNodes plugin:
+var dragListener = sigma.plugins.dragNodes(sigmaInstance, sigmaInstance.renderers[0]);
+
+// The geographical coordinates of the dragged nodes will be updated
+// to their new location to preserve their position during zoom.
+leafletPlugin.bindDragListener(dragListener);
+
+
+// Listen to some map events
+map.on("click dblclick contextmenu", function (e) {
+  console.log(e);
+});
+
+
+// Add reference markers
+L.marker([51.505, -0.09]).addTo(map);
+L.marker([48.853, 2.349]).addTo(map)
+  .bindPopup('A Leaflet popup.')
+  .openPopup();
+
+
+// How to add a node and update its coordinates
+sigmaInstance.graph.addNode({
+  id: 'n2',
+  label: 'Berlin',
+  x: Math.random(),
+  y: Math.random(),
+  lat: 52.524, // mandatory field
+  lng: 13.41, // mandatory field
+  size: 5,
+  color: '#000'
+});
+
+sigmaInstance.graph.addEdge({
+  id: 'e1',
+  source: 'n0',
+  target: 'n2',
+  size: 2,
+  color: '#333'
+});
+
+leafletPlugin.syncNodes('n2');
+
+// We can disable the integration
+// leafletPlugin.disable();
+
+// We can kill and restart the plugin at will.
+// Notice that the Leaflet map itself is not killed.
+// sigma.plugins.killLeafletPlugin(sigmaInstance);
+
+</script>

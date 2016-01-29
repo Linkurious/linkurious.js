@@ -97,6 +97,7 @@ module.exports = function(grunt) {
     'plugins.generators',
     'plugins.keyboard',
     'plugins.lasso',
+    'plugins.leaflet',
     'plugins.locate',
     'plugins.neighborhoods',
     'plugins.poweredBy',

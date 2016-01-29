@@ -1,0 +1,4609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns:viz="http:///www.gexf.net/1.1draft/viz" version="1.1" xmlns="http://www.gexf.net/1.1draft">
+<meta lastmodifieddate="2010-05-17+11:28">
+<creator>Gephi 0.7</creator>
+<description>Sample dataset - Airlines Routes in the United States</description>
+</meta>
+<graph defaultedgetype="undirected" idtype="string" type="static">
+<attributes class="node" mode="static">
+<attribute id="code" title="Code" type="string"/>
+<attribute id="city" title="City" type="string"/>
+<attribute id="latitude" title="latitude" type="double"/>
+<attribute id="longitude" title="longitude" type="double"/>
+<attribute id="eccentricity" title="Eccentricity" type="double"/>
+<attribute id="closnesscentrality" title="Closeness Centrality" type="double"/>
+<attribute id="betweenesscentrality" title="Betweeness Centrality" type="double"/>
+</attributes>
+<nodes count="235">
+<node id="0" label="Adams Field Airport">
+<attvalues>
+<attvalue for="code" value="LIT"/>
+<attvalue for="city" value="Little Rock, AR"/>
+<attvalue for="latitude" value="34.729444"/>
+<attvalue for="longitude" value="-92.224444"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0936170212765957"/>
+<attvalue for="betweenesscentrality" value="70.52318704687126"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="243" g="107" r="88"/>
+<viz:position x="27.902723" y="-104.67456" z="0.0"/>
+</node>
+<node id="1" label="Akron/canton Regional">
+<attvalues>
+<attvalue for="code" value="CAK"/>
+<attvalue for="city" value="Akron/Canton, OH"/>
+<attvalue for="latitude" value="40.916111"/>
+<attvalue for="longitude" value="-81.442222"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.272340425531915"/>
+<attvalue for="betweenesscentrality" value="8.7426045826788"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="245" g="122" r="61"/>
+<viz:position x="216.088" y="32.16815" z="0.0"/>
+</node>
+<node id="2" label="Albany International">
+<attvalues>
+<attvalue for="code" value="ALB"/>
+<attvalue for="city" value="Albany"/>
+<attvalue for="latitude" value="42.733333"/>
+<attvalue for="longitude" value="-73.8"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.123404255319149"/>
+<attvalue for="betweenesscentrality" value="6.156796242972714"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="245" g="123" r="59"/>
+<viz:position x="349.46994" y="74.73456" z="0.0"/>
+</node>
+<node id="3" label="Albemarle">
+<attvalues>
+<attvalue for="code" value="CHO"/>
+<attvalue for="city" value="Charlottesville"/>
+<attvalue for="latitude" value="38.133333"/>
+<attvalue for="longitude" value="-78.45"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4851063829787234"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="268.31213" y="-30.812195" z="0.0"/>
+</node>
+<node id="4" label="Albuquerque International">
+<attvalues>
+<attvalue for="code" value="ABQ"/>
+<attvalue for="city" value="Albuquerque"/>
+<attvalue for="latitude" value="35.040278"/>
+<attvalue for="longitude" value="-106.609167"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1914893617021276"/>
+<attvalue for="betweenesscentrality" value="0.9497076023391813"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="-223.15805" y="-98.0611" z="0.0"/>
+</node>
+<node id="5" label="Alexandria International">
+<attvalues>
+<attvalue for="code" value="AEX"/>
+<attvalue for="city" value="Alexandria, LA"/>
+<attvalue for="latitude" value="31.3275"/>
+<attvalue for="longitude" value="-92.548611"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.4085106382978725"/>
+<attvalue for="betweenesscentrality" value="6.140170940170941"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="245" g="123" r="59"/>
+<viz:position x="22.244942" y="-175.51337" z="0.0"/>
+</node>
+<node id="6" label="Alpena County Regional">
+<attvalues>
+<attvalue for="code" value="APN"/>
+<attvalue for="city" value="Alpena"/>
+<attvalue for="latitude" value="45.083333"/>
+<attvalue for="longitude" value="-83.55"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4893617021276597"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="179.30034" y="131.6759" z="0.0"/>
+</node>
+<node id="7" label="Arcata">
+<attvalues>
+<attvalue for="code" value="ACV"/>
+<attvalue for="city" value="Arcata"/>
+<attvalue for="latitude" value="40.983333"/>
+<attvalue for="longitude" value="-124.1"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.7914893617021277"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-528.43066" y="33.721558" z="0.0"/>
+</node>
+<node id="8" label="Asheville Regional Airport">
+<attvalues>
+<attvalue for="code" value="AVL"/>
+<attvalue for="city" value="Fletcher"/>
+<attvalue for="latitude" value="35.436111"/>
+<attvalue for="longitude" value="-82.541667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1446808510638298"/>
+<attvalue for="betweenesscentrality" value="3.1931009115011775"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="125" r="56"/>
+<viz:position x="196.89906" y="-89.60248" z="0.0"/>
+</node>
+<node id="9" label="Austin-bergstrom International">
+<attvalues>
+<attvalue for="code" value="AUS"/>
+<attvalue for="city" value="Austin"/>
+<attvalue for="latitude" value="30.194444"/>
+<attvalue for="longitude" value="-97.67"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.029787234042553"/>
+<attvalue for="betweenesscentrality" value="83.91519803252056"/>
+</attvalues>
+<viz:size value="2.620155"/>
+<viz:color b="243" g="105" r="91"/>
+<viz:position x="-67.14015" y="-198.52734" z="0.0"/>
+</node>
+<node id="10" label="Austin-straubel Field">
+<attvalues>
+<attvalue for="code" value="GRB"/>
+<attvalue for="city" value="Green Bay"/>
+<attvalue for="latitude" value="44.483333"/>
+<attvalue for="longitude" value="-88.133333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.046808510638298"/>
+<attvalue for="betweenesscentrality" value="112.81575277353922"/>
+</attvalues>
+<viz:size value="2.5542636"/>
+<viz:color b="242" g="101" r="98"/>
+<viz:position x="99.30608" y="116.921814" z="0.0"/>
+</node>
+<node id="11" label="Baltimore/Washington International Thurgood Marshall">
+<attvalues>
+<attvalue for="code" value="BWI"/>
+<attvalue for="city" value="Baltimore, MD"/>
+<attvalue for="latitude" value="39.175278"/>
+<attvalue for="longitude" value="-76.668333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.025531914893617"/>
+<attvalue for="betweenesscentrality" value="80.3235648101282"/>
+</attvalues>
+<viz:size value="2.620155"/>
+<viz:color b="243" g="105" r="90"/>
+<viz:position x="299.40808" y="-7.524658" z="0.0"/>
+</node>
+<node id="12" label="Bangor International Airport">
+<attvalues>
+<attvalue for="code" value="BGR"/>
+<attvalue for="city" value="Bangor"/>
+<attvalue for="latitude" value="44.8"/>
+<attvalue for="longitude" value="-68.816667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4595744680851066"/>
+<attvalue for="betweenesscentrality" value="1.0857142857142859"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="436.4455" y="124.689575" z="0.0"/>
+</node>
+<node id="13" label="Barkley Regional">
+<attvalues>
+<attvalue for="code" value="PAH"/>
+<attvalue for="city" value="Paducah, KY"/>
+<attvalue for="latitude" value="37.060278"/>
+<attvalue for="longitude" value="-88.773056"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.595744680851064"/>
+<attvalue for="betweenesscentrality" value="5.166666666666666"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="246" g="124" r="58"/>
+<viz:position x="88.14081" y="-54.450195" z="0.0"/>
+</node>
+<node id="14" label="Bay County">
+<attvalues>
+<attvalue for="code" value="PFN"/>
+<attvalue for="city" value="Panama City"/>
+<attvalue for="latitude" value="30.216667"/>
+<attvalue for="longitude" value="-85.683333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3617021276595747"/>
+<attvalue for="betweenesscentrality" value="3.565645259453309"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="125" r="56"/>
+<viz:position x="142.06665" y="-198.07855" z="0.0"/>
+</node>
+<node id="15" label="Bellingham">
+<attvalues>
+<attvalue for="code" value="BLI"/>
+<attvalue for="city" value="Bellingham"/>
+<attvalue for="latitude" value="48.8"/>
+<attvalue for="longitude" value="-122.533333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.748936170212766"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-501.0872" y="226.74182" z="0.0"/>
+</node>
+<node id="16" label="Bemidji">
+<attvalues>
+<attvalue for="code" value="BJI"/>
+<attvalue for="city" value="Bemidji"/>
+<attvalue for="latitude" value="47.516667"/>
+<attvalue for="longitude" value="-94.933333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.429787234042553"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-19.376308" y="193.16235" z="0.0"/>
+</node>
+<node id="17" label="Bert Mooney Airport">
+<attvalues>
+<attvalue for="code" value="BTM"/>
+<attvalue for="city" value="Butte,"/>
+<attvalue for="latitude" value="45.954722"/>
+<attvalue for="longitude" value="-112.4975"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.7319148936170214"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-325.92886" y="153.38232" z="0.0"/>
+</node>
+<node id="18" label="Billings">
+<attvalues>
+<attvalue for="code" value="BIL"/>
+<attvalue for="city" value="Billings"/>
+<attvalue for="latitude" value="45.8"/>
+<attvalue for="longitude" value="-108.533333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.072340425531915"/>
+<attvalue for="betweenesscentrality" value="3224.199802126355"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="162" g="71" r="236"/>
+<viz:position x="-256.7411" y="149.50348" z="0.0"/>
+</node>
+<node id="19" label="Birmingham">
+<attvalues>
+<attvalue for="code" value="BHM"/>
+<attvalue for="city" value="Birmingham"/>
+<attvalue for="latitude" value="33.566667"/>
+<attvalue for="longitude" value="-86.75"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1872340425531913"/>
+<attvalue for="betweenesscentrality" value="33.63422675535678"/>
+</attvalues>
+<viz:size value="2.1589148"/>
+<viz:color b="244" g="114" r="75"/>
+<viz:position x="123.4498" y="-129.19757" z="0.0"/>
+</node>
+<node id="20" label="Bishop International Airport">
+<attvalues>
+<attvalue for="code" value="FNT"/>
+<attvalue for="city" value="Flint"/>
+<attvalue for="latitude" value="42.965556"/>
+<attvalue for="longitude" value="-83.743611"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.119148936170213"/>
+<attvalue for="betweenesscentrality" value="58.26959040015439"/>
+</attvalues>
+<viz:size value="2.2248063"/>
+<viz:color b="243" g="109" r="84"/>
+<viz:position x="175.92119" y="80.26288" z="0.0"/>
+</node>
+<node id="21" label="Bismarck">
+<attvalues>
+<attvalue for="code" value="BIS"/>
+<attvalue for="city" value="Bismarck"/>
+<attvalue for="latitude" value="46.783333"/>
+<attvalue for="longitude" value="-100.75"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.34468085106383"/>
+<attvalue for="betweenesscentrality" value="6.888851438942183"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="245" g="123" r="60"/>
+<viz:position x="-120.89629" y="174.34198" z="0.0"/>
+</node>
+<node id="22" label="Blue Grass">
+<attvalues>
+<attvalue for="code" value="LEX"/>
+<attvalue for="city" value="Lexington"/>
+<attvalue for="latitude" value="38.036389"/>
+<attvalue for="longitude" value="-84.605833"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1872340425531913"/>
+<attvalue for="betweenesscentrality" value="121.50719192643797"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="242" g="100" r="100"/>
+<viz:position x="160.87257" y="-32.961853" z="0.0"/>
+</node>
+<node id="23" label="Bob Hope">
+<attvalues>
+<attvalue for="code" value="BUR"/>
+<attvalue for="city" value="Burbank"/>
+<attvalue for="latitude" value="34.2"/>
+<attvalue for="longitude" value="-118.35"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.7148936170212767"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-428.07425" y="-115.88245" z="0.0"/>
+</node>
+<node id="24" label="Boise Air Terminal/Gowen Field">
+<attvalues>
+<attvalue for="code" value="BOI"/>
+<attvalue for="city" value="Boise, ID"/>
+<attvalue for="latitude" value="43.564444"/>
+<attvalue for="longitude" value="-116.222778"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2382978723404254"/>
+<attvalue for="betweenesscentrality" value="173.80159957003227"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="241" g="94" r="110"/>
+<viz:position x="-390.9472" y="94.61719" z="0.0"/>
+</node>
+<node id="25" label="Bradley International">
+<attvalues>
+<attvalue for="code" value="BDL"/>
+<attvalue for="city" value="Windsor Locks, CT"/>
+<attvalue for="latitude" value="41.938889"/>
+<attvalue for="longitude" value="-72.683333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0808510638297872"/>
+<attvalue for="betweenesscentrality" value="15.904607932673517"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="245" g="119" r="66"/>
+<viz:position x="368.95944" y="55.976624" z="0.0"/>
+</node>
+<node id="26" label="Brainerd Lakes Regional">
+<attvalues>
+<attvalue for="code" value="BRD"/>
+<attvalue for="city" value="Brainerd, MN"/>
+<attvalue for="latitude" value="46.401667"/>
+<attvalue for="longitude" value="-94.135556"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.421276595744681"/>
+<attvalue for="betweenesscentrality" value="1.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="-5.452473" y="164.6482" z="0.0"/>
+</node>
+<node id="27" label="Buffalo Niagara International">
+<attvalues>
+<attvalue for="code" value="BUF"/>
+<attvalue for="city" value="Buffalo, NY"/>
+<attvalue for="latitude" value="42.940556"/>
+<attvalue for="longitude" value="-78.732222"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.123404255319149"/>
+<attvalue for="betweenesscentrality" value="7.590809631018356"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="245" g="123" r="60"/>
+<viz:position x="263.3864" y="79.66669" z="0.0"/>
+</node>
+<node id="28" label="Burlington International">
+<attvalues>
+<attvalue for="code" value="BTV"/>
+<attvalue for="city" value="Burlington"/>
+<attvalue for="latitude" value="44.471944"/>
+<attvalue for="longitude" value="-73.153333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4"/>
+<attvalue for="betweenesscentrality" value="1.3009803921568628"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="127" r="53"/>
+<viz:position x="360.7564" y="116.64319" z="0.0"/>
+</node>
+<node id="29" label="Bush Field">
+<attvalues>
+<attvalue for="code" value="AGS"/>
+<attvalue for="city" value="Augusta"/>
+<attvalue for="latitude" value="33.366667"/>
+<attvalue for="longitude" value="-81.966667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.5063829787234044"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="206.93471" y="-133.38196" z="0.0"/>
+</node>
+<node id="30" label="Capital City">
+<attvalues>
+<attvalue for="code" value="LAN"/>
+<attvalue for="city" value="Lansing"/>
+<attvalue for="latitude" value="42.783333"/>
+<attvalue for="longitude" value="-84.583333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.195744680851064"/>
+<attvalue for="betweenesscentrality" value="33.278554486640104"/>
+</attvalues>
+<viz:size value="2.1589148"/>
+<viz:color b="244" g="114" r="75"/>
+<viz:position x="161.26527" y="75.923096" z="0.0"/>
+</node>
+<node id="31" label="Cedar Rapids">
+<attvalues>
+<attvalue for="code" value="CID"/>
+<attvalue for="city" value="Cedar Rapids"/>
+<attvalue for="latitude" value="41.884722"/>
+<attvalue for="longitude" value="-91.710833"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2425531914893617"/>
+<attvalue for="betweenesscentrality" value="28.185222051323514"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="244" g="115" r="73"/>
+<viz:position x="36.866924" y="54.706238" z="0.0"/>
+</node>
+<node id="32" label="Central Illinois Regional Airport at Bloomington-Normal">
+<attvalues>
+<attvalue for="code" value="BMI"/>
+<attvalue for="city" value="Bloomington/Normal, IL"/>
+<attvalue for="latitude" value="40.477222"/>
+<attvalue for="longitude" value="-88.915833"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4851063829787234"/>
+<attvalue for="betweenesscentrality" value="1.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="85.64888" y="22.064758" z="0.0"/>
+</node>
+<node id="33" label="Central Wisconsin">
+<attvalues>
+<attvalue for="code" value="CWA"/>
+<attvalue for="city" value="Wausau"/>
+<attvalue for="latitude" value="44.769444"/>
+<attvalue for="longitude" value="-89.683056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2680851063829786"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="72.258316" y="123.93823" z="0.0"/>
+</node>
+<node id="34" label="Charleston, AFB Municipal">
+<attvalues>
+<attvalue for="code" value="CHS"/>
+<attvalue for="city" value="Charleston, SC"/>
+<attvalue for="latitude" value="32.898611"/>
+<attvalue for="longitude" value="-80.040556"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1021276595744682"/>
+<attvalue for="betweenesscentrality" value="9.623224893848027"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="245" g="122" r="62"/>
+<viz:position x="240.55168" y="-143.13727" z="0.0"/>
+</node>
+<node id="35" label="Charlotte Douglas">
+<attvalues>
+<attvalue for="code" value="CLT"/>
+<attvalue for="city" value="Charlotte"/>
+<attvalue for="latitude" value="35.216667"/>
+<attvalue for="longitude" value="-80.933333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0595744680851062"/>
+<attvalue for="betweenesscentrality" value="153.11550072100204"/>
+</attvalues>
+<viz:size value="2.620155"/>
+<viz:color b="242" g="96" r="106"/>
+<viz:position x="224.96979" y="-94.296936" z="0.0"/>
+</node>
+<node id="36" label="Cherry Capital Airport">
+<attvalues>
+<attvalue for="code" value="TVC"/>
+<attvalue for="city" value="Traverse City"/>
+<attvalue for="latitude" value="44.741389"/>
+<attvalue for="longitude" value="-85.582222"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2212765957446807"/>
+<attvalue for="betweenesscentrality" value="68.74823477920661"/>
+</attvalues>
+<viz:size value="2.0271318"/>
+<viz:color b="243" g="107" r="87"/>
+<viz:position x="143.83138" y="123.24866" z="0.0"/>
+</node>
+<node id="37" label="Chicago O'hare International">
+<attvalues>
+<attvalue for="code" value="ORD"/>
+<attvalue for="city" value="Chicago, Il"/>
+<attvalue for="latitude" value="41.978611"/>
+<attvalue for="longitude" value="-87.904722"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.995744680851064"/>
+<attvalue for="betweenesscentrality" value="273.83859933168173"/>
+</attvalues>
+<viz:size value="2.8837209"/>
+<viz:color b="240" g="85" r="125"/>
+<viz:position x="103.2961" y="56.908936" z="0.0"/>
+</node>
+<node id="38" label="Chippewa County">
+<attvalues>
+<attvalue for="code" value="CIU"/>
+<attvalue for="city" value="Sault Ste Marie"/>
+<attvalue for="latitude" value="46.25"/>
+<attvalue for="longitude" value="-84.466667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.472340425531915"/>
+<attvalue for="betweenesscentrality" value="1.9357142857142857"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="126" r="54"/>
+<viz:position x="163.30148" y="160.81494" z="0.0"/>
+</node>
+<node id="39" label="Chippewa Valley Regional Airport">
+<attvalues>
+<attvalue for="code" value="EAU"/>
+<attvalue for="city" value="Eau Claire, WI"/>
+<attvalue for="latitude" value="44.865833"/>
+<attvalue for="longitude" value="-91.484167"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="40.822994" y="126.309814" z="0.0"/>
+</node>
+<node id="40" label="Chisholm">
+<attvalues>
+<attvalue for="code" value="HIB"/>
+<attvalue for="city" value="Chisholm"/>
+<attvalue for="latitude" value="47.383333"/>
+<attvalue for="longitude" value="-92.833333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="17.275604" y="189.72101" z="0.0"/>
+</node>
+<node id="41" label="Cincinnati/northern Kentucky">
+<attvalues>
+<attvalue for="code" value="CVG"/>
+<attvalue for="city" value="Covington, KY"/>
+<attvalue for="latitude" value="39.048889"/>
+<attvalue for="longitude" value="-84.667778"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.7063829787234042"/>
+<attvalue for="betweenesscentrality" value="2018.6647014851253"/>
+</attvalues>
+<viz:size value="6.44186"/>
+<viz:color b="216" g="36" r="230"/>
+<viz:position x="159.79143" y="-10.367615" z="0.0"/>
+</node>
+<node id="42" label="City County">
+<attvalues>
+<attvalue for="code" value="HVR"/>
+<attvalue for="city" value="Havre"/>
+<attvalue for="latitude" value="48.55"/>
+<attvalue for="longitude" value="-109.766667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="3.0638297872340425"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-278.2668" y="220.13403" z="0.0"/>
+</node>
+<node id="43" label="Colorado Springs">
+<attvalues>
+<attvalue for="code" value="COS"/>
+<attvalue for="city" value="Colorado Springs"/>
+<attvalue for="latitude" value="38.816667"/>
+<attvalue for="longitude" value="-104.716667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2127659574468086"/>
+<attvalue for="betweenesscentrality" value="1.0952380952380951"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="127" r="53"/>
+<viz:position x="-190.1277" y="-15.577942" z="0.0"/>
+</node>
+<node id="44" label="Dallas/Fort Worth International">
+<attvalues>
+<attvalue for="code" value="DFW"/>
+<attvalue for="city" value="Dallas, TX"/>
+<attvalue for="latitude" value="32.896944"/>
+<attvalue for="longitude" value="-97.038056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.008510638297872"/>
+<attvalue for="betweenesscentrality" value="183.89680935842176"/>
+</attvalues>
+<viz:size value="2.8178296"/>
+<viz:color b="241" g="93" r="112"/>
+<viz:position x="-56.110657" y="-143.17194" z="0.0"/>
+</node>
+<node id="45" label="Dane County Regional">
+<attvalues>
+<attvalue for="code" value="MSN"/>
+<attvalue for="city" value="Madison"/>
+<attvalue for="latitude" value="43.139722"/>
+<attvalue for="longitude" value="-89.3375"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0340425531914894"/>
+<attvalue for="betweenesscentrality" value="163.20776885656286"/>
+</attvalues>
+<viz:size value="2.8837209"/>
+<viz:color b="241" g="95" r="108"/>
+<viz:position x="78.289406" y="84.42279" z="0.0"/>
+</node>
+<node id="46" label="Dannelly Fld">
+<attvalues>
+<attvalue for="code" value="MGM"/>
+<attvalue for="city" value="Montgomery"/>
+<attvalue for="latitude" value="32.3"/>
+<attvalue for="longitude" value="-86.4"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.608510638297872"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="129.55846" y="-155.53882" z="0.0"/>
+</node>
+<node id="47" label="Dawson Community">
+<attvalues>
+<attvalue for="code" value="GDV"/>
+<attvalue for="city" value="Glendive"/>
+<attvalue for="latitude" value="47.133333"/>
+<attvalue for="longitude" value="-104.683333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="3.0638297872340425"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-189.54591" y="183.29199" z="0.0"/>
+</node>
+<node id="48" label="Denver International">
+<attvalues>
+<attvalue for="code" value="DEN"/>
+<attvalue for="city" value="Denver"/>
+<attvalue for="latitude" value="39.861667"/>
+<attvalue for="longitude" value="-104.673056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.9446808510638298"/>
+<attvalue for="betweenesscentrality" value="60.55047196118922"/>
+</attvalues>
+<viz:size value="2.7519379"/>
+<viz:color b="243" g="108" r="85"/>
+<viz:position x="-189.36655" y="8.005066" z="0.0"/>
+</node>
+<node id="49" label="Des Moines International">
+<attvalues>
+<attvalue for="code" value="DSM"/>
+<attvalue for="city" value="Des Moines, IA"/>
+<attvalue for="latitude" value="41.533889"/>
+<attvalue for="longitude" value="-93.663056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0382978723404257"/>
+<attvalue for="betweenesscentrality" value="105.5805012830236"/>
+</attvalues>
+<viz:size value="2.6860466"/>
+<viz:color b="242" g="102" r="97"/>
+<viz:position x="2.7942073" y="46.50403" z="0.0"/>
+</node>
+<node id="50" label="Detroit Metropolitan Wayne County">
+<attvalues>
+<attvalue for="code" value="DTW"/>
+<attvalue for="city" value="Detroit, MI"/>
+<attvalue for="latitude" value="42.2125"/>
+<attvalue for="longitude" value="-83.353333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.5021276595744681"/>
+<attvalue for="betweenesscentrality" value="11021.638050857286"/>
+</attvalues>
+<viz:size value="9.670543"/>
+<viz:color b="17" g="167" r="253"/>
+<viz:position x="182.73282" y="62.41028" z="0.0"/>
+</node>
+<node id="51" label="Devils Lake">
+<attvalues>
+<attvalue for="code" value="DVL"/>
+<attvalue for="city" value="Devils Lake"/>
+<attvalue for="latitude" value="48.116667"/>
+<attvalue for="longitude" value="-98.9"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.421276595744681"/>
+<attvalue for="betweenesscentrality" value="1.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="-88.607704" y="208.75739" z="0.0"/>
+</node>
+<node id="52" label="Dothan Arpt">
+<attvalues>
+<attvalue for="code" value="DHN"/>
+<attvalue for="city" value="Dothan"/>
+<attvalue for="latitude" value="31.316667"/>
+<attvalue for="longitude" value="-85.45"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.5063829787234044"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="146.13908" y="-175.73468" z="0.0"/>
+</node>
+<node id="53" label="Duluth International">
+<attvalues>
+<attvalue for="code" value="DLH"/>
+<attvalue for="city" value="Duluth"/>
+<attvalue for="latitude" value="46.833333"/>
+<attvalue for="longitude" value="-92.183333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1659574468085108"/>
+<attvalue for="betweenesscentrality" value="30.5891021614551"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="244" g="115" r="74"/>
+<viz:position x="28.620245" y="175.61694" z="0.0"/>
+</node>
+<node id="54" label="Eagle County">
+<attvalues>
+<attvalue for="code" value="EGE"/>
+<attvalue for="city" value="Vail/Eagle"/>
+<attvalue for="latitude" value="39.633333"/>
+<attvalue for="longitude" value="-106.916667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.421276595744681"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-228.52493" y="2.8218994" z="0.0"/>
+</node>
+<node id="55" label="Eglin AFB">
+<attvalues>
+<attvalue for="code" value="VPS"/>
+<attvalue for="city" value="Valparaiso, FL"/>
+<attvalue for="latitude" value="30.483333"/>
+<attvalue for="longitude" value="-86.525278"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3574468085106384"/>
+<attvalue for="betweenesscentrality" value="1.2397047397047396"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="127" r="53"/>
+<viz:position x="127.37194" y="-192.68524" z="0.0"/>
+</node>
+<node id="56" label="El Paso International Airport">
+<attvalues>
+<attvalue for="code" value="ELP"/>
+<attvalue for="city" value="El Paso"/>
+<attvalue for="latitude" value="31.8"/>
+<attvalue for="longitude" value="-106.383333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.374468085106383"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-219.2165" y="-165.83478" z="0.0"/>
+</node>
+<node id="57" label="Elmira Corning Regional">
+<attvalues>
+<attvalue for="code" value="ELM"/>
+<attvalue for="city" value="Corning, NY"/>
+<attvalue for="latitude" value="42.166667"/>
+<attvalue for="longitude" value="-76.9"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4893617021276597"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="295.36472" y="61.330627" z="0.0"/>
+</node>
+<node id="58" label="Emmet County">
+<attvalues>
+<attvalue for="code" value="PLN"/>
+<attvalue for="city" value="Pellston"/>
+<attvalue for="latitude" value="45.566667"/>
+<attvalue for="longitude" value="-84.8"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4936170212765956"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="157.48372" y="143.67426" z="0.0"/>
+</node>
+<node id="59" label="Eppley Airfield">
+<attvalues>
+<attvalue for="code" value="OMA"/>
+<attvalue for="city" value="Omaha"/>
+<attvalue for="latitude" value="41.3"/>
+<attvalue for="longitude" value="-95.9"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0851063829787235"/>
+<attvalue for="betweenesscentrality" value="141.1424255574293"/>
+</attvalues>
+<viz:size value="2.4224806"/>
+<viz:color b="242" g="97" r="104"/>
+<viz:position x="-36.24783" y="41.060547" z="0.0"/>
+</node>
+<node id="60" label="Eugene">
+<attvalues>
+<attvalue for="code" value="EUG"/>
+<attvalue for="city" value="Eugene"/>
+<attvalue for="latitude" value="44.116667"/>
+<attvalue for="longitude" value="-123.216667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.7148936170212767"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-513.0136" y="107.98004" z="0.0"/>
+</node>
+<node id="61" label="Evansville Regional Airport">
+<attvalues>
+<attvalue for="code" value="EVV"/>
+<attvalue for="city" value="Evansville, IN"/>
+<attvalue for="latitude" value="38.036944"/>
+<attvalue for="longitude" value="-87.5325"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.246808510638298"/>
+<attvalue for="betweenesscentrality" value="68.58745473708602"/>
+</attvalues>
+<viz:size value="2.2248063"/>
+<viz:color b="243" g="107" r="87"/>
+<viz:position x="109.792595" y="-32.949585" z="0.0"/>
+</node>
+<node id="62" label="Falls Intl">
+<attvalues>
+<attvalue for="code" value="INL"/>
+<attvalue for="city" value="International Falls"/>
+<attvalue for="latitude" value="48.566667"/>
+<attvalue for="longitude" value="-93.4"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="7.385401" y="220.57355" z="0.0"/>
+</node>
+<node id="63" label="Fanning Field">
+<attvalues>
+<attvalue for="code" value="IDA"/>
+<attvalue for="city" value="Idaho Falls"/>
+<attvalue for="latitude" value="43.516667"/>
+<attvalue for="longitude" value="-112.066667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3106382978723405"/>
+<attvalue for="betweenesscentrality" value="15.046720317385446"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="245" g="119" r="66"/>
+<viz:position x="-318.4094" y="93.46686" z="0.0"/>
+</node>
+<node id="64" label="Fort Dodge Regional">
+<attvalues>
+<attvalue for="code" value="FOD"/>
+<attvalue for="city" value="Fort Dodge, IA"/>
+<attvalue for="latitude" value="42.551111"/>
+<attvalue for="longitude" value="-94.191944"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-6.4366293" y="70.41101" z="0.0"/>
+</node>
+<node id="65" label="Fort Lauderdale/hollywood International">
+<attvalues>
+<attvalue for="code" value="FLL"/>
+<attvalue for="city" value="Fort Lauderdale, FL"/>
+<attvalue for="latitude" value="26.0725"/>
+<attvalue for="longitude" value="-80.152778"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0127659574468084"/>
+<attvalue for="betweenesscentrality" value="57.366635253117785"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="243" g="109" r="84"/>
+<viz:position x="238.59305" y="-280.13507" z="0.0"/>
+</node>
+<node id="66" label="Fresno Air Terminal Airport">
+<attvalues>
+<attvalue for="code" value="FAT"/>
+<attvalue for="city" value="Fresno"/>
+<attvalue for="latitude" value="36.766667"/>
+<attvalue for="longitude" value="-119.716667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.6425531914893616"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-451.9271" y="-60.859497" z="0.0"/>
+</node>
+<node id="67" label="Gainesville Regional">
+<attvalues>
+<attvalue for="code" value="GNV"/>
+<attvalue for="city" value="Gainesville"/>
+<attvalue for="latitude" value="29.683333"/>
+<attvalue for="longitude" value="-82.266667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.5063829787234044"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="201.69872" y="-208.82166" z="0.0"/>
+</node>
+<node id="68" label="Gallatin Field">
+<attvalues>
+<attvalue for="code" value="BZN"/>
+<attvalue for="city" value="Bozeman"/>
+<attvalue for="latitude" value="45.7775"/>
+<attvalue for="longitude" value="-111.153056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.148936170212766"/>
+<attvalue for="betweenesscentrality" value="106.35925882544548"/>
+</attvalues>
+<viz:size value="2.0271318"/>
+<viz:color b="242" g="102" r="97"/>
+<viz:position x="-302.46387" y="148.9403" z="0.0"/>
+</node>
+<node id="69" label="General Mitchell International">
+<attvalues>
+<attvalue for="code" value="MKE"/>
+<attvalue for="city" value="Milwaukee"/>
+<attvalue for="latitude" value="42.95"/>
+<attvalue for="longitude" value="-87.9"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.9361702127659575"/>
+<attvalue for="betweenesscentrality" value="134.65676707495555"/>
+</attvalues>
+<viz:size value="2.8837209"/>
+<viz:color b="242" g="98" r="103"/>
+<viz:position x="103.37851" y="79.89191" z="0.0"/>
+</node>
+<node id="70" label="George Bush Intercontinental">
+<attvalues>
+<attvalue for="code" value="IAH"/>
+<attvalue for="city" value="Houston"/>
+<attvalue for="latitude" value="29.984444"/>
+<attvalue for="longitude" value="-95.341389"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.676595744680851"/>
+<attvalue for="betweenesscentrality" value="3951.4467763866037"/>
+</attvalues>
+<viz:size value="6.771318"/>
+<viz:color b="137" g="87" r="239"/>
+<viz:position x="-26.49823" y="-202.76337" z="0.0"/>
+</node>
+<node id="71" label="Glacier Park International">
+<attvalues>
+<attvalue for="code" value="FCA"/>
+<attvalue for="city" value="Kalispell, MT"/>
+<attvalue for="latitude" value="48.316667"/>
+<attvalue for="longitude" value="-114.266667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3063829787234043"/>
+<attvalue for="betweenesscentrality" value="4.193624971519708"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="246" g="125" r="57"/>
+<viz:position x="-356.80664" y="213.9961" z="0.0"/>
+</node>
+<node id="72" label="Grand Forks">
+<attvalues>
+<attvalue for="code" value="GFK"/>
+<attvalue for="city" value="Grand Forks"/>
+<attvalue for="latitude" value="47.95"/>
+<attvalue for="longitude" value="-97.183333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2425531914893617"/>
+<attvalue for="betweenesscentrality" value="32.277077967325646"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="244" g="114" r="75"/>
+<viz:position x="-58.646217" y="204.40729" z="0.0"/>
+</node>
+<node id="73" label="Greater Binghamton">
+<attvalues>
+<attvalue for="code" value="BGM"/>
+<attvalue for="city" value="Binghamton, NY"/>
+<attvalue for="latitude" value="42.208611"/>
+<attvalue for="longitude" value="-75.979722"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4936170212765956"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="311.4266" y="62.318604" z="0.0"/>
+</node>
+<node id="74" label="Greater Peoria">
+<attvalues>
+<attvalue for="code" value="PIA"/>
+<attvalue for="city" value="Peoria, IL"/>
+<attvalue for="latitude" value="40.666667"/>
+<attvalue for="longitude" value="-89.683333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.234042553191489"/>
+<attvalue for="betweenesscentrality" value="4.579883811279162"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="124" r="57"/>
+<viz:position x="72.25348" y="26.417725" z="0.0"/>
+</node>
+<node id="75" label="Greater Rochester International">
+<attvalues>
+<attvalue for="code" value="ROC"/>
+<attvalue for="city" value="Rochester, NY"/>
+<attvalue for="latitude" value="43.118889"/>
+<attvalue for="longitude" value="-77.6725"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1106382978723404"/>
+<attvalue for="betweenesscentrality" value="41.89655694694087"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="244" g="112" r="78"/>
+<viz:position x="281.88205" y="83.92456" z="0.0"/>
+</node>
+<node id="76" label="Greenville">
+<attvalues>
+<attvalue for="code" value="GLH"/>
+<attvalue for="city" value="Greenville"/>
+<attvalue for="latitude" value="33.477222"/>
+<attvalue for="longitude" value="-90.985"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.5914893617021275"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="49.535103" y="-131.07013" z="0.0"/>
+</node>
+<node id="77" label="Greenville Spartanbur Int'l Airport">
+<attvalues>
+<attvalue for="code" value="GSP"/>
+<attvalue for="city" value="Greenville"/>
+<attvalue for="latitude" value="34.895556"/>
+<attvalue for="longitude" value="-82.218889"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.157446808510638"/>
+<attvalue for="betweenesscentrality" value="32.32699306027937"/>
+</attvalues>
+<viz:size value="2.4224806"/>
+<viz:color b="244" g="114" r="75"/>
+<viz:position x="202.53261" y="-101.14337" z="0.0"/>
+</node>
+<node id="78" label="Gulfport-Biloxi International">
+<attvalues>
+<attvalue for="code" value="GPT"/>
+<attvalue for="city" value="Gulfport"/>
+<attvalue for="latitude" value="30.4"/>
+<attvalue for="longitude" value="-89.066667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3276595744680852"/>
+<attvalue for="betweenesscentrality" value="0.25"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="128" r="51"/>
+<viz:position x="83.016335" y="-194.3722" z="0.0"/>
+</node>
+<node id="79" label="Harrisburg International">
+<attvalues>
+<attvalue for="code" value="MDT"/>
+<attvalue for="city" value="Harrisburg, PA"/>
+<attvalue for="latitude" value="40.193611"/>
+<attvalue for="longitude" value="-76.763333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.106382978723404"/>
+<attvalue for="betweenesscentrality" value="51.671783771783765"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="244" g="110" r="82"/>
+<viz:position x="297.75003" y="15.571045" z="0.0"/>
+</node>
+<node id="80" label="Hartsfield-jackson Atlanta International">
+<attvalues>
+<attvalue for="code" value="ATL"/>
+<attvalue for="city" value="Atlanta, GA"/>
+<attvalue for="latitude" value="33.636667"/>
+<attvalue for="longitude" value="-84.428056"/>
+<attvalue for="eccentricity" value="2.0"/>
+<attvalue for="closnesscentrality" value="1.5148936170212766"/>
+<attvalue for="betweenesscentrality" value="9444.237120478216"/>
+</attvalues>
+<viz:size value="8.813953"/>
+<viz:color b="32" g="157" r="251"/>
+<viz:position x="163.97537" y="-127.73071" z="0.0"/>
+</node>
+<node id="81" label="Hattiesburg-Laurel Regional">
+<attvalues>
+<attvalue for="code" value="PIB"/>
+<attvalue for="city" value="Hattiesburg/Laurel, MS"/>
+<attvalue for="latitude" value="31.467222"/>
+<attvalue for="longitude" value="-89.336944"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.608510638297872"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="78.29911" y="-172.65643" z="0.0"/>
+</node>
+<node id="82" label="Hector Field">
+<attvalues>
+<attvalue for="code" value="FAR"/>
+<attvalue for="city" value="Fargo"/>
+<attvalue for="latitude" value="46.916667"/>
+<attvalue for="longitude" value="-96.816667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1617021276595745"/>
+<attvalue for="betweenesscentrality" value="61.57620825018875"/>
+</attvalues>
+<viz:size value="2.488372"/>
+<viz:color b="243" g="108" r="85"/>
+<viz:position x="-52.24669" y="177.74463" z="0.0"/>
+</node>
+<node id="83" label="Helena">
+<attvalues>
+<attvalue for="code" value="HLN"/>
+<attvalue for="city" value="Helena"/>
+<attvalue for="latitude" value="46.6"/>
+<attvalue for="longitude" value="-111.983333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.297872340425532"/>
+<attvalue for="betweenesscentrality" value="5.648864606798044"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="124" r="58"/>
+<viz:position x="-316.95496" y="169.67706" z="0.0"/>
+</node>
+<node id="84" label="Hopkins International">
+<attvalues>
+<attvalue for="code" value="CLE"/>
+<attvalue for="city" value="Cleveland"/>
+<attvalue for="latitude" value="41.416667"/>
+<attvalue for="longitude" value="-81.85"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.774468085106383"/>
+<attvalue for="betweenesscentrality" value="1431.5161786756562"/>
+</attvalues>
+<viz:size value="5.4534883"/>
+<viz:color b="233" g="34" r="214"/>
+<viz:position x="208.97093" y="43.773376" z="0.0"/>
+</node>
+<node id="85" label="Houghton County">
+<attvalues>
+<attvalue for="code" value="CMX"/>
+<attvalue for="city" value="Hancock"/>
+<attvalue for="latitude" value="47.123611"/>
+<attvalue for="longitude" value="-88.573333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3787234042553194"/>
+<attvalue for="betweenesscentrality" value="0.18181818181818182"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="128" r="51"/>
+<viz:position x="91.62663" y="183.0426" z="0.0"/>
+</node>
+<node id="86" label="Huntsville International - Carl T. Jones Field">
+<attvalues>
+<attvalue for="code" value="HSV"/>
+<attvalue for="city" value="Huntsville, AL"/>
+<attvalue for="latitude" value="34.637222"/>
+<attvalue for="longitude" value="-86.775"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.174468085106383"/>
+<attvalue for="betweenesscentrality" value="7.500563325563324"/>
+</attvalues>
+<viz:size value="2.2248063"/>
+<viz:color b="245" g="123" r="60"/>
+<viz:position x="123.013466" y="-106.63196" z="0.0"/>
+</node>
+<node id="87" label="Indianapolis International">
+<attvalues>
+<attvalue for="code" value="IND"/>
+<attvalue for="city" value="Indianapolis, IN"/>
+<attvalue for="latitude" value="39.717222"/>
+<attvalue for="longitude" value="-86.294722"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.9319148936170212"/>
+<attvalue for="betweenesscentrality" value="382.3405542408264"/>
+</attvalues>
+<viz:size value="3.8720932"/>
+<viz:color b="239" g="77" r="139"/>
+<viz:position x="131.3959" y="4.724182" z="0.0"/>
+</node>
+<node id="88" label="International">
+<attvalues>
+<attvalue for="code" value="ERI"/>
+<attvalue for="city" value="Erie"/>
+<attvalue for="latitude" value="42.083333"/>
+<attvalue for="longitude" value="-80.183333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4468085106382977"/>
+<attvalue for="betweenesscentrality" value="9.433965672990063"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="245" g="122" r="62"/>
+<viz:position x="238.05975" y="59.36963" z="0.0"/>
+</node>
+<node id="89" label="International">
+<attvalues>
+<attvalue for="code" value="GGW"/>
+<attvalue for="city" value="Glasgow"/>
+<attvalue for="latitude" value="48.216667"/>
+<attvalue for="longitude" value="-106.616667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="3.0638297872340425"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-223.28896" y="211.3742" z="0.0"/>
+</node>
+<node id="90" label="International">
+<attvalues>
+<attvalue for="code" value="GTF"/>
+<attvalue for="city" value="Great Falls"/>
+<attvalue for="latitude" value="47.5"/>
+<attvalue for="longitude" value="-111.366667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.293617021276596"/>
+<attvalue for="betweenesscentrality" value="11.29791561724022"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="245" g="121" r="63"/>
+<viz:position x="-306.19208" y="192.73169" z="0.0"/>
+</node>
+<node id="91" label="International">
+<attvalues>
+<attvalue for="code" value="EYW"/>
+<attvalue for="city" value="Key West"/>
+<attvalue for="latitude" value="24.55"/>
+<attvalue for="longitude" value="-81.766667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.497872340425532"/>
+<attvalue for="betweenesscentrality" value="0.2"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="128" r="51"/>
+<viz:position x="210.42537" y="-309.53088" z="0.0"/>
+</node>
+<node id="92" label="International">
+<attvalues>
+<attvalue for="code" value="MOT"/>
+<attvalue for="city" value="Minot"/>
+<attvalue for="latitude" value="48.266667"/>
+<attvalue for="longitude" value="-101.283333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.195744680851064"/>
+<attvalue for="betweenesscentrality" value="0.4722222222222222"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="246" g="128" r="51"/>
+<viz:position x="-130.20471" y="212.68451" z="0.0"/>
+</node>
+<node id="93" label="International">
+<attvalues>
+<attvalue for="code" value="RST"/>
+<attvalue for="city" value="Rochester"/>
+<attvalue for="latitude" value="43.908333"/>
+<attvalue for="longitude" value="-92.5"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2297872340425533"/>
+<attvalue for="betweenesscentrality" value="33.587508662980554"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="244" g="114" r="75"/>
+<viz:position x="23.093363" y="102.92413" z="0.0"/>
+</node>
+<node id="94" label="International">
+<attvalues>
+<attvalue for="code" value="OLF"/>
+<attvalue for="city" value="Wolf Point"/>
+<attvalue for="latitude" value="48.083333"/>
+<attvalue for="longitude" value="-105.566667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="3.0638297872340425"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-204.963" y="207.88617" z="0.0"/>
+</node>
+<node id="95" label="Intl Jetport">
+<attvalues>
+<attvalue for="code" value="PWM"/>
+<attvalue for="city" value="Portland"/>
+<attvalue for="latitude" value="43.65"/>
+<attvalue for="longitude" value="-70.3"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.251063829787234"/>
+<attvalue for="betweenesscentrality" value="1.603174603174603"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="246" g="127" r="53"/>
+<viz:position x="410.55646" y="96.67944" z="0.0"/>
+</node>
+<node id="96" label="Jackson-evers">
+<attvalues>
+<attvalue for="code" value="JAN"/>
+<attvalue for="city" value="Jackson"/>
+<attvalue for="latitude" value="32.311111"/>
+<attvalue for="longitude" value="-90.075833"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1829787234042555"/>
+<attvalue for="betweenesscentrality" value="55.59356230299965"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="243" g="109" r="83"/>
+<viz:position x="65.40306" y="-155.30939" z="0.0"/>
+</node>
+<node id="97" label="Jacksonville,">
+<attvalues>
+<attvalue for="code" value="JAX"/>
+<attvalue for="city" value="Jacksonville, FL"/>
+<attvalue for="latitude" value="30.416667"/>
+<attvalue for="longitude" value="-81.633333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.097872340425532"/>
+<attvalue for="betweenesscentrality" value="31.619521557615062"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="244" g="114" r="74"/>
+<viz:position x="212.75249" y="-194.03491" z="0.0"/>
+</node>
+<node id="98" label="James Cox Dayton Intl">
+<attvalues>
+<attvalue for="code" value="DAY"/>
+<attvalue for="city" value="Dayton, Oh"/>
+<attvalue for="latitude" value="39.75"/>
+<attvalue for="longitude" value="-84.183333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.119148936170213"/>
+<attvalue for="betweenesscentrality" value="55.753128758861365"/>
+</attvalues>
+<viz:size value="2.1589148"/>
+<viz:color b="243" g="109" r="83"/>
+<viz:position x="168.24658" y="5.4680786" z="0.0"/>
+</node>
+<node id="99" label="Jamestown">
+<attvalues>
+<attvalue for="code" value="JMS"/>
+<attvalue for="city" value="Jamestown"/>
+<attvalue for="latitude" value="46.933333"/>
+<attvalue for="longitude" value="-98.683333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.421276595744681"/>
+<attvalue for="betweenesscentrality" value="1.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="-84.82615" y="178.17053" z="0.0"/>
+</node>
+<node id="100" label="Jefferson County">
+<attvalues>
+<attvalue for="code" value="BPT"/>
+<attvalue for="city" value="Beaumont"/>
+<attvalue for="latitude" value="30.083333"/>
+<attvalue for="longitude" value="-94.1"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.668085106382979"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-4.831904" y="-200.76978" z="0.0"/>
+</node>
+<node id="101" label="Joe Foss Field Airport">
+<attvalues>
+<attvalue for="code" value="FSD"/>
+<attvalue for="city" value="Sioux Falls"/>
+<attvalue for="latitude" value="43.581944"/>
+<attvalue for="longitude" value="-96.741944"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.178723404255319"/>
+<attvalue for="betweenesscentrality" value="3.0484126984126982"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="246" g="125" r="55"/>
+<viz:position x="-50.942528" y="95.03876" z="0.0"/>
+</node>
+<node id="102" label="John F Kennedy Intl">
+<attvalues>
+<attvalue for="code" value="JFK"/>
+<attvalue for="city" value="New York"/>
+<attvalue for="latitude" value="40.633333"/>
+<attvalue for="longitude" value="-73.783333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0553191489361704"/>
+<attvalue for="betweenesscentrality" value="34.05745593830322"/>
+</attvalues>
+<viz:size value="2.3565893"/>
+<viz:color b="244" g="114" r="75"/>
+<viz:position x="349.76083" y="25.650879" z="0.0"/>
+</node>
+<node id="103" label="John Wayne">
+<attvalues>
+<attvalue for="code" value="SNA"/>
+<attvalue for="city" value="Santa Ana, CA"/>
+<attvalue for="latitude" value="33.666667"/>
+<attvalue for="longitude" value="-117.866667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1617021276595745"/>
+<attvalue for="betweenesscentrality" value="15.315265129545487"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="245" g="119" r="66"/>
+<viz:position x="-419.6385" y="-127.101685" z="0.0"/>
+</node>
+<node id="104" label="Kalamazoo/Battle Creek Intl">
+<attvalues>
+<attvalue for="code" value="AZO"/>
+<attvalue for="city" value="Kalamazoo"/>
+<attvalue for="latitude" value="42.235"/>
+<attvalue for="longitude" value="-85.551944"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2127659574468086"/>
+<attvalue for="betweenesscentrality" value="71.94004566541163"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="243" g="107" r="88"/>
+<viz:position x="144.35982" y="62.94055" z="0.0"/>
+</node>
+<node id="105" label="Kansas City International Airport">
+<attvalues>
+<attvalue for="code" value="MCI"/>
+<attvalue for="city" value="Kansas City"/>
+<attvalue for="latitude" value="39.291667"/>
+<attvalue for="longitude" value="-94.730556"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0170212765957447"/>
+<attvalue for="betweenesscentrality" value="188.80998107950276"/>
+</attvalues>
+<viz:size value="3.015504"/>
+<viz:color b="241" g="92" r="113"/>
+<viz:position x="-15.837182" y="-4.9020996" z="0.0"/>
+</node>
+<node id="106" label="Kent County Intl">
+<attvalues>
+<attvalue for="code" value="GRR"/>
+<attvalue for="city" value="Grand Rapids"/>
+<attvalue for="latitude" value="42.883333"/>
+<attvalue for="longitude" value="-85.533333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0042553191489363"/>
+<attvalue for="betweenesscentrality" value="158.93327181345535"/>
+</attvalues>
+<viz:size value="3.147287"/>
+<viz:color b="241" g="95" r="107"/>
+<viz:position x="144.68465" y="78.3031" z="0.0"/>
+</node>
+<node id="107" label="Key Field">
+<attvalues>
+<attvalue for="code" value="MEI"/>
+<attvalue for="city" value="Meridian"/>
+<attvalue for="latitude" value="32.333333"/>
+<attvalue for="longitude" value="-88.75"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.5063829787234044"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="88.54321" y="-154.85046" z="0.0"/>
+</node>
+<node id="108" label="Kingsley Field">
+<attvalues>
+<attvalue for="code" value="LMT"/>
+<attvalue for="city" value="Klamath Falls"/>
+<attvalue for="latitude" value="42.166667"/>
+<attvalue for="longitude" value="-121.733333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.9659574468085106"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-487.12454" y="61.330627" z="0.0"/>
+</node>
+<node id="109" label="La Guardia">
+<attvalues>
+<attvalue for="code" value="LGA"/>
+<attvalue for="city" value="New York"/>
+<attvalue for="latitude" value="40.766667"/>
+<attvalue for="longitude" value="-73.866667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.9319148936170212"/>
+<attvalue for="betweenesscentrality" value="123.66810774064217"/>
+</attvalues>
+<viz:size value="3.015504"/>
+<viz:color b="242" g="99" r="101"/>
+<viz:position x="348.30637" y="28.720398" z="0.0"/>
+</node>
+<node id="110" label="Lafayette Regional">
+<attvalues>
+<attvalue for="code" value="LFT"/>
+<attvalue for="city" value="Lafayette, LA"/>
+<attvalue for="latitude" value="30.205278"/>
+<attvalue for="longitude" value="-91.9875"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.374468085106383"/>
+<attvalue for="betweenesscentrality" value="25.9441747907265"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="244" g="116" r="72"/>
+<viz:position x="32.038177" y="-198.3086" z="0.0"/>
+</node>
+<node id="111" label="Lambert-St. Louis International">
+<attvalues>
+<attvalue for="code" value="STL"/>
+<attvalue for="city" value="St Louis"/>
+<attvalue for="latitude" value="38.748611"/>
+<attvalue for="longitude" value="-90.37"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0382978723404257"/>
+<attvalue for="betweenesscentrality" value="161.29161911631704"/>
+</attvalues>
+<viz:size value="2.7519379"/>
+<viz:color b="241" g="95" r="108"/>
+<viz:position x="60.268875" y="-17.101685" z="0.0"/>
+</node>
+<node id="112" label="Lehigh Valley International">
+<attvalues>
+<attvalue for="code" value="ABE"/>
+<attvalue for="city" value="Allentown"/>
+<attvalue for="latitude" value="40.652222"/>
+<attvalue for="longitude" value="-75.440278"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4680851063829787"/>
+<attvalue for="betweenesscentrality" value="0.9523809523809523"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="320.84167" y="26.085388" z="0.0"/>
+</node>
+<node id="113" label="Lemons Municipal">
+<attvalues>
+<attvalue for="code" value="TUP"/>
+<attvalue for="city" value="Tupelo"/>
+<attvalue for="latitude" value="34.268056"/>
+<attvalue for="longitude" value="-88.77"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.608510638297872"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="88.194145" y="-114.44574" z="0.0"/>
+</node>
+<node id="114" label="Lincoln">
+<attvalues>
+<attvalue for="code" value="LNK"/>
+<attvalue for="city" value="Lincoln, NE"/>
+<attvalue for="latitude" value="40.850833"/>
+<attvalue for="longitude" value="-96.759167"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.251063829787234"/>
+<attvalue for="betweenesscentrality" value="4.279249845884453"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="246" g="124" r="57"/>
+<viz:position x="-51.243122" y="30.661194" z="0.0"/>
+</node>
+<node id="115" label="Logan International">
+<attvalues>
+<attvalue for="code" value="BOS"/>
+<attvalue for="city" value="Boston"/>
+<attvalue for="latitude" value="42.363056"/>
+<attvalue for="longitude" value="-71.0"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.025531914893617"/>
+<attvalue for="betweenesscentrality" value="131.95303844017198"/>
+</attvalues>
+<viz:size value="2.5542636"/>
+<viz:color b="242" g="98" r="102"/>
+<viz:position x="398.33914" y="65.96228" z="0.0"/>
+</node>
+<node id="116" label="Long Beach Municipal">
+<attvalues>
+<attvalue for="code" value="LGB"/>
+<attvalue for="city" value="Long Beach"/>
+<attvalue for="latitude" value="33.816667"/>
+<attvalue for="longitude" value="-118.15"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.748936170212766"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-424.5836" y="-123.95337" z="0.0"/>
+</node>
+<node id="117" label="Long Island Mac Arthur">
+<attvalues>
+<attvalue for="code" value="ISP"/>
+<attvalue for="city" value="Islip, NY"/>
+<attvalue for="latitude" value="40.795278"/>
+<attvalue for="longitude" value="-73.100278"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.502127659574468"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="361.6824" y="29.379883" z="0.0"/>
+</node>
+<node id="118" label="Los Angeles International">
+<attvalues>
+<attvalue for="code" value="LAX"/>
+<attvalue for="city" value="Los Angeles"/>
+<attvalue for="latitude" value="33.9425"/>
+<attvalue for="longitude" value="-118.407222"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.8936170212765957"/>
+<attvalue for="betweenesscentrality" value="1951.0710947426087"/>
+</attvalues>
+<viz:size value="3.410853"/>
+<viz:color b="220" g="33" r="230"/>
+<viz:position x="-429.07297" y="-121.308044" z="0.0"/>
+</node>
+<node id="119" label="Louis Armstrong New OrlÃ©ans International Airport">
+<attvalues>
+<attvalue for="code" value="MSY"/>
+<attvalue for="city" value="New Orleans"/>
+<attvalue for="latitude" value="29.993333"/>
+<attvalue for="longitude" value="-90.258056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0638297872340425"/>
+<attvalue for="betweenesscentrality" value="33.76969735873936"/>
+</attvalues>
+<viz:size value="2.2906976"/>
+<viz:color b="244" g="114" r="75"/>
+<viz:position x="62.222668" y="-202.58423" z="0.0"/>
+</node>
+<node id="120" label="Louisville International">
+<attvalues>
+<attvalue for="code" value="SDF"/>
+<attvalue for="city" value="Louisville, KY"/>
+<attvalue for="latitude" value="38.174444"/>
+<attvalue for="longitude" value="-85.736111"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0595744680851062"/>
+<attvalue for="betweenesscentrality" value="105.11884186784671"/>
+</attvalues>
+<viz:size value="2.620155"/>
+<viz:color b="242" g="102" r="96"/>
+<viz:position x="141.14551" y="-29.89978" z="0.0"/>
+</node>
+<node id="121" label="Love Field">
+<attvalues>
+<attvalue for="code" value="DAL"/>
+<attvalue for="city" value="Dallas"/>
+<attvalue for="latitude" value="32.852778"/>
+<attvalue for="longitude" value="-96.85"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.668085106382979"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-52.82846" y="-144.08972" z="0.0"/>
+</node>
+<node id="122" label="Lovell Field">
+<attvalues>
+<attvalue for="code" value="CHA"/>
+<attvalue for="city" value="Chattanooga,TN"/>
+<attvalue for="latitude" value="35.035278"/>
+<attvalue for="longitude" value="-85.203889"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.353191489361702"/>
+<attvalue for="betweenesscentrality" value="27.351079883850517"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="244" g="116" r="72"/>
+<viz:position x="150.43452" y="-98.16766" z="0.0"/>
+</node>
+<node id="123" label="Manchester-boston Regional Airport">
+<attvalues>
+<attvalue for="code" value="MHT"/>
+<attvalue for="city" value="Manchester, NH"/>
+<attvalue for="latitude" value="42.9325"/>
+<attvalue for="longitude" value="-71.435556"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.251063829787234"/>
+<attvalue for="betweenesscentrality" value="6.9729951358657125"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="245" g="123" r="60"/>
+<viz:position x="390.73727" y="79.47467" z="0.0"/>
+</node>
+<node id="124" label="Mason City Municipal">
+<attvalues>
+<attvalue for="code" value="MCW"/>
+<attvalue for="city" value="Mason City, IA"/>
+<attvalue for="latitude" value="43.157778"/>
+<attvalue for="longitude" value="-93.331389"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="8.58289" y="84.85474" z="0.0"/>
+</node>
+<node id="125" label="MBS International">
+<attvalues>
+<attvalue for="code" value="MBS"/>
+<attvalue for="city" value="Saginaw"/>
+<attvalue for="latitude" value="43.532778"/>
+<attvalue for="longitude" value="-83.079722"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.127659574468085"/>
+<attvalue for="betweenesscentrality" value="8.162947969343314"/>
+</attvalues>
+<viz:size value="2.0271318"/>
+<viz:color b="245" g="122" r="61"/>
+<viz:position x="187.50824" y="93.854675" z="0.0"/>
+</node>
+<node id="126" label="Mc Allen Miller International">
+<attvalues>
+<attvalue for="code" value="MFE"/>
+<attvalue for="city" value="Mc Allen, TX"/>
+<attvalue for="latitude" value="26.175833"/>
+<attvalue for="longitude" value="-98.238611"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.668085106382979"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-77.064285" y="-278.12637" z="0.0"/>
+</node>
+<node id="127" label="Mc Carran Intl">
+<attvalues>
+<attvalue for="code" value="LAS"/>
+<attvalue for="city" value="Las Vegas"/>
+<attvalue for="latitude" value="36.083333"/>
+<attvalue for="longitude" value="-115.166667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.9404255319148935"/>
+<attvalue for="betweenesscentrality" value="45.6031370890399"/>
+</attvalues>
+<viz:size value="2.6860466"/>
+<viz:color b="244" g="111" r="80"/>
+<viz:position x="-372.5146" y="-75.68182" z="0.0"/>
+</node>
+<node id="128" label="Mc Ghee Tyson">
+<attvalues>
+<attvalue for="code" value="TYS"/>
+<attvalue for="city" value="Knoxville"/>
+<attvalue for="latitude" value="35.95"/>
+<attvalue for="longitude" value="-83.916667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0382978723404257"/>
+<attvalue for="betweenesscentrality" value="103.35253341200604"/>
+</attvalues>
+<viz:size value="2.6860466"/>
+<viz:color b="242" g="102" r="96"/>
+<viz:position x="172.90079" y="-78.5589" z="0.0"/>
+</node>
+<node id="129" label="Melbourne International Airport">
+<attvalues>
+<attvalue for="code" value="MLB"/>
+<attvalue for="city" value="Melbourne"/>
+<attvalue for="latitude" value="28.1"/>
+<attvalue for="longitude" value="-80.633333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.5063829787234044"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="230.20578" y="-240.38614" z="0.0"/>
+</node>
+<node id="130" label="Memphis International">
+<attvalues>
+<attvalue for="code" value="MEM"/>
+<attvalue for="city" value="Memphis"/>
+<attvalue for="latitude" value="35.066667"/>
+<attvalue for="longitude" value="-89.966667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.6212765957446809"/>
+<attvalue for="betweenesscentrality" value="5870.78676726232"/>
+</attvalues>
+<viz:size value="7.364341"/>
+<viz:color b="88" g="120" r="245"/>
+<viz:position x="67.30837" y="-97.49841" z="0.0"/>
+</node>
+<node id="131" label="Metropolitan Airport">
+<attvalues>
+<attvalue for="code" value="CAE"/>
+<attvalue for="city" value="Columbia, SC"/>
+<attvalue for="latitude" value="33.95"/>
+<attvalue for="longitude" value="-81.116667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.217021276595745"/>
+<attvalue for="betweenesscentrality" value="4.562763053939524"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="246" g="124" r="57"/>
+<viz:position x="221.77" y="-121.15021" z="0.0"/>
+</node>
+<node id="132" label="Miami International Airport">
+<attvalues>
+<attvalue for="code" value="MIA"/>
+<attvalue for="city" value="Miami"/>
+<attvalue for="latitude" value="25.783333"/>
+<attvalue for="longitude" value="-80.266667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.025531914893617"/>
+<attvalue for="betweenesscentrality" value="82.78362449423958"/>
+</attvalues>
+<viz:size value="2.4224806"/>
+<viz:color b="243" g="105" r="91"/>
+<viz:position x="236.6053" y="-285.74686" z="0.0"/>
+</node>
+<node id="133" label="Mid-Continent">
+<attvalues>
+<attvalue for="code" value="ICT"/>
+<attvalue for="city" value="Wichita"/>
+<attvalue for="latitude" value="37.65"/>
+<attvalue for="longitude" value="-97.433333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.246808510638298"/>
+<attvalue for="betweenesscentrality" value="46.43571711512892"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="244" g="111" r="80"/>
+<viz:position x="-63.00954" y="-41.501648" z="0.0"/>
+</node>
+<node id="134" label="Midway">
+<attvalues>
+<attvalue for="code" value="MDW"/>
+<attvalue for="city" value="Chicago"/>
+<attvalue for="latitude" value="41.783333"/>
+<attvalue for="longitude" value="-87.75"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0851063829787235"/>
+<attvalue for="betweenesscentrality" value="104.21340243388543"/>
+</attvalues>
+<viz:size value="2.488372"/>
+<viz:color b="242" g="102" r="96"/>
+<viz:position x="105.996506" y="52.331238" z="0.0"/>
+</node>
+<node id="135" label="Mineta San Jose International Airport">
+<attvalues>
+<attvalue for="code" value="SJC"/>
+<attvalue for="city" value="San Jose"/>
+<attvalue for="latitude" value="37.352778"/>
+<attvalue for="longitude" value="-121.919444"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1021276595744682"/>
+<attvalue for="betweenesscentrality" value="19.09380589061181"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="245" g="118" r="68"/>
+<viz:position x="-490.3728" y="-48.040466" z="0.0"/>
+</node>
+<node id="136" label="Minneapolis - St. Paul Intl">
+<attvalues>
+<attvalue for="code" value="MSP"/>
+<attvalue for="city" value="Minneapolis"/>
+<attvalue for="latitude" value="44.883333"/>
+<attvalue for="longitude" value="-93.216944"/>
+<attvalue for="eccentricity" value="2.0"/>
+<attvalue for="closnesscentrality" value="1.4382978723404256"/>
+<attvalue for="betweenesscentrality" value="14826.967848812046"/>
+</attvalues>
+<viz:size value="10.0"/>
+<viz:color b="0" g="179" r="255"/>
+<viz:position x="10.580331" y="126.740845" z="0.0"/>
+</node>
+<node id="137" label="Missoula International">
+<attvalues>
+<attvalue for="code" value="MSO"/>
+<attvalue for="city" value="Missoula"/>
+<attvalue for="latitude" value="46.916667"/>
+<attvalue for="longitude" value="-114.083333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3106382978723405"/>
+<attvalue for="betweenesscentrality" value="3.720914173545753"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="246" g="125" r="56"/>
+<viz:position x="-353.60684" y="177.74463" z="0.0"/>
+</node>
+<node id="138" label="Mobile Regional Airport">
+<attvalues>
+<attvalue for="code" value="MOB"/>
+<attvalue for="city" value="Alabama, AL"/>
+<attvalue for="latitude" value="30.691111"/>
+<attvalue for="longitude" value="-88.242778"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.382978723404255"/>
+<attvalue for="betweenesscentrality" value="2.1519657528731937"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="246" g="126" r="54"/>
+<viz:position x="97.395905" y="-188.47266" z="0.0"/>
+</node>
+<node id="139" label="Monterey Peninsula">
+<attvalues>
+<attvalue for="code" value="MRY"/>
+<attvalue for="city" value="Monterey"/>
+<attvalue for="latitude" value="36.583333"/>
+<attvalue for="longitude" value="-121.85"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.8851063829787233"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-489.16077" y="-64.84906" z="0.0"/>
+</node>
+<node id="140" label="Municipal">
+<attvalues>
+<attvalue for="code" value="ABR"/>
+<attvalue for="city" value="Aberdeen"/>
+<attvalue for="latitude" value="45.45"/>
+<attvalue for="longitude" value="-98.433333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-80.46283" y="140.76874" z="0.0"/>
+</node>
+<node id="141" label="Municipal">
+<attvalues>
+<attvalue for="code" value="LSE"/>
+<attvalue for="city" value="La Crosse"/>
+<attvalue for="latitude" value="43.883333"/>
+<attvalue for="longitude" value="-91.25"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.404255319148936"/>
+<attvalue for="betweenesscentrality" value="2.5107142857142857"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="246" g="126" r="55"/>
+<viz:position x="44.90998" y="102.318665" z="0.0"/>
+</node>
+<node id="142" label="Municipal">
+<attvalues>
+<attvalue for="code" value="LCH"/>
+<attvalue for="city" value="Lake Charles"/>
+<attvalue for="latitude" value="30.116667"/>
+<attvalue for="longitude" value="-93.216667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.668085106382979"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="10.585166" y="-200.09729" z="0.0"/>
+</node>
+<node id="143" label="Municipal">
+<attvalues>
+<attvalue for="code" value="LWT"/>
+<attvalue for="city" value="Lewistown"/>
+<attvalue for="latitude" value="47.05"/>
+<attvalue for="longitude" value="-109.466667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="3.0638297872340425"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-273.03082" y="181.15576" z="0.0"/>
+</node>
+<node id="144" label="Municipal">
+<attvalues>
+<attvalue for="code" value="MLS"/>
+<attvalue for="city" value="Miles City"/>
+<attvalue for="latitude" value="46.433333"/>
+<attvalue for="longitude" value="-105.883333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="3.0638297872340425"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-210.48985" y="165.44989" z="0.0"/>
+</node>
+<node id="145" label="Municipal">
+<attvalues>
+<attvalue for="code" value="MLU"/>
+<attvalue for="city" value="Monroe"/>
+<attvalue for="latitude" value="32.5"/>
+<attvalue for="longitude" value="-92.033333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.472340425531915"/>
+<attvalue for="betweenesscentrality" value="17.972672920948778"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="245" g="118" r="68"/>
+<viz:position x="31.23824" y="-151.4046" z="0.0"/>
+</node>
+<node id="146" label="Municipal">
+<attvalues>
+<attvalue for="code" value="PSP"/>
+<attvalue for="city" value="Palm Springs"/>
+<attvalue for="latitude" value="33.833333"/>
+<attvalue for="longitude" value="-116.5"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3148936170212764"/>
+<attvalue for="betweenesscentrality" value="4.078643578643579"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="246" g="125" r="57"/>
+<viz:position x="-395.78564" y="-123.60327" z="0.0"/>
+</node>
+<node id="147" label="Municipal">
+<attvalues>
+<attvalue for="code" value="STC"/>
+<attvalue for="city" value="Saint Cloud"/>
+<attvalue for="latitude" value="45.583333"/>
+<attvalue for="longitude" value="-94.183333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-6.2863393" y="144.08984" z="0.0"/>
+</node>
+<node id="148" label="Municipal">
+<attvalues>
+<attvalue for="code" value="SBA"/>
+<attvalue for="city" value="Santa Barbara, CA"/>
+<attvalue for="latitude" value="33.426111"/>
+<attvalue for="longitude" value="-119.840278"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.6425531914893616"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-454.0845" y="-132.13928" z="0.0"/>
+</node>
+<node id="149" label="Municipal/Baer Field">
+<attvalues>
+<attvalue for="code" value="FWA"/>
+<attvalue for="city" value="Fort Wayne"/>
+<attvalue for="latitude" value="41.116667"/>
+<attvalue for="longitude" value="-85.116667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.476595744680851"/>
+<attvalue for="betweenesscentrality" value="5.166666666666666"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="246" g="124" r="58"/>
+<viz:position x="151.95683" y="36.807312" z="0.0"/>
+</node>
+<node id="150" label="Muskegon">
+<attvalues>
+<attvalue for="code" value="MKG"/>
+<attvalue for="city" value="Muskegon"/>
+<attvalue for="latitude" value="43.166667"/>
+<attvalue for="longitude" value="-86.233333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.472340425531915"/>
+<attvalue for="betweenesscentrality" value="1.8222222222222224"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="126" r="54"/>
+<viz:position x="132.46735" y="85.067444" z="0.0"/>
+</node>
+<node id="151" label="Myrtle Beach Afb">
+<attvalues>
+<attvalue for="code" value="MYR"/>
+<attvalue for="city" value="Myrtle Beach"/>
+<attvalue for="latitude" value="33.7"/>
+<attvalue for="longitude" value="-78.966667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2680851063829786"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="259.2946" y="-126.40259" z="0.0"/>
+</node>
+<node id="152" label="Nashville International">
+<attvalues>
+<attvalue for="code" value="BNA"/>
+<attvalue for="city" value="Nashville, TN"/>
+<attvalue for="latitude" value="36.124444"/>
+<attvalue for="longitude" value="-86.678056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.021276595744681"/>
+<attvalue for="betweenesscentrality" value="157.65184506756793"/>
+</attvalues>
+<viz:size value="2.7519379"/>
+<viz:color b="241" g="95" r="107"/>
+<viz:position x="124.70546" y="-74.79376" z="0.0"/>
+</node>
+<node id="153" label="Natrona County International Airport">
+<attvalues>
+<attvalue for="code" value="CPR"/>
+<attvalue for="city" value="Casper, WY"/>
+<attvalue for="latitude" value="42.908056"/>
+<attvalue for="longitude" value="-106.464444"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.429787234042553"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-220.63216" y="78.89209" z="0.0"/>
+</node>
+<node id="154" label="Newark Liberty International">
+<attvalues>
+<attvalue for="code" value="EWR"/>
+<attvalue for="city" value="Newark"/>
+<attvalue for="latitude" value="40.6925"/>
+<attvalue for="longitude" value="-74.168611"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.7063829787234042"/>
+<attvalue for="betweenesscentrality" value="1549.8201948716173"/>
+</attvalues>
+<viz:size value="6.310077"/>
+<viz:color b="232" g="31" r="220"/>
+<viz:position x="343.03647" y="27.012207" z="0.0"/>
+</node>
+<node id="155" label="Newport News/williamsb">
+<attvalues>
+<attvalue for="code" value="PHF"/>
+<attvalue for="city" value="Newport News"/>
+<attvalue for="latitude" value="37.133333"/>
+<attvalue for="longitude" value="-76.5"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.5063829787234044"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="302.34604" y="-52.851624" z="0.0"/>
+</node>
+<node id="156" label="Nez Perce County Rgnl">
+<attvalues>
+<attvalue for="code" value="LWS"/>
+<attvalue for="city" value="Lewiston"/>
+<attvalue for="latitude" value="46.383333"/>
+<attvalue for="longitude" value="-117.033333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.7361702127659573"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-405.09406" y="164.18427" z="0.0"/>
+</node>
+<node id="157" label="Norfolk International Airport">
+<attvalues>
+<attvalue for="code" value="ORF"/>
+<attvalue for="city" value="Norfolk"/>
+<attvalue for="latitude" value="36.9"/>
+<attvalue for="longitude" value="-76.2"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1021276595744682"/>
+<attvalue for="betweenesscentrality" value="23.709242775113633"/>
+</attvalues>
+<viz:size value="2.1589148"/>
+<viz:color b="245" g="117" r="71"/>
+<viz:position x="307.58203" y="-57.952026" z="0.0"/>
+</node>
+<node id="158" label="North Bend">
+<attvalues>
+<attvalue for="code" value="OTH"/>
+<attvalue for="city" value="North Bend"/>
+<attvalue for="latitude" value="43.416667"/>
+<attvalue for="longitude" value="-124.25"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.9659574468085106"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-531.04865" y="91.06207" z="0.0"/>
+</node>
+<node id="159" label="Northwest Arkansas Regional">
+<attvalues>
+<attvalue for="code" value="XNA"/>
+<attvalue for="city" value="Fayetteville, AR"/>
+<attvalue for="latitude" value="36.281667"/>
+<attvalue for="longitude" value="-94.306667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.119148936170213"/>
+<attvalue for="betweenesscentrality" value="36.86887514998201"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="244" g="113" r="77"/>
+<viz:position x="-8.438923" y="-71.39313" z="0.0"/>
+</node>
+<node id="160" label="Oakland International Airport">
+<attvalues>
+<attvalue for="code" value="OAK"/>
+<attvalue for="city" value="Oakland"/>
+<attvalue for="latitude" value="37.716667"/>
+<attvalue for="longitude" value="-122.216667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2808510638297874"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-495.5603" y="-40.031372" z="0.0"/>
+</node>
+<node id="161" label="Oneida County">
+<attvalues>
+<attvalue for="code" value="RHI"/>
+<attvalue for="city" value="Rhinelander"/>
+<attvalue for="latitude" value="45.633333"/>
+<attvalue for="longitude" value="-89.45"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="76.32591" y="145.33728" z="0.0"/>
+</node>
+<node id="162" label="Ontario International">
+<attvalues>
+<attvalue for="code" value="ONT"/>
+<attvalue for="city" value="Ontario"/>
+<attvalue for="latitude" value="34.056111"/>
+<attvalue for="longitude" value="-117.601111"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2808510638297874"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-415.00366" y="-118.91626" z="0.0"/>
+</node>
+<node id="163" label="Orlando International">
+<attvalues>
+<attvalue for="code" value="MCO"/>
+<attvalue for="city" value="Orlando"/>
+<attvalue for="latitude" value="28.429444"/>
+<attvalue for="longitude" value="-81.308889"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0127659574468084"/>
+<attvalue for="betweenesscentrality" value="28.815255436466604"/>
+</attvalues>
+<viz:size value="2.5542636"/>
+<viz:color b="244" g="115" r="73"/>
+<viz:position x="218.4151" y="-233.85785" z="0.0"/>
+</node>
+<node id="164" label="Outagamie County">
+<attvalues>
+<attvalue for="code" value="ATW"/>
+<attvalue for="city" value="Appleton"/>
+<attvalue for="latitude" value="44.266667"/>
+<attvalue for="longitude" value="-88.516667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.123404255319149"/>
+<attvalue for="betweenesscentrality" value="105.0720134497657"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="242" g="102" r="96"/>
+<viz:position x="92.61565" y="111.63129" z="0.0"/>
+</node>
+<node id="165" label="Palm Beach International">
+<attvalues>
+<attvalue for="code" value="PBI"/>
+<attvalue for="city" value="West Palm Beach"/>
+<attvalue for="latitude" value="26.683056"/>
+<attvalue for="longitude" value="-80.095556"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.234042553191489"/>
+<attvalue for="betweenesscentrality" value="0.7619047619047618"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="239.59175" y="-268.24036" z="0.0"/>
+</node>
+<node id="166" label="Pangborn Field">
+<attvalues>
+<attvalue for="code" value="EAT"/>
+<attvalue for="city" value="Wenatchee"/>
+<attvalue for="latitude" value="47.4"/>
+<attvalue for="longitude" value="-120.2"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.748936170212766"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-460.36282" y="190.15076" z="0.0"/>
+</node>
+<node id="167" label="Pendleton">
+<attvalues>
+<attvalue for="code" value="PDT"/>
+<attvalue for="city" value="Pendleton"/>
+<attvalue for="latitude" value="45.7"/>
+<attvalue for="longitude" value="-118.833333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.9659574468085106"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-436.51" y="147.00226" z="0.0"/>
+</node>
+<node id="168" label="Philadelphia International">
+<attvalues>
+<attvalue for="code" value="PHL"/>
+<attvalue for="city" value="Philadelphia"/>
+<attvalue for="latitude" value="39.871944"/>
+<attvalue for="longitude" value="-75.241111"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0127659574468084"/>
+<attvalue for="betweenesscentrality" value="63.94152201542828"/>
+</attvalues>
+<viz:size value="2.8837209"/>
+<viz:color b="243" g="108" r="86"/>
+<viz:position x="324.3178" y="8.23877" z="0.0"/>
+</node>
+<node id="169" label="Piedmont Triad Intl">
+<attvalues>
+<attvalue for="code" value="GSO"/>
+<attvalue for="city" value="Greensboro, NC"/>
+<attvalue for="latitude" value="36.097778"/>
+<attvalue for="longitude" value="-79.937222"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.068085106382979"/>
+<attvalue for="betweenesscentrality" value="28.84915254761236"/>
+</attvalues>
+<viz:size value="2.2248063"/>
+<viz:color b="244" g="115" r="73"/>
+<viz:position x="242.35521" y="-75.36987" z="0.0"/>
+</node>
+<node id="170" label="Pierre">
+<attvalues>
+<attvalue for="code" value="PIR"/>
+<attvalue for="city" value="Pierre"/>
+<attvalue for="latitude" value="44.383333"/>
+<attvalue for="longitude" value="-100.283333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-112.75142" y="114.4776" z="0.0"/>
+</node>
+<node id="171" label="Pittsburgh International">
+<attvalues>
+<attvalue for="code" value="PIT"/>
+<attvalue for="city" value="Pittsburgh, PA"/>
+<attvalue for="latitude" value="40.491389"/>
+<attvalue for="longitude" value="-80.232778"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0425531914893615"/>
+<attvalue for="betweenesscentrality" value="124.91028779283617"/>
+</attvalues>
+<viz:size value="2.620155"/>
+<viz:color b="242" g="99" r="101"/>
+<viz:position x="237.19678" y="22.389893" z="0.0"/>
+</node>
+<node id="172" label="Port Columbus Intl">
+<attvalues>
+<attvalue for="code" value="CMH"/>
+<attvalue for="city" value="Columbus"/>
+<attvalue for="latitude" value="40.0"/>
+<attvalue for="longitude" value="-82.883333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.008510638297872"/>
+<attvalue for="betweenesscentrality" value="340.81538302024586"/>
+</attvalues>
+<viz:size value="2.9496126"/>
+<viz:color b="239" g="80" r="134"/>
+<viz:position x="190.93587" y="11.1536255" z="0.0"/>
+</node>
+<node id="173" label="Portland International">
+<attvalues>
+<attvalue for="code" value="PDX"/>
+<attvalue for="city" value="Portland, OR"/>
+<attvalue for="latitude" value="45.588611"/>
+<attvalue for="longitude" value="-122.5975"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.974468085106383"/>
+<attvalue for="betweenesscentrality" value="2521.5825780849914"/>
+</attvalues>
+<viz:size value="3.8062017"/>
+<viz:color b="191" g="52" r="233"/>
+<viz:position x="-502.2071" y="144.22144" z="0.0"/>
+</node>
+<node id="174" label="Pullman-Moscow Regional Airport">
+<attvalues>
+<attvalue for="code" value="PUW"/>
+<attvalue for="city" value="Pullman"/>
+<attvalue for="latitude" value="46.75"/>
+<attvalue for="longitude" value="-117.116667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.7361702127659573"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-406.54852" y="173.49261" z="0.0"/>
+</node>
+<node id="175" label="Quad-City">
+<attvalues>
+<attvalue for="code" value="MLI"/>
+<attvalue for="city" value="Moline"/>
+<attvalue for="latitude" value="41.45"/>
+<attvalue for="longitude" value="-90.516667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1659574468085108"/>
+<attvalue for="betweenesscentrality" value="29.98140557756657"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="244" g="115" r="74"/>
+<viz:position x="57.709053" y="44.549377" z="0.0"/>
+</node>
+<node id="176" label="Raleigh-durham International Airport">
+<attvalues>
+<attvalue for="code" value="RDU"/>
+<attvalue for="city" value="Raleigh/Durham, NC"/>
+<attvalue for="latitude" value="35.877778"/>
+<attvalue for="longitude" value="-78.7875"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.974468085106383"/>
+<attvalue for="betweenesscentrality" value="123.45700891993079"/>
+</attvalues>
+<viz:size value="2.620155"/>
+<viz:color b="242" g="99" r="101"/>
+<viz:position x="262.42163" y="-80.115295" z="0.0"/>
+</node>
+<node id="177" label="Redding">
+<attvalues>
+<attvalue for="code" value="RDD"/>
+<attvalue for="city" value="Redding"/>
+<attvalue for="latitude" value="40.5"/>
+<attvalue for="longitude" value="-122.3"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.7914893617021277"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-497.01474" y="22.587524" z="0.0"/>
+</node>
+<node id="178" label="Regional">
+<attvalues>
+<attvalue for="code" value="DAB"/>
+<attvalue for="city" value="Daytona Beach"/>
+<attvalue for="latitude" value="29.183333"/>
+<attvalue for="longitude" value="-81.05"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.472340425531915"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="222.93356" y="-218.84167" z="0.0"/>
+</node>
+<node id="179" label="Regional">
+<attvalues>
+<attvalue for="code" value="FSM"/>
+<attvalue for="city" value="Fort Smith"/>
+<attvalue for="latitude" value="35.333333"/>
+<attvalue for="longitude" value="-94.366667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.5063829787234044"/>
+<attvalue for="betweenesscentrality" value="13.608035597487932"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="245" g="120" r="65"/>
+<viz:position x="-9.48612" y="-91.802734" z="0.0"/>
+</node>
+<node id="180" label="Regional">
+<attvalues>
+<attvalue for="code" value="PNS"/>
+<attvalue for="city" value="Pensacola"/>
+<attvalue for="latitude" value="30.466667"/>
+<attvalue for="longitude" value="-87.183333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3106382978723405"/>
+<attvalue for="betweenesscentrality" value="5.429761904761905"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="246" g="124" r="58"/>
+<viz:position x="115.88671" y="-193.0227" z="0.0"/>
+</node>
+<node id="181" label="Regional">
+<attvalues>
+<attvalue for="code" value="RAP"/>
+<attvalue for="city" value="Rapid City"/>
+<attvalue for="latitude" value="44.033333"/>
+<attvalue for="longitude" value="-103.05"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2"/>
+<attvalue for="betweenesscentrality" value="4.841248992951779"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="246" g="124" r="58"/>
+<viz:position x="-161.03886" y="105.95557" z="0.0"/>
+</node>
+<node id="182" label="Regional">
+<attvalues>
+<attvalue for="code" value="SHV"/>
+<attvalue for="city" value="Shreveport"/>
+<attvalue for="latitude" value="32.45"/>
+<attvalue for="longitude" value="-93.816667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2595744680851064"/>
+<attvalue for="betweenesscentrality" value="11.948275129583175"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="245" g="121" r="64"/>
+<viz:position x="0.113189824" y="-152.43903" z="0.0"/>
+</node>
+<node id="183" label="Reno-Tahoe International">
+<attvalues>
+<attvalue for="code" value="RNO"/>
+<attvalue for="city" value="Reno, NV"/>
+<attvalue for="latitude" value="39.499167"/>
+<attvalue for="longitude" value="-119.768056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2638297872340427"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-452.824" y="-0.21569824" z="0.0"/>
+</node>
+<node id="184" label="Richland Municipal">
+<attvalues>
+<attvalue for="code" value="SDY"/>
+<attvalue for="city" value="Sidney"/>
+<attvalue for="latitude" value="47.716667"/>
+<attvalue for="longitude" value="-104.183333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="3.0638297872340425"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-180.81926" y="198.3407" z="0.0"/>
+</node>
+<node id="185" label="Richmond International Airport">
+<attvalues>
+<attvalue for="code" value="RIC"/>
+<attvalue for="city" value="Richmond, VA"/>
+<attvalue for="latitude" value="37.5"/>
+<attvalue for="longitude" value="-77.316667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.076595744680851"/>
+<attvalue for="betweenesscentrality" value="79.82017515458222"/>
+</attvalues>
+<viz:size value="2.3565893"/>
+<viz:color b="243" g="105" r="90"/>
+<viz:position x="288.09253" y="-44.80487" z="0.0"/>
+</node>
+<node id="186" label="Roanoke Regional Airport">
+<attvalues>
+<attvalue for="code" value="ROA"/>
+<attvalue for="city" value="Roanoke"/>
+<attvalue for="latitude" value="37.316667"/>
+<attvalue for="longitude" value="-79.983333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.293617021276596"/>
+<attvalue for="betweenesscentrality" value="3.100730163458358"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="246" g="125" r="56"/>
+<viz:position x="241.55042" y="-48.83313" z="0.0"/>
+</node>
+<node id="187" label="Roberts Field">
+<attvalues>
+<attvalue for="code" value="RDM"/>
+<attvalue for="city" value="Redmond"/>
+<attvalue for="latitude" value="44.25"/>
+<attvalue for="longitude" value="-121.15"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.7148936170212767"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-476.94345" y="111.2251" z="0.0"/>
+</node>
+<node id="188" label="Rogue Valley International - Medford Airport">
+<attvalues>
+<attvalue for="code" value="MFR"/>
+<attvalue for="city" value="Medford"/>
+<attvalue for="latitude" value="42.366667"/>
+<attvalue for="longitude" value="-122.866667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.6808510638297873"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-506.90497" y="66.04761" z="0.0"/>
+</node>
+<node id="189" label="Ronald Reagan Washington National Airport">
+<attvalues>
+<attvalue for="code" value="DCA"/>
+<attvalue for="city" value="Washington, DC"/>
+<attvalue for="latitude" value="38.851944"/>
+<attvalue for="longitude" value="-77.037778"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.9148936170212767"/>
+<attvalue for="betweenesscentrality" value="168.59536717249637"/>
+</attvalues>
+<viz:size value="3.0813954"/>
+<viz:color b="241" g="94" r="109"/>
+<viz:position x="292.96005" y="-14.787537" z="0.0"/>
+</node>
+<node id="190" label="Ryan">
+<attvalues>
+<attvalue for="code" value="BTR"/>
+<attvalue for="city" value="Baton Rouge"/>
+<attvalue for="latitude" value="30.533333"/>
+<attvalue for="longitude" value="-91.15"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3063829787234043"/>
+<attvalue for="betweenesscentrality" value="1.7079365079365079"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="246" g="126" r="54"/>
+<viz:position x="46.655308" y="-191.6723" z="0.0"/>
+</node>
+<node id="191" label="Sacramento International">
+<attvalues>
+<attvalue for="code" value="SMF"/>
+<attvalue for="city" value="Sacramento, CA"/>
+<attvalue for="latitude" value="38.7"/>
+<attvalue for="longitude" value="-121.616667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0170212765957447"/>
+<attvalue for="betweenesscentrality" value="31.03793087466042"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="244" g="115" r="74"/>
+<viz:position x="-485.08835" y="-18.189209" z="0.0"/>
+</node>
+<node id="192" label="Salt Lake City International">
+<attvalues>
+<attvalue for="code" value="SLC"/>
+<attvalue for="city" value="Salt Lake City, UT"/>
+<attvalue for="latitude" value="40.788333"/>
+<attvalue for="longitude" value="-111.966667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.804255319148936"/>
+<attvalue for="betweenesscentrality" value="1592.9078035330872"/>
+</attvalues>
+<viz:size value="4.7286825"/>
+<viz:color b="232" g="29" r="222"/>
+<viz:position x="-316.66406" y="29.219788" z="0.0"/>
+</node>
+<node id="193" label="San Antonio International">
+<attvalues>
+<attvalue for="code" value="SAT"/>
+<attvalue for="city" value="San Antonio"/>
+<attvalue for="latitude" value="29.533333"/>
+<attvalue for="longitude" value="-98.466667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0042553191489363"/>
+<attvalue for="betweenesscentrality" value="20.453650815474074"/>
+</attvalues>
+<viz:size value="2.1589148"/>
+<viz:color b="245" g="118" r="69"/>
+<viz:position x="-81.04462" y="-211.83282" z="0.0"/>
+</node>
+<node id="194" label="San Diego International Airport">
+<attvalues>
+<attvalue for="code" value="SAN"/>
+<attvalue for="city" value="San Diego"/>
+<attvalue for="latitude" value="32.733333"/>
+<attvalue for="longitude" value="-117.183333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0382978723404257"/>
+<attvalue for="betweenesscentrality" value="26.06469441687778"/>
+</attvalues>
+<viz:size value="2.4224806"/>
+<viz:color b="244" g="116" r="72"/>
+<viz:position x="-407.71207" y="-146.56964" z="0.0"/>
+</node>
+<node id="195" label="San Francisco International">
+<attvalues>
+<attvalue for="code" value="SFO"/>
+<attvalue for="city" value="San Francisco, CA"/>
+<attvalue for="latitude" value="37.618889"/>
+<attvalue for="longitude" value="-122.375"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.9702127659574469"/>
+<attvalue for="betweenesscentrality" value="64.38601694637372"/>
+</attvalues>
+<viz:size value="2.620155"/>
+<viz:color b="243" g="108" r="86"/>
+<viz:position x="-498.32376" y="-42.187317" z="0.0"/>
+</node>
+<node id="196" label="San Luis County Regional Airport">
+<attvalues>
+<attvalue for="code" value="SBP"/>
+<attvalue for="city" value="San Luis Obispo"/>
+<attvalue for="latitude" value="35.236944"/>
+<attvalue for="longitude" value="-120.641944"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.8851063829787233"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-468.0762" y="-93.86365" z="0.0"/>
+</node>
+<node id="197" label="Sarasota-Bradenton International Airport">
+<attvalues>
+<attvalue for="code" value="SRQ"/>
+<attvalue for="city" value="Sarasota, FL"/>
+<attvalue for="latitude" value="27.395556"/>
+<attvalue for="longitude" value="-82.554444"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2851063829787233"/>
+<attvalue for="betweenesscentrality" value="0.13333333333333333"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="246" g="128" r="51"/>
+<viz:position x="196.67607" y="-254.27869" z="0.0"/>
+</node>
+<node id="198" label="Savannah/Hilton Head">
+<attvalues>
+<attvalue for="code" value="SAV"/>
+<attvalue for="city" value="Savannah"/>
+<attvalue for="latitude" value="32.133333"/>
+<attvalue for="longitude" value="-81.2"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0851063829787235"/>
+<attvalue for="betweenesscentrality" value="0.16666666666666666"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="246" g="128" r="51"/>
+<viz:position x="220.31557" y="-158.97711" z="0.0"/>
+</node>
+<node id="199" label="Sawyer International">
+<attvalues>
+<attvalue for="code" value="MQT"/>
+<attvalue for="city" value="Marquette"/>
+<attvalue for="latitude" value="46.533333"/>
+<attvalue for="longitude" value="-87.566667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2638297872340427"/>
+<attvalue for="betweenesscentrality" value="13.628048705680284"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="245" g="120" r="65"/>
+<viz:position x="109.19627" y="167.98462" z="0.0"/>
+</node>
+<node id="200" label="Seattle-Tacoma International">
+<attvalues>
+<attvalue for="code" value="SEA"/>
+<attvalue for="city" value="Seattle, WA"/>
+<attvalue for="latitude" value="47.448889"/>
+<attvalue for="longitude" value="-122.309444"/>
+<attvalue for="eccentricity" value="2.0"/>
+<attvalue for="closnesscentrality" value="1.7574468085106383"/>
+<attvalue for="betweenesscentrality" value="6225.693175243822"/>
+</attvalues>
+<viz:size value="5.05814"/>
+<viz:color b="80" g="125" r="245"/>
+<viz:position x="-497.17957" y="191.41193" z="0.0"/>
+</node>
+<node id="201" label="Sheffield">
+<attvalues>
+<attvalue for="code" value="MSL"/>
+<attvalue for="city" value="Sheffield"/>
+<attvalue for="latitude" value="34.75"/>
+<attvalue for="longitude" value="-87.616667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.608510638297872"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="108.32361" y="-104.237976" z="0.0"/>
+</node>
+<node id="202" label="Sioux Gateway">
+<attvalues>
+<attvalue for="code" value="SUX"/>
+<attvalue for="city" value="Sioux City"/>
+<attvalue for="latitude" value="42.4"/>
+<attvalue for="longitude" value="-96.383333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.421276595744681"/>
+<attvalue for="betweenesscentrality" value="1.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="-44.683582" y="66.835205" z="0.0"/>
+</node>
+<node id="203" label="Sky Harbor Intl">
+<attvalues>
+<attvalue for="code" value="PHX"/>
+<attvalue for="city" value="Phoenix"/>
+<attvalue for="latitude" value="33.433333"/>
+<attvalue for="longitude" value="-112.033333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="1.9531914893617022"/>
+<attvalue for="betweenesscentrality" value="40.22982104876513"/>
+</attvalues>
+<viz:size value="2.620155"/>
+<viz:color b="244" g="112" r="78"/>
+<viz:position x="-317.8276" y="-131.98822" z="0.0"/>
+</node>
+<node id="204" label="South Bend Regional">
+<attvalues>
+<attvalue for="code" value="SBN"/>
+<attvalue for="city" value="South Bend"/>
+<attvalue for="latitude" value="41.7"/>
+<attvalue for="longitude" value="-86.316667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1361702127659576"/>
+<attvalue for="betweenesscentrality" value="123.08618625715266"/>
+</attvalues>
+<viz:size value="1.9612403"/>
+<viz:color b="242" g="99" r="100"/>
+<viz:position x="131.0129" y="50.38202" z="0.0"/>
+</node>
+<node id="205" label="Southwest Florida Reg">
+<attvalues>
+<attvalue for="code" value="RSW"/>
+<attvalue for="city" value="Fort Myers"/>
+<attvalue for="latitude" value="26.542222"/>
+<attvalue for="longitude" value="-81.755278"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0170212765957447"/>
+<attvalue for="betweenesscentrality" value="35.887647359513565"/>
+</attvalues>
+<viz:size value="2.3565893"/>
+<viz:color b="244" g="113" r="76"/>
+<viz:position x="210.62415" y="-270.98965" z="0.0"/>
+</node>
+<node id="206" label="Spokane International">
+<attvalues>
+<attvalue for="code" value="GEG"/>
+<attvalue for="city" value="Spokane"/>
+<attvalue for="latitude" value="47.619722"/>
+<attvalue for="longitude" value="-117.533889"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.297872340425532"/>
+<attvalue for="betweenesscentrality" value="5.020346320346319"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="246" g="124" r="58"/>
+<viz:position x="-413.8304" y="195.82812" z="0.0"/>
+</node>
+<node id="207" label="Springfield-Branson Rg">
+<attvalues>
+<attvalue for="code" value="SGF"/>
+<attvalue for="city" value="Springfield"/>
+<attvalue for="latitude" value="37.25"/>
+<attvalue for="longitude" value="-93.383333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.123404255319149"/>
+<attvalue for="betweenesscentrality" value="28.42336810649505"/>
+</attvalues>
+<viz:size value="2.0930233"/>
+<viz:color b="244" g="115" r="73"/>
+<viz:position x="7.676295" y="-50.295532" z="0.0"/>
+</node>
+<node id="208" label="Stewart">
+<attvalues>
+<attvalue for="code" value="SWF"/>
+<attvalue for="city" value="Newburgh"/>
+<attvalue for="latitude" value="41.5"/>
+<attvalue for="longitude" value="-74.016667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4553191489361703"/>
+<attvalue for="betweenesscentrality" value="3.142532467532467"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="246" g="125" r="56"/>
+<viz:position x="345.6884" y="45.71405" z="0.0"/>
+</node>
+<node id="209" label="Sun Valley">
+<attvalues>
+<attvalue for="code" value="SUN"/>
+<attvalue for="city" value="Sun Valley"/>
+<attvalue for="latitude" value="43.5"/>
+<attvalue for="longitude" value="-114.316667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.748936170212766"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-357.6793" y="93.065796" z="0.0"/>
+</node>
+<node id="210" label="Syracuse Hancock International Airport">
+<attvalues>
+<attvalue for="code" value="SYR"/>
+<attvalue for="city" value="Syracuse"/>
+<attvalue for="latitude" value="43.116667"/>
+<attvalue for="longitude" value="-76.116667"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.127659574468085"/>
+<attvalue for="betweenesscentrality" value="48.565180414924676"/>
+</attvalues>
+<viz:size value="2.0271318"/>
+<viz:color b="244" g="111" r="81"/>
+<viz:position x="309.03647" y="83.87146" z="0.0"/>
+</node>
+<node id="211" label="T. F. Green Airport">
+<attvalues>
+<attvalue for="code" value="PVD"/>
+<attvalue for="city" value="Providence"/>
+<attvalue for="latitude" value="41.733333"/>
+<attvalue for="longitude" value="-71.433333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.331914893617021"/>
+<attvalue for="betweenesscentrality" value="4.68051023051023"/>
+</attvalues>
+<viz:size value="2.0271318"/>
+<viz:color b="246" g="124" r="57"/>
+<viz:position x="390.77606" y="51.161377" z="0.0"/>
+</node>
+<node id="212" label="Tallahassee Regional Airport">
+<attvalues>
+<attvalue for="code" value="TLH"/>
+<attvalue for="city" value="Tallahassee"/>
+<attvalue for="latitude" value="30.396389"/>
+<attvalue for="longitude" value="-84.350278"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3361702127659574"/>
+<attvalue for="betweenesscentrality" value="1.9786435786435788"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="246" g="126" r="54"/>
+<viz:position x="165.33286" y="-194.44525" z="0.0"/>
+</node>
+<node id="213" label="Tampa International">
+<attvalues>
+<attvalue for="code" value="TPA"/>
+<attvalue for="city" value="Tampa"/>
+<attvalue for="latitude" value="27.975556"/>
+<attvalue for="longitude" value="-82.533056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.0595744680851062"/>
+<attvalue for="betweenesscentrality" value="64.92507085019"/>
+</attvalues>
+<viz:size value="2.3565893"/>
+<viz:color b="243" g="108" r="86"/>
+<viz:position x="197.04936" y="-242.8469" z="0.0"/>
+</node>
+<node id="214" label="Toledo Express">
+<attvalues>
+<attvalue for="code" value="TOL"/>
+<attvalue for="city" value="Toledo, OH"/>
+<attvalue for="latitude" value="41.586944"/>
+<attvalue for="longitude" value="-83.807778"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4553191489361703"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="174.80125" y="47.741516" z="0.0"/>
+</node>
+<node id="215" label="Tompkins County">
+<attvalues>
+<attvalue for="code" value="ITH"/>
+<attvalue for="city" value="Ithaca"/>
+<attvalue for="latitude" value="42.483333"/>
+<attvalue for="longitude" value="-76.466667"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.476595744680851"/>
+<attvalue for="betweenesscentrality" value="5.4"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="246" g="124" r="58"/>
+<viz:position x="302.92783" y="68.80609" z="0.0"/>
+</node>
+<node id="216" label="Tri-cities">
+<attvalues>
+<attvalue for="code" value="PSC"/>
+<attvalue for="city" value="Pasco, WA"/>
+<attvalue for="latitude" value="46.264722"/>
+<attvalue for="longitude" value="-119.119167"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.646808510638298"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-441.49875" y="161.18658" z="0.0"/>
+</node>
+<node id="217" label="Tri-cities Regional">
+<attvalues>
+<attvalue for="code" value="TRI"/>
+<attvalue for="city" value="Blountville"/>
+<attvalue for="latitude" value="36.475278"/>
+<attvalue for="longitude" value="-82.4075"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.3191489361702127"/>
+<attvalue for="betweenesscentrality" value="44.61467242666507"/>
+</attvalues>
+<viz:size value="1.8294574"/>
+<viz:color b="244" g="111" r="79"/>
+<viz:position x="199.24072" y="-67.196045" z="0.0"/>
+</node>
+<node id="218" label="Tucson International Airport">
+<attvalues>
+<attvalue for="code" value="TUS"/>
+<attvalue for="city" value="Tucson, AZ"/>
+<attvalue for="latitude" value="32.116111"/>
+<attvalue for="longitude" value="-110.941111"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.1914893617021276"/>
+<attvalue for="betweenesscentrality" value="3.7444805194805206"/>
+</attvalues>
+<viz:size value="1.8953488"/>
+<viz:color b="246" g="125" r="56"/>
+<viz:position x="-298.76474" y="-159.33203" z="0.0"/>
+</node>
+<node id="219" label="Tulsa International">
+<attvalues>
+<attvalue for="code" value="TUL"/>
+<attvalue for="city" value="Tulsa"/>
+<attvalue for="latitude" value="36.198333"/>
+<attvalue for="longitude" value="-95.888056"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.068085106382979"/>
+<attvalue for="betweenesscentrality" value="52.5808394084717"/>
+</attvalues>
+<viz:size value="2.2248063"/>
+<viz:color b="244" g="110" r="82"/>
+<viz:position x="-36.039368" y="-73.19641" z="0.0"/>
+</node>
+<node id="220" label="University Of Illinois Willard">
+<attvalues>
+<attvalue for="code" value="CMI"/>
+<attvalue for="city" value="Champaign"/>
+<attvalue for="latitude" value="40.033333"/>
+<attvalue for="longitude" value="-88.283333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4936170212765956"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="96.68809" y="11.913269" z="0.0"/>
+</node>
+<node id="221" label="University Park">
+<attvalues>
+<attvalue for="code" value="SCE"/>
+<attvalue for="city" value="State College"/>
+<attvalue for="latitude" value="40.772222"/>
+<attvalue for="longitude" value="-77.883333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4382978723404256"/>
+<attvalue for="betweenesscentrality" value="6.432163742690056"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="245" g="123" r="59"/>
+<viz:position x="278.20233" y="28.84845" z="0.0"/>
+</node>
+<node id="222" label="Walla Walla">
+<attvalues>
+<attvalue for="code" value="ALW"/>
+<attvalue for="city" value="Walla Walla"/>
+<attvalue for="latitude" value="46.1"/>
+<attvalue for="longitude" value="-118.3"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.748936170212766"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-427.20157" y="157.03424" z="0.0"/>
+</node>
+<node id="223" label="Washington Dulles International">
+<attvalues>
+<attvalue for="code" value="IAD"/>
+<attvalue for="city" value="Washington, DC"/>
+<attvalue for="latitude" value="38.944444"/>
+<attvalue for="longitude" value="-77.455833"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.046808510638298"/>
+<attvalue for="betweenesscentrality" value="41.5665083068711"/>
+</attvalues>
+<viz:size value="2.3565893"/>
+<viz:color b="244" g="112" r="78"/>
+<viz:position x="285.6636" y="-12.713135" z="0.0"/>
+</node>
+<node id="224" label="Waterloo">
+<attvalues>
+<attvalue for="code" value="ALO"/>
+<attvalue for="city" value="Waterloo"/>
+<attvalue for="latitude" value="42.55"/>
+<attvalue for="longitude" value="-92.383333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.4085106382978725"/>
+<attvalue for="betweenesscentrality" value="2.1538461538461537"/>
+</attvalues>
+<viz:size value="1.6976744"/>
+<viz:color b="246" g="126" r="54"/>
+<viz:position x="25.129587" y="70.384705" z="0.0"/>
+</node>
+<node id="225" label="Watertown">
+<attvalues>
+<attvalue for="code" value="ATY"/>
+<attvalue for="city" value="Watertown"/>
+<attvalue for="latitude" value="44.916667"/>
+<attvalue for="longitude" value="-97.15"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.425531914893617"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-58.064445" y="127.56213" z="0.0"/>
+</node>
+<node id="226" label="Westchester County Apt">
+<attvalues>
+<attvalue for="code" value="HPN"/>
+<attvalue for="city" value="White Plains"/>
+<attvalue for="latitude" value="41.066667"/>
+<attvalue for="longitude" value="-73.7"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.2425531914893617"/>
+<attvalue for="betweenesscentrality" value="1.0933253533971727"/>
+</attvalues>
+<viz:size value="1.7635659"/>
+<viz:color b="246" g="127" r="52"/>
+<viz:position x="351.21527" y="35.649414" z="0.0"/>
+</node>
+<node id="227" label="Westmoreland County">
+<attvalues>
+<attvalue for="code" value="LBE"/>
+<attvalue for="city" value="Latrobe"/>
+<attvalue for="latitude" value="40.283333"/>
+<attvalue for="longitude" value="-79.4"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4851063829787234"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="251.7315" y="17.622437" z="0.0"/>
+</node>
+<node id="228" label="Wilkes-Barre/Scranton International Airport">
+<attvalues>
+<attvalue for="code" value="AVP"/>
+<attvalue for="city" value="Wilkes-Barre/Scranton, PA"/>
+<attvalue for="latitude" value="41.338333"/>
+<attvalue for="longitude" value="-75.723333"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.3574468085106384"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.631783"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="315.90146" y="41.951355" z="0.0"/>
+</node>
+<node id="229" label="Will Rogers World Airport">
+<attvalues>
+<attvalue for="code" value="OKC"/>
+<attvalue for="city" value="Oklahoma City"/>
+<attvalue for="latitude" value="35.393056"/>
+<attvalue for="longitude" value="-97.600833"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.068085106382979"/>
+<attvalue for="betweenesscentrality" value="12.624842977988264"/>
+</attvalues>
+<viz:size value="2.2248063"/>
+<viz:color b="245" g="120" r="64"/>
+<viz:position x="-65.93296" y="-90.524536" z="0.0"/>
+</node>
+<node id="230" label="William P Hobby">
+<attvalues>
+<attvalue for="code" value="HOU"/>
+<attvalue for="city" value="Houston, TX"/>
+<attvalue for="latitude" value="29.645556"/>
+<attvalue for="longitude" value="-95.278889"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.472340425531915"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-25.407398" y="-209.58044" z="0.0"/>
+</node>
+<node id="231" label="Wilmington International">
+<attvalues>
+<attvalue for="code" value="ILM"/>
+<attvalue for="city" value="Wilmington"/>
+<attvalue for="latitude" value="34.270556"/>
+<attvalue for="longitude" value="-77.9025"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.5063829787234044"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="277.8678" y="-114.392944" z="0.0"/>
+</node>
+<node id="232" label="Yakima Air Terminal">
+<attvalues>
+<attvalue for="code" value="YKM"/>
+<attvalue for="city" value="Yakima"/>
+<attvalue for="latitude" value="46.566667"/>
+<attvalue for="longitude" value="-120.533333"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.748936170212766"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-466.1806" y="168.83063" z="0.0"/>
+</node>
+<node id="233" label="Yampa Valley">
+<attvalues>
+<attvalue for="code" value="HDN"/>
+<attvalue for="city" value="Hayden"/>
+<attvalue for="latitude" value="40.519444"/>
+<attvalue for="longitude" value="-106.869444"/>
+<attvalue for="eccentricity" value="3.0"/>
+<attvalue for="closnesscentrality" value="2.4170212765957446"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="-227.70074" y="23.033875" z="0.0"/>
+</node>
+<node id="234" label="Yeager">
+<attvalues>
+<attvalue for="code" value="CRW"/>
+<attvalue for="city" value="Charleston"/>
+<attvalue for="latitude" value="38.366667"/>
+<attvalue for="longitude" value="-81.6"/>
+<attvalue for="eccentricity" value="4.0"/>
+<attvalue for="closnesscentrality" value="2.4893617021276597"/>
+<attvalue for="betweenesscentrality" value="0.0"/>
+</attvalues>
+<viz:size value="1.5658915"/>
+<viz:color b="247" g="131" r="47"/>
+<viz:position x="213.33426" y="-25.626465" z="0.0"/>
+</node>
+</nodes>
+<edges count="1297">
+<edge id="0" source="0" target="109"/>
+<edge id="2" source="1" target="36"/>
+<edge id="1" source="1" target="61"/>
+<edge id="3" source="2" target="152"/>
+<edge id="4" source="3" target="104"/>
+<edge id="5" source="4" target="132"/>
+<edge id="6" source="4" target="168"/>
+<edge id="7" source="5" target="217"/>
+<edge id="8" source="7" target="173"/>
+<edge id="9" source="7" target="177"/>
+<edge id="10" source="8" target="53"/>
+<edge id="11" source="9" target="105"/>
+<edge id="12" source="9" target="106"/>
+<edge id="13" source="9" target="128"/>
+<edge id="14" source="9" target="152"/>
+<edge id="20" source="10" target="8"/>
+<edge id="16" source="10" target="25"/>
+<edge id="17" source="10" target="61"/>
+<edge id="18" source="10" target="70"/>
+<edge id="15" source="10" target="105"/>
+<edge id="21" source="10" target="133"/>
+<edge id="19" source="10" target="223"/>
+<edge id="23" source="11" target="68"/>
+<edge id="24" source="11" target="78"/>
+<edge id="22" source="11" target="106"/>
+<edge id="25" source="11" target="191"/>
+<edge id="26" source="12" target="204"/>
+<edge id="27" source="13" target="179"/>
+<edge id="30" source="14" target="120"/>
+<edge id="28" source="14" target="159"/>
+<edge id="29" source="14" target="172"/>
+<edge id="31" source="18" target="130"/>
+<edge id="32" source="19" target="11"/>
+<edge id="33" source="19" target="112"/>
+<edge id="34" source="20" target="154"/>
+<edge id="37" source="21" target="36"/>
+<edge id="35" source="21" target="49"/>
+<edge id="36" source="21" target="109"/>
+<edge id="38" source="21" target="111"/>
+<edge id="41" source="22" target="77"/>
+<edge id="40" source="22" target="104"/>
+<edge id="39" source="22" target="106"/>
+<edge id="42" source="22" target="164"/>
+<edge id="44" source="24" target="44"/>
+<edge id="43" source="24" target="45"/>
+<edge id="45" source="25" target="69"/>
+<edge id="49" source="27" target="41"/>
+<edge id="48" source="27" target="98"/>
+<edge id="46" source="27" target="136"/>
+<edge id="47" source="27" target="203"/>
+<edge id="50" source="28" target="120"/>
+<edge id="51" source="30" target="11"/>
+<edge id="54" source="30" target="22"/>
+<edge id="53" source="30" target="168"/>
+<edge id="52" source="30" target="169"/>
+<edge id="55" source="31" target="63"/>
+<edge id="56" source="34" target="45"/>
+<edge id="57" source="34" target="61"/>
+<edge id="60" source="35" target="37"/>
+<edge id="59" source="35" target="69"/>
+<edge id="58" source="35" target="103"/>
+<edge id="61" source="35" target="111"/>
+<edge id="62" source="36" target="84"/>
+<edge id="63" source="36" target="123"/>
+<edge id="68" source="37" target="18"/>
+<edge id="69" source="37" target="78"/>
+<edge id="64" source="37" target="87"/>
+<edge id="70" source="37" target="101"/>
+<edge id="66" source="37" target="157"/>
+<edge id="71" source="37" target="181"/>
+<edge id="67" source="37" target="197"/>
+<edge id="65" source="37" target="213"/>
+<edge id="73" source="38" target="6"/>
+<edge id="72" source="38" target="84"/>
+<edge id="90" source="41" target="0"/>
+<edge id="93" source="41" target="2"/>
+<edge id="87" source="41" target="4"/>
+<edge id="80" source="41" target="9"/>
+<edge id="88" source="41" target="10"/>
+<edge id="75" source="41" target="11"/>
+<edge id="77" source="41" target="19"/>
+<edge id="89" source="41" target="22"/>
+<edge id="74" source="41" target="25"/>
+<edge id="81" source="41" target="28"/>
+<edge id="91" source="41" target="30"/>
+<edge id="76" source="41" target="31"/>
+<edge id="82" source="41" target="35"/>
+<edge id="83" source="41" target="49"/>
+<edge id="94" source="41" target="77"/>
+<edge id="79" source="41" target="131"/>
+<edge id="92" source="41" target="132"/>
+<edge id="78" source="41" target="193"/>
+<edge id="85" source="41" target="214"/>
+<edge id="86" source="41" target="223"/>
+<edge id="84" source="41" target="226"/>
+<edge id="95" source="42" target="18"/>
+<edge id="96" source="43" target="11"/>
+<edge id="97" source="43" target="154"/>
+<edge id="99" source="44" target="21"/>
+<edge id="100" source="44" target="41"/>
+<edge id="101" source="44" target="71"/>
+<edge id="102" source="44" target="77"/>
+<edge id="98" source="44" target="131"/>
+<edge id="103" source="45" target="25"/>
+<edge id="104" source="45" target="41"/>
+<edge id="106" source="45" target="43"/>
+<edge id="105" source="45" target="83"/>
+<edge id="109" source="45" target="123"/>
+<edge id="108" source="45" target="132"/>
+<edge id="107" source="45" target="180"/>
+<edge id="110" source="47" target="18"/>
+<edge id="112" source="48" target="11"/>
+<edge id="114" source="48" target="35"/>
+<edge id="113" source="48" target="41"/>
+<edge id="111" source="48" target="205"/>
+<edge id="118" source="49" target="70"/>
+<edge id="117" source="49" target="138"/>
+<edge id="116" source="49" target="157"/>
+<edge id="119" source="49" target="176"/>
+<edge id="115" source="49" target="182"/>
+<edge id="147" source="50" target="0"/>
+<edge id="122" source="50" target="1"/>
+<edge id="149" source="50" target="2"/>
+<edge id="129" source="50" target="3"/>
+<edge id="136" source="50" target="6"/>
+<edge id="132" source="50" target="8"/>
+<edge id="138" source="50" target="9"/>
+<edge id="143" source="50" target="10"/>
+<edge id="121" source="50" target="11"/>
+<edge id="145" source="50" target="12"/>
+<edge id="124" source="50" target="19"/>
+<edge id="133" source="50" target="20"/>
+<edge id="144" source="50" target="22"/>
+<edge id="120" source="50" target="25"/>
+<edge id="139" source="50" target="27"/>
+<edge id="126" source="50" target="28"/>
+<edge id="148" source="50" target="30"/>
+<edge id="135" source="50" target="31"/>
+<edge id="125" source="50" target="32"/>
+<edge id="141" source="50" target="33"/>
+<edge id="123" source="50" target="34"/>
+<edge id="140" source="50" target="35"/>
+<edge id="137" source="50" target="36"/>
+<edge id="130" source="50" target="37"/>
+<edge id="146" source="50" target="38"/>
+<edge id="134" source="50" target="41"/>
+<edge id="142" source="50" target="44"/>
+<edge id="131" source="50" target="45"/>
+<edge id="128" source="50" target="48"/>
+<edge id="127" source="50" target="49"/>
+<edge id="150" source="51" target="26"/>
+<edge id="158" source="53" target="37"/>
+<edge id="155" source="53" target="48"/>
+<edge id="154" source="53" target="50"/>
+<edge id="157" source="53" target="118"/>
+<edge id="156" source="53" target="152"/>
+<edge id="152" source="53" target="172"/>
+<edge id="153" source="53" target="189"/>
+<edge id="151" source="53" target="226"/>
+<edge id="160" source="55" target="37"/>
+<edge id="161" source="55" target="69"/>
+<edge id="159" source="55" target="105"/>
+<edge id="162" source="56" target="192"/>
+<edge id="163" source="57" target="50"/>
+<edge id="164" source="58" target="50"/>
+<edge id="165" source="59" target="19"/>
+<edge id="169" source="59" target="21"/>
+<edge id="167" source="59" target="50"/>
+<edge id="168" source="59" target="146"/>
+<edge id="166" source="59" target="180"/>
+<edge id="173" source="61" target="30"/>
+<edge id="175" source="61" target="41"/>
+<edge id="174" source="61" target="50"/>
+<edge id="171" source="61" target="70"/>
+<edge id="170" source="61" target="84"/>
+<edge id="172" source="61" target="145"/>
+<edge id="176" source="62" target="40"/>
+<edge id="177" source="63" target="24"/>
+<edge id="178" source="65" target="27"/>
+<edge id="180" source="65" target="48"/>
+<edge id="179" source="65" target="50"/>
+<edge id="181" source="65" target="206"/>
+<edge id="185" source="68" target="17"/>
+<edge id="184" source="68" target="50"/>
+<edge id="182" source="68" target="65"/>
+<edge id="183" source="68" target="106"/>
+<edge id="193" source="69" target="41"/>
+<edge id="188" source="69" target="50"/>
+<edge id="186" source="69" target="87"/>
+<edge id="191" source="69" target="92"/>
+<edge id="187" source="69" target="119"/>
+<edge id="190" source="69" target="125"/>
+<edge id="189" source="69" target="168"/>
+<edge id="194" source="69" target="203"/>
+<edge id="192" source="69" target="213"/>
+<edge id="212" source="70" target="4"/>
+<edge id="209" source="70" target="9"/>
+<edge id="195" source="70" target="11"/>
+<edge id="198" source="70" target="19"/>
+<edge id="213" source="70" target="22"/>
+<edge id="203" source="70" target="37"/>
+<edge id="207" source="70" target="41"/>
+<edge id="196" source="70" target="43"/>
+<edge id="211" source="70" target="44"/>
+<edge id="200" source="70" target="48"/>
+<edge id="206" source="70" target="50"/>
+<edge id="201" source="70" target="56"/>
+<edge id="210" source="70" target="59"/>
+<edge id="204" source="70" target="65"/>
+<edge id="199" source="70" target="69"/>
+<edge id="205" source="70" target="77"/>
+<edge id="215" source="70" target="86"/>
+<edge id="197" source="70" target="133"/>
+<edge id="208" source="70" target="172"/>
+<edge id="214" source="70" target="198"/>
+<edge id="202" source="70" target="211"/>
+<edge id="216" source="71" target="134"/>
+<edge id="220" source="72" target="37"/>
+<edge id="217" source="72" target="51"/>
+<edge id="218" source="72" target="80"/>
+<edge id="219" source="72" target="93"/>
+<edge id="221" source="73" target="50"/>
+<edge id="223" source="74" target="50"/>
+<edge id="222" source="74" target="172"/>
+<edge id="224" source="74" target="185"/>
+<edge id="231" source="75" target="41"/>
+<edge id="225" source="75" target="49"/>
+<edge id="229" source="75" target="50"/>
+<edge id="230" source="75" target="77"/>
+<edge id="227" source="75" target="120"/>
+<edge id="226" source="75" target="128"/>
+<edge id="228" source="75" target="181"/>
+<edge id="232" source="76" target="22"/>
+<edge id="236" source="77" target="9"/>
+<edge id="234" source="77" target="50"/>
+<edge id="233" source="77" target="74"/>
+<edge id="237" source="77" target="111"/>
+<edge id="235" source="77" target="125"/>
+<edge id="239" source="78" target="70"/>
+<edge id="238" source="78" target="84"/>
+<edge id="241" source="79" target="44"/>
+<edge id="240" source="79" target="50"/>
+<edge id="279" source="80" target="0"/>
+<edge id="245" source="80" target="1"/>
+<edge id="282" source="80" target="2"/>
+<edge id="275" source="80" target="4"/>
+<edge id="257" source="80" target="5"/>
+<edge id="262" source="80" target="8"/>
+<edge id="270" source="80" target="9"/>
+<edge id="276" source="80" target="10"/>
+<edge id="243" source="80" target="11"/>
+<edge id="248" source="80" target="14"/>
+<edge id="258" source="80" target="18"/>
+<edge id="252" source="80" target="19"/>
+<edge id="265" source="80" target="20"/>
+<edge id="277" source="80" target="22"/>
+<edge id="242" source="80" target="25"/>
+<edge id="271" source="80" target="27"/>
+<edge id="269" source="80" target="29"/>
+<edge id="246" source="80" target="34"/>
+<edge id="272" source="80" target="35"/>
+<edge id="260" source="80" target="37"/>
+<edge id="268" source="80" target="41"/>
+<edge id="249" source="80" target="43"/>
+<edge id="274" source="80" target="44"/>
+<edge id="261" source="80" target="45"/>
+<edge id="255" source="80" target="48"/>
+<edge id="254" source="80" target="49"/>
+<edge id="266" source="80" target="50"/>
+<edge id="251" source="80" target="52"/>
+<edge id="264" source="80" target="55"/>
+<edge id="256" source="80" target="56"/>
+<edge id="244" source="80" target="67"/>
+<edge id="253" source="80" target="69"/>
+<edge id="250" source="80" target="70"/>
+<edge id="267" source="80" target="75"/>
+<edge id="263" source="80" target="77"/>
+<edge id="284" source="80" target="78"/>
+<edge id="278" source="80" target="79"/>
+<edge id="283" source="80" target="91"/>
+<edge id="259" source="80" target="122"/>
+<edge id="247" source="80" target="125"/>
+<edge id="281" source="80" target="128"/>
+<edge id="285" source="80" target="203"/>
+<edge id="280" source="80" target="219"/>
+<edge id="273" source="80" target="229"/>
+<edge id="286" source="81" target="13"/>
+<edge id="292" source="82" target="44"/>
+<edge id="289" source="82" target="59"/>
+<edge id="288" source="82" target="105"/>
+<edge id="290" source="82" target="157"/>
+<edge id="287" source="82" target="205"/>
+<edge id="293" source="82" target="219"/>
+<edge id="291" source="82" target="229"/>
+<edge id="294" source="83" target="106"/>
+<edge id="308" source="84" target="2"/>
+<edge id="311" source="84" target="9"/>
+<edge id="296" source="84" target="11"/>
+<edge id="305" source="84" target="19"/>
+<edge id="295" source="84" target="25"/>
+<edge id="314" source="84" target="27"/>
+<edge id="315" source="84" target="28"/>
+<edge id="316" source="84" target="35"/>
+<edge id="303" source="84" target="37"/>
+<edge id="313" source="84" target="45"/>
+<edge id="298" source="84" target="48"/>
+<edge id="297" source="84" target="50"/>
+<edge id="306" source="84" target="65"/>
+<edge id="310" source="84" target="69"/>
+<edge id="300" source="84" target="70"/>
+<edge id="299" source="84" target="75"/>
+<edge id="319" source="84" target="77"/>
+<edge id="302" source="84" target="80"/>
+<edge id="307" source="84" target="128"/>
+<edge id="312" source="84" target="150"/>
+<edge id="309" source="84" target="168"/>
+<edge id="318" source="84" target="179"/>
+<edge id="317" source="84" target="181"/>
+<edge id="301" source="84" target="190"/>
+<edge id="304" source="84" target="192"/>
+<edge id="320" source="85" target="172"/>
+<edge id="326" source="86" target="9"/>
+<edge id="327" source="86" target="41"/>
+<edge id="321" source="86" target="49"/>
+<edge id="323" source="86" target="50"/>
+<edge id="325" source="86" target="75"/>
+<edge id="324" source="86" target="80"/>
+<edge id="322" source="86" target="84"/>
+<edge id="343" source="87" target="9"/>
+<edge id="333" source="87" target="10"/>
+<edge id="328" source="87" target="25"/>
+<edge id="339" source="87" target="30"/>
+<edge id="336" source="87" target="41"/>
+<edge id="331" source="87" target="48"/>
+<edge id="332" source="87" target="50"/>
+<edge id="342" source="87" target="65"/>
+<edge id="338" source="87" target="70"/>
+<edge id="340" source="87" target="80"/>
+<edge id="329" source="87" target="84"/>
+<edge id="337" source="87" target="90"/>
+<edge id="334" source="87" target="97"/>
+<edge id="335" source="87" target="194"/>
+<edge id="330" source="87" target="212"/>
+<edge id="341" source="87" target="230"/>
+<edge id="348" source="88" target="32"/>
+<edge id="347" source="88" target="50"/>
+<edge id="344" source="88" target="59"/>
+<edge id="345" source="88" target="61"/>
+<edge id="346" source="88" target="104"/>
+<edge id="349" source="89" target="18"/>
+<edge id="350" source="90" target="45"/>
+<edge id="351" source="90" target="75"/>
+<edge id="352" source="90" target="83"/>
+<edge id="354" source="92" target="80"/>
+<edge id="353" source="92" target="87"/>
+<edge id="355" source="92" target="130"/>
+<edge id="358" source="93" target="50"/>
+<edge id="357" source="93" target="106"/>
+<edge id="360" source="93" target="111"/>
+<edge id="356" source="93" target="157"/>
+<edge id="359" source="93" target="185"/>
+<edge id="361" source="94" target="18"/>
+<edge id="366" source="95" target="41"/>
+<edge id="364" source="95" target="44"/>
+<edge id="362" source="95" target="49"/>
+<edge id="363" source="95" target="50"/>
+<edge id="365" source="95" target="80"/>
+<edge id="367" source="96" target="11"/>
+<edge id="369" source="96" target="27"/>
+<edge id="372" source="96" target="50"/>
+<edge id="371" source="96" target="70"/>
+<edge id="373" source="96" target="80"/>
+<edge id="368" source="96" target="84"/>
+<edge id="375" source="96" target="98"/>
+<edge id="370" source="96" target="106"/>
+<edge id="374" source="96" target="149"/>
+<edge id="382" source="97" target="41"/>
+<edge id="380" source="97" target="50"/>
+<edge id="376" source="97" target="59"/>
+<edge id="378" source="97" target="61"/>
+<edge id="381" source="97" target="68"/>
+<edge id="379" source="97" target="70"/>
+<edge id="377" source="97" target="134"/>
+<edge id="384" source="98" target="12"/>
+<edge id="389" source="98" target="41"/>
+<edge id="385" source="98" target="50"/>
+<edge id="388" source="98" target="72"/>
+<edge id="386" source="98" target="80"/>
+<edge id="383" source="98" target="84"/>
+<edge id="387" source="98" target="93"/>
+<edge id="390" source="99" target="26"/>
+<edge id="391" source="100" target="70"/>
+<edge id="395" source="101" target="41"/>
+<edge id="394" source="101" target="80"/>
+<edge id="392" source="101" target="87"/>
+<edge id="393" source="101" target="191"/>
+<edge id="398" source="102" target="41"/>
+<edge id="397" source="102" target="50"/>
+<edge id="401" source="102" target="70"/>
+<edge id="402" source="102" target="80"/>
+<edge id="403" source="102" target="118"/>
+<edge id="404" source="102" target="127"/>
+<edge id="400" source="102" target="172"/>
+<edge id="396" source="102" target="192"/>
+<edge id="399" source="102" target="194"/>
+<edge id="407" source="103" target="41"/>
+<edge id="405" source="103" target="70"/>
+<edge id="406" source="103" target="82"/>
+<edge id="412" source="104" target="41"/>
+<edge id="410" source="104" target="50"/>
+<edge id="409" source="104" target="82"/>
+<edge id="411" source="104" target="185"/>
+<edge id="408" source="104" target="223"/>
+<edge id="417" source="105" target="2"/>
+<edge id="421" source="105" target="35"/>
+<edge id="419" source="105" target="45"/>
+<edge id="416" source="105" target="50"/>
+<edge id="426" source="105" target="63"/>
+<edge id="420" source="105" target="70"/>
+<edge id="424" source="105" target="80"/>
+<edge id="414" source="105" target="84"/>
+<edge id="413" source="105" target="87"/>
+<edge id="425" source="105" target="102"/>
+<edge id="422" source="105" target="104"/>
+<edge id="415" source="105" target="115"/>
+<edge id="423" source="105" target="180"/>
+<edge id="418" source="105" target="213"/>
+<edge id="433" source="106" target="35"/>
+<edge id="431" source="106" target="41"/>
+<edge id="429" source="106" target="50"/>
+<edge id="432" source="106" target="70"/>
+<edge id="430" source="106" target="79"/>
+<edge id="434" source="106" target="80"/>
+<edge id="427" source="106" target="84"/>
+<edge id="428" source="106" target="115"/>
+<edge id="435" source="107" target="80"/>
+<edge id="443" source="109" target="20"/>
+<edge id="449" source="109" target="24"/>
+<edge id="444" source="109" target="41"/>
+<edge id="445" source="109" target="45"/>
+<edge id="441" source="109" target="48"/>
+<edge id="437" source="109" target="49"/>
+<edge id="442" source="109" target="50"/>
+<edge id="446" source="109" target="70"/>
+<edge id="448" source="109" target="80"/>
+<edge id="439" source="109" target="84"/>
+<edge id="438" source="109" target="87"/>
+<edge id="436" source="109" target="105"/>
+<edge id="440" source="109" target="106"/>
+<edge id="447" source="109" target="200"/>
+<edge id="450" source="110" target="13"/>
+<edge id="451" source="110" target="70"/>
+<edge id="452" source="110" target="80"/>
+<edge id="459" source="111" target="41"/>
+<edge id="455" source="111" target="44"/>
+<edge id="454" source="111" target="50"/>
+<edge id="462" source="111" target="80"/>
+<edge id="461" source="111" target="82"/>
+<edge id="453" source="111" target="84"/>
+<edge id="457" source="111" target="97"/>
+<edge id="458" source="111" target="125"/>
+<edge id="456" source="111" target="168"/>
+<edge id="460" source="111" target="224"/>
+<edge id="464" source="112" target="50"/>
+<edge id="463" source="112" target="84"/>
+<edge id="465" source="112" target="175"/>
+<edge id="467" source="114" target="22"/>
+<edge id="466" source="114" target="50"/>
+<edge id="471" source="115" target="44"/>
+<edge id="472" source="115" target="45"/>
+<edge id="470" source="115" target="50"/>
+<edge id="476" source="115" target="54"/>
+<edge id="469" source="115" target="84"/>
+<edge id="468" source="115" target="87"/>
+<edge id="475" source="115" target="127"/>
+<edge id="474" source="115" target="200"/>
+<edge id="473" source="115" target="203"/>
+<edge id="477" source="117" target="0"/>
+<edge id="478" source="117" target="80"/>
+<edge id="481" source="118" target="7"/>
+<edge id="485" source="118" target="24"/>
+<edge id="480" source="118" target="50"/>
+<edge id="487" source="118" target="66"/>
+<edge id="482" source="118" target="70"/>
+<edge id="484" source="118" target="80"/>
+<edge id="479" source="118" target="84"/>
+<edge id="486" source="118" target="87"/>
+<edge id="483" source="118" target="109"/>
+<edge id="488" source="118" target="115"/>
+<edge id="494" source="119" target="37"/>
+<edge id="495" source="119" target="41"/>
+<edge id="490" source="119" target="50"/>
+<edge id="489" source="119" target="70"/>
+<edge id="491" source="119" target="80"/>
+<edge id="493" source="119" target="95"/>
+<edge id="492" source="119" target="211"/>
+<edge id="501" source="120" target="2"/>
+<edge id="503" source="120" target="9"/>
+<edge id="500" source="120" target="36"/>
+<edge id="504" source="120" target="41"/>
+<edge id="499" source="120" target="50"/>
+<edge id="505" source="120" target="80"/>
+<edge id="496" source="120" target="84"/>
+<edge id="502" source="120" target="92"/>
+<edge id="497" source="120" target="96"/>
+<edge id="498" source="120" target="229"/>
+<edge id="506" source="121" target="70"/>
+<edge id="509" source="122" target="41"/>
+<edge id="508" source="122" target="145"/>
+<edge id="507" source="122" target="182"/>
+<edge id="514" source="123" target="41"/>
+<edge id="512" source="123" target="50"/>
+<edge id="513" source="123" target="80"/>
+<edge id="511" source="123" target="84"/>
+<edge id="510" source="123" target="87"/>
+<edge id="515" source="124" target="64"/>
+<edge id="517" source="125" target="35"/>
+<edge id="519" source="125" target="50"/>
+<edge id="516" source="125" target="59"/>
+<edge id="518" source="125" target="119"/>
+<edge id="520" source="126" target="70"/>
+<edge id="528" source="127" target="0"/>
+<edge id="525" source="127" target="50"/>
+<edge id="526" source="127" target="70"/>
+<edge id="529" source="127" target="80"/>
+<edge id="522" source="127" target="84"/>
+<edge id="521" source="127" target="87"/>
+<edge id="523" source="127" target="106"/>
+<edge id="527" source="127" target="109"/>
+<edge id="530" source="127" target="118"/>
+<edge id="524" source="127" target="189"/>
+<edge id="535" source="128" target="14"/>
+<edge id="533" source="128" target="20"/>
+<edge id="537" source="128" target="31"/>
+<edge id="536" source="128" target="41"/>
+<edge id="531" source="128" target="49"/>
+<edge id="532" source="128" target="50"/>
+<edge id="538" source="128" target="70"/>
+<edge id="539" source="128" target="82"/>
+<edge id="534" source="128" target="168"/>
+<edge id="540" source="128" target="207"/>
+<edge id="541" source="129" target="80"/>
+<edge id="578" source="130" target="0"/>
+<edge id="573" source="130" target="5"/>
+<edge id="557" source="130" target="9"/>
+<edge id="569" source="130" target="10"/>
+<edge id="544" source="130" target="11"/>
+<edge id="574" source="130" target="13"/>
+<edge id="549" source="130" target="14"/>
+<edge id="554" source="130" target="19"/>
+<edge id="571" source="130" target="22"/>
+<edge id="543" source="130" target="25"/>
+<edge id="548" source="130" target="34"/>
+<edge id="559" source="130" target="35"/>
+<edge id="581" source="130" target="37"/>
+<edge id="550" source="130" target="41"/>
+<edge id="567" source="130" target="44"/>
+<edge id="587" source="130" target="45"/>
+<edge id="568" source="130" target="46"/>
+<edge id="566" source="130" target="48"/>
+<edge id="563" source="130" target="49"/>
+<edge id="547" source="130" target="50"/>
+<edge id="542" source="130" target="55"/>
+<edge id="558" source="130" target="59"/>
+<edge id="582" source="130" target="61"/>
+<edge id="584" source="130" target="65"/>
+<edge id="556" source="130" target="69"/>
+<edge id="551" source="130" target="70"/>
+<edge id="553" source="130" target="76"/>
+<edge id="593" source="130" target="77"/>
+<edge id="588" source="130" target="78"/>
+<edge id="572" source="130" target="79"/>
+<edge id="580" source="130" target="80"/>
+<edge id="545" source="130" target="81"/>
+<edge id="589" source="130" target="82"/>
+<edge id="564" source="130" target="84"/>
+<edge id="591" source="130" target="86"/>
+<edge id="555" source="130" target="87"/>
+<edge id="583" source="130" target="96"/>
+<edge id="570" source="130" target="97"/>
+<edge id="575" source="130" target="101"/>
+<edge id="561" source="130" target="105"/>
+<edge id="546" source="130" target="106"/>
+<edge id="576" source="130" target="109"/>
+<edge id="562" source="130" target="110"/>
+<edge id="560" source="130" target="111"/>
+<edge id="590" source="130" target="113"/>
+<edge id="586" source="130" target="115"/>
+<edge id="552" source="130" target="118"/>
+<edge id="565" source="130" target="119"/>
+<edge id="577" source="130" target="120"/>
+<edge id="579" source="130" target="122"/>
+<edge id="592" source="130" target="127"/>
+<edge id="585" source="130" target="128"/>
+<edge id="594" source="131" target="50"/>
+<edge id="595" source="131" target="80"/>
+<edge id="596" source="131" target="130"/>
+<edge id="597" source="131" target="219"/>
+<edge id="601" source="132" target="20"/>
+<edge id="599" source="132" target="48"/>
+<edge id="600" source="132" target="50"/>
+<edge id="604" source="132" target="70"/>
+<edge id="605" source="132" target="80"/>
+<edge id="598" source="132" target="84"/>
+<edge id="603" source="132" target="91"/>
+<edge id="606" source="132" target="118"/>
+<edge id="602" source="132" target="130"/>
+<edge id="607" source="133" target="46"/>
+<edge id="608" source="133" target="130"/>
+<edge id="614" source="134" target="36"/>
+<edge id="613" source="134" target="50"/>
+<edge id="615" source="134" target="80"/>
+<edge id="610" source="134" target="84"/>
+<edge id="612" source="134" target="135"/>
+<edge id="616" source="134" target="171"/>
+<edge id="609" source="134" target="192"/>
+<edge id="611" source="134" target="193"/>
+<edge id="619" source="135" target="10"/>
+<edge id="617" source="135" target="70"/>
+<edge id="618" source="135" target="80"/>
+<edge id="620" source="135" target="97"/>
+<edge id="686" source="136" target="0"/>
+<edge id="694" source="136" target="2"/>
+<edge id="678" source="136" target="4"/>
+<edge id="658" source="136" target="8"/>
+<edge id="670" source="136" target="9"/>
+<edge id="679" source="136" target="10"/>
+<edge id="622" source="136" target="11"/>
+<edge id="636" source="136" target="16"/>
+<edge id="647" source="136" target="18"/>
+<edge id="660" source="136" target="20"/>
+<edge id="680" source="136" target="21"/>
+<edge id="651" source="136" target="24"/>
+<edge id="621" source="136" target="25"/>
+<edge id="698" source="136" target="26"/>
+<edge id="687" source="136" target="30"/>
+<edge id="665" source="136" target="31"/>
+<edge id="676" source="136" target="33"/>
+<edge id="625" source="136" target="34"/>
+<edge id="672" source="136" target="35"/>
+<edge id="669" source="136" target="36"/>
+<edge id="652" source="136" target="37"/>
+<edge id="650" source="136" target="39"/>
+<edge id="673" source="136" target="40"/>
+<edge id="663" source="136" target="41"/>
+<edge id="629" source="136" target="43"/>
+<edge id="677" source="136" target="44"/>
+<edge id="656" source="136" target="45"/>
+<edge id="643" source="136" target="48"/>
+<edge id="640" source="136" target="49"/>
+<edge id="661" source="136" target="50"/>
+<edge id="668" source="136" target="51"/>
+<edge id="696" source="136" target="53"/>
+<edge id="638" source="136" target="54"/>
+<edge id="671" source="136" target="59"/>
+<edge id="666" source="136" target="62"/>
+<edge id="633" source="136" target="63"/>
+<edge id="626" source="136" target="64"/>
+<edge id="654" source="136" target="65"/>
+<edge id="693" source="136" target="68"/>
+<edge id="634" source="136" target="69"/>
+<edge id="630" source="136" target="70"/>
+<edge id="690" source="136" target="71"/>
+<edge id="635" source="136" target="72"/>
+<edge id="646" source="136" target="74"/>
+<edge id="662" source="136" target="75"/>
+<edge id="682" source="136" target="79"/>
+<edge id="689" source="136" target="80"/>
+<edge id="657" source="136" target="82"/>
+<edge id="695" source="136" target="83"/>
+<edge id="641" source="136" target="84"/>
+<edge id="645" source="136" target="85"/>
+<edge id="667" source="136" target="87"/>
+<edge id="664" source="136" target="90"/>
+<edge id="628" source="136" target="92"/>
+<edge id="644" source="136" target="93"/>
+<edge id="681" source="136" target="97"/>
+<edge id="659" source="136" target="98"/>
+<edge id="674" source="136" target="99"/>
+<edge id="649" source="136" target="101"/>
+<edge id="653" source="136" target="102"/>
+<edge id="623" source="136" target="103"/>
+<edge id="685" source="136" target="104"/>
+<edge id="675" source="136" target="105"/>
+<edge id="624" source="136" target="106"/>
+<edge id="683" source="136" target="109"/>
+<edge id="639" source="136" target="111"/>
+<edge id="637" source="136" target="114"/>
+<edge id="692" source="136" target="115"/>
+<edge id="631" source="136" target="118"/>
+<edge id="642" source="136" target="119"/>
+<edge id="684" source="136" target="120"/>
+<edge id="700" source="136" target="124"/>
+<edge id="627" source="136" target="125"/>
+<edge id="699" source="136" target="127"/>
+<edge id="691" source="136" target="128"/>
+<edge id="655" source="136" target="130"/>
+<edge id="688" source="136" target="132"/>
+<edge id="632" source="136" target="133"/>
+<edge id="648" source="136" target="134"/>
+<edge id="697" source="136" target="135"/>
+<edge id="701" source="136" target="210"/>
+<edge id="702" source="137" target="136"/>
+<edge id="703" source="137" target="171"/>
+<edge id="705" source="138" target="80"/>
+<edge id="704" source="138" target="115"/>
+<edge id="706" source="138" target="130"/>
+<edge id="707" source="139" target="118"/>
+<edge id="709" source="140" target="99"/>
+<edge id="708" source="140" target="136"/>
+<edge id="713" source="141" target="9"/>
+<edge id="712" source="141" target="134"/>
+<edge id="710" source="141" target="136"/>
+<edge id="711" source="141" target="224"/>
+<edge id="714" source="142" target="70"/>
+<edge id="715" source="143" target="18"/>
+<edge id="716" source="144" target="18"/>
+<edge id="717" source="145" target="13"/>
+<edge id="718" source="145" target="70"/>
+<edge id="719" source="145" target="130"/>
+<edge id="720" source="146" target="136"/>
+<edge id="721" source="146" target="176"/>
+<edge id="722" source="147" target="136"/>
+<edge id="723" source="148" target="118"/>
+<edge id="724" source="149" target="50"/>
+<edge id="726" source="149" target="210"/>
+<edge id="725" source="149" target="215"/>
+<edge id="727" source="150" target="50"/>
+<edge id="729" source="151" target="50"/>
+<edge id="728" source="151" target="136"/>
+<edge id="731" source="152" target="1"/>
+<edge id="737" source="152" target="41"/>
+<edge id="733" source="152" target="50"/>
+<edge id="739" source="152" target="70"/>
+<edge id="741" source="152" target="80"/>
+<edge id="740" source="152" target="82"/>
+<edge id="730" source="152" target="84"/>
+<edge id="734" source="152" target="85"/>
+<edge id="736" source="152" target="95"/>
+<edge id="742" source="152" target="102"/>
+<edge id="735" source="152" target="130"/>
+<edge id="738" source="152" target="136"/>
+<edge id="732" source="152" target="229"/>
+<edge id="743" source="153" target="136"/>
+<edge id="782" source="154" target="0"/>
+<edge id="787" source="154" target="2"/>
+<edge id="778" source="154" target="4"/>
+<edge id="765" source="154" target="8"/>
+<edge id="772" source="154" target="9"/>
+<edge id="745" source="154" target="11"/>
+<edge id="752" source="154" target="19"/>
+<edge id="780" source="154" target="22"/>
+<edge id="744" source="154" target="25"/>
+<edge id="774" source="154" target="27"/>
+<edge id="754" source="154" target="28"/>
+<edge id="748" source="154" target="34"/>
+<edge id="775" source="154" target="35"/>
+<edge id="762" source="154" target="37"/>
+<edge id="770" source="154" target="41"/>
+<edge id="777" source="154" target="44"/>
+<edge id="757" source="154" target="48"/>
+<edge id="768" source="154" target="50"/>
+<edge id="773" source="154" target="59"/>
+<edge id="763" source="154" target="65"/>
+<edge id="753" source="154" target="69"/>
+<edge id="750" source="154" target="70"/>
+<edge id="769" source="154" target="75"/>
+<edge id="766" source="154" target="77"/>
+<edge id="785" source="154" target="80"/>
+<edge id="756" source="154" target="84"/>
+<edge id="771" source="154" target="87"/>
+<edge id="749" source="154" target="95"/>
+<edge id="779" source="154" target="97"/>
+<edge id="767" source="154" target="98"/>
+<edge id="746" source="154" target="103"/>
+<edge id="776" source="154" target="105"/>
+<edge id="747" source="154" target="106"/>
+<edge id="755" source="154" target="111"/>
+<edge id="751" source="154" target="118"/>
+<edge id="758" source="154" target="119"/>
+<edge id="783" source="154" target="120"/>
+<edge id="761" source="154" target="123"/>
+<edge id="789" source="154" target="127"/>
+<edge id="786" source="154" target="128"/>
+<edge id="764" source="154" target="130"/>
+<edge id="784" source="154" target="132"/>
+<edge id="760" source="154" target="134"/>
+<edge id="788" source="154" target="135"/>
+<edge id="781" source="154" target="136"/>
+<edge id="759" source="154" target="152"/>
+<edge id="790" source="155" target="80"/>
+<edge id="791" source="156" target="24"/>
+<edge id="798" source="157" target="41"/>
+<edge id="796" source="157" target="50"/>
+<edge id="794" source="157" target="53"/>
+<edge id="795" source="157" target="70"/>
+<edge id="797" source="157" target="80"/>
+<edge id="792" source="157" target="136"/>
+<edge id="793" source="157" target="154"/>
+<edge id="802" source="159" target="50"/>
+<edge id="801" source="159" target="70"/>
+<edge id="805" source="159" target="72"/>
+<edge id="800" source="159" target="87"/>
+<edge id="803" source="159" target="130"/>
+<edge id="799" source="159" target="136"/>
+<edge id="804" source="159" target="168"/>
+<edge id="806" source="160" target="70"/>
+<edge id="807" source="160" target="80"/>
+<edge id="809" source="161" target="39"/>
+<edge id="808" source="161" target="136"/>
+<edge id="810" source="162" target="70"/>
+<edge id="811" source="162" target="80"/>
+<edge id="818" source="163" target="20"/>
+<edge id="823" source="163" target="45"/>
+<edge id="819" source="163" target="50"/>
+<edge id="824" source="163" target="70"/>
+<edge id="826" source="163" target="80"/>
+<edge id="815" source="163" target="84"/>
+<edge id="814" source="163" target="87"/>
+<edge id="816" source="163" target="106"/>
+<edge id="827" source="163" target="118"/>
+<edge id="828" source="163" target="127"/>
+<edge id="820" source="163" target="130"/>
+<edge id="817" source="163" target="131"/>
+<edge id="825" source="163" target="132"/>
+<edge id="822" source="163" target="136"/>
+<edge id="813" source="163" target="154"/>
+<edge id="812" source="163" target="192"/>
+<edge id="821" source="163" target="195"/>
+<edge id="836" source="164" target="41"/>
+<edge id="832" source="164" target="50"/>
+<edge id="831" source="164" target="53"/>
+<edge id="835" source="164" target="80"/>
+<edge id="830" source="164" target="128"/>
+<edge id="829" source="164" target="136"/>
+<edge id="834" source="164" target="185"/>
+<edge id="833" source="164" target="215"/>
+<edge id="841" source="165" target="35"/>
+<edge id="844" source="165" target="41"/>
+<edge id="842" source="165" target="50"/>
+<edge id="840" source="165" target="70"/>
+<edge id="843" source="165" target="80"/>
+<edge id="838" source="165" target="84"/>
+<edge id="839" source="165" target="106"/>
+<edge id="837" source="165" target="154"/>
+<edge id="857" source="168" target="37"/>
+<edge id="853" source="168" target="41"/>
+<edge id="849" source="168" target="48"/>
+<edge id="850" source="168" target="50"/>
+<edge id="855" source="168" target="70"/>
+<edge id="856" source="168" target="80"/>
+<edge id="845" source="168" target="87"/>
+<edge id="847" source="168" target="96"/>
+<edge id="846" source="168" target="103"/>
+<edge id="848" source="168" target="106"/>
+<edge id="851" source="168" target="130"/>
+<edge id="854" source="168" target="136"/>
+<edge id="852" source="168" target="195"/>
+<edge id="866" source="169" target="41"/>
+<edge id="860" source="169" target="49"/>
+<edge id="863" source="169" target="50"/>
+<edge id="862" source="169" target="70"/>
+<edge id="864" source="169" target="80"/>
+<edge id="865" source="169" target="130"/>
+<edge id="858" source="169" target="136"/>
+<edge id="861" source="169" target="154"/>
+<edge id="859" source="169" target="159"/>
+<edge id="867" source="170" target="136"/>
+<edge id="868" source="171" target="19"/>
+<edge id="877" source="171" target="30"/>
+<edge id="874" source="171" target="41"/>
+<edge id="872" source="171" target="44"/>
+<edge id="869" source="171" target="49"/>
+<edge id="871" source="171" target="50"/>
+<edge id="876" source="171" target="70"/>
+<edge id="878" source="171" target="80"/>
+<edge id="879" source="171" target="86"/>
+<edge id="873" source="171" target="130"/>
+<edge id="875" source="171" target="136"/>
+<edge id="870" source="171" target="154"/>
+<edge id="880" source="171" target="219"/>
+<edge id="889" source="172" target="12"/>
+<edge id="887" source="172" target="41"/>
+<edge id="884" source="172" target="50"/>
+<edge id="881" source="172" target="55"/>
+<edge id="893" source="172" target="80"/>
+<edge id="892" source="172" target="86"/>
+<edge id="883" source="172" target="96"/>
+<edge id="890" source="172" target="109"/>
+<edge id="891" source="172" target="120"/>
+<edge id="885" source="172" target="130"/>
+<edge id="888" source="172" target="136"/>
+<edge id="882" source="172" target="154"/>
+<edge id="886" source="172" target="176"/>
+<edge id="894" source="172" target="207"/>
+<edge id="895" source="172" target="208"/>
+<edge id="908" source="173" target="23"/>
+<edge id="906" source="173" target="24"/>
+<edge id="900" source="173" target="41"/>
+<edge id="899" source="173" target="48"/>
+<edge id="898" source="173" target="60"/>
+<edge id="910" source="173" target="65"/>
+<edge id="912" source="173" target="69"/>
+<edge id="903" source="173" target="70"/>
+<edge id="905" source="173" target="80"/>
+<edge id="914" source="173" target="82"/>
+<edge id="897" source="173" target="103"/>
+<edge id="904" source="173" target="108"/>
+<edge id="907" source="173" target="118"/>
+<edge id="916" source="173" target="127"/>
+<edge id="913" source="173" target="135"/>
+<edge id="901" source="173" target="136"/>
+<edge id="896" source="173" target="154"/>
+<edge id="902" source="173" target="158"/>
+<edge id="911" source="173" target="160"/>
+<edge id="909" source="173" target="162"/>
+<edge id="915" source="173" target="167"/>
+<edge id="917" source="174" target="24"/>
+<edge id="921" source="175" target="2"/>
+<edge id="920" source="175" target="50"/>
+<edge id="919" source="175" target="105"/>
+<edge id="922" source="175" target="130"/>
+<edge id="918" source="175" target="136"/>
+<edge id="929" source="176" target="41"/>
+<edge id="926" source="176" target="50"/>
+<edge id="933" source="176" target="70"/>
+<edge id="935" source="176" target="80"/>
+<edge id="924" source="176" target="87"/>
+<edge id="925" source="176" target="106"/>
+<edge id="927" source="176" target="130"/>
+<edge id="930" source="176" target="136"/>
+<edge id="932" source="176" target="138"/>
+<edge id="923" source="176" target="154"/>
+<edge id="931" source="176" target="159"/>
+<edge id="928" source="176" target="175"/>
+<edge id="934" source="176" target="200"/>
+<edge id="937" source="177" target="118"/>
+<edge id="936" source="177" target="173"/>
+<edge id="939" source="178" target="80"/>
+<edge id="938" source="178" target="154"/>
+<edge id="941" source="179" target="35"/>
+<edge id="942" source="179" target="122"/>
+<edge id="943" source="179" target="130"/>
+<edge id="940" source="179" target="217"/>
+<edge id="945" source="180" target="70"/>
+<edge id="946" source="180" target="80"/>
+<edge id="947" source="180" target="130"/>
+<edge id="944" source="180" target="169"/>
+<edge id="948" source="180" target="171"/>
+<edge id="950" source="181" target="50"/>
+<edge id="951" source="181" target="93"/>
+<edge id="949" source="181" target="136"/>
+<edge id="954" source="182" target="50"/>
+<edge id="953" source="182" target="70"/>
+<edge id="952" source="182" target="128"/>
+<edge id="956" source="182" target="130"/>
+<edge id="955" source="182" target="171"/>
+<edge id="958" source="183" target="70"/>
+<edge id="959" source="183" target="80"/>
+<edge id="960" source="183" target="118"/>
+<edge id="957" source="183" target="173"/>
+<edge id="961" source="184" target="18"/>
+<edge id="971" source="185" target="41"/>
+<edge id="967" source="185" target="50"/>
+<edge id="969" source="185" target="80"/>
+<edge id="964" source="185" target="84"/>
+<edge id="968" source="185" target="86"/>
+<edge id="965" source="185" target="114"/>
+<edge id="970" source="185" target="130"/>
+<edge id="962" source="185" target="136"/>
+<edge id="963" source="185" target="154"/>
+<edge id="966" source="185" target="212"/>
+<edge id="972" source="186" target="30"/>
+<edge id="973" source="186" target="50"/>
+<edge id="974" source="186" target="80"/>
+<edge id="975" source="187" target="173"/>
+<edge id="977" source="188" target="118"/>
+<edge id="976" source="188" target="173"/>
+<edge id="986" source="189" target="10"/>
+<edge id="984" source="189" target="20"/>
+<edge id="987" source="189" target="21"/>
+<edge id="997" source="189" target="24"/>
+<edge id="988" source="189" target="41"/>
+<edge id="991" source="189" target="45"/>
+<edge id="979" source="189" target="49"/>
+<edge id="983" source="189" target="50"/>
+<edge id="993" source="189" target="70"/>
+<edge id="995" source="189" target="80"/>
+<edge id="981" source="189" target="84"/>
+<edge id="980" source="189" target="87"/>
+<edge id="982" source="189" target="106"/>
+<edge id="996" source="189" target="118"/>
+<edge id="985" source="189" target="130"/>
+<edge id="992" source="189" target="134"/>
+<edge id="990" source="189" target="136"/>
+<edge id="978" source="189" target="154"/>
+<edge id="989" source="189" target="173"/>
+<edge id="994" source="189" target="200"/>
+<edge id="999" source="190" target="70"/>
+<edge id="1001" source="190" target="80"/>
+<edge id="1000" source="190" target="120"/>
+<edge id="1003" source="190" target="130"/>
+<edge id="1002" source="190" target="171"/>
+<edge id="998" source="190" target="172"/>
+<edge id="1008" source="191" target="50"/>
+<edge id="1007" source="191" target="70"/>
+<edge id="1009" source="191" target="80"/>
+<edge id="1006" source="191" target="134"/>
+<edge id="1005" source="191" target="136"/>
+<edge id="1004" source="191" target="173"/>
+<edge id="1025" source="192" target="9"/>
+<edge id="1011" source="192" target="11"/>
+<edge id="1032" source="192" target="18"/>
+<edge id="1035" source="192" target="24"/>
+<edge id="1030" source="192" target="44"/>
+<edge id="1028" source="192" target="48"/>
+<edge id="1014" source="192" target="50"/>
+<edge id="1026" source="192" target="59"/>
+<edge id="1020" source="192" target="63"/>
+<edge id="1022" source="192" target="66"/>
+<edge id="1037" source="192" target="68"/>
+<edge id="1017" source="192" target="70"/>
+<edge id="1033" source="192" target="71"/>
+<edge id="1034" source="192" target="80"/>
+<edge id="1043" source="192" target="82"/>
+<edge id="1041" source="192" target="83"/>
+<edge id="1015" source="192" target="90"/>
+<edge id="1012" source="192" target="103"/>
+<edge id="1027" source="192" target="111"/>
+<edge id="1019" source="192" target="118"/>
+<edge id="1046" source="192" target="127"/>
+<edge id="1044" source="192" target="135"/>
+<edge id="1031" source="192" target="136"/>
+<edge id="1013" source="192" target="137"/>
+<edge id="1038" source="192" target="148"/>
+<edge id="1029" source="192" target="152"/>
+<edge id="1010" source="192" target="154"/>
+<edge id="1039" source="192" target="160"/>
+<edge id="1021" source="192" target="162"/>
+<edge id="1024" source="192" target="168"/>
+<edge id="1016" source="192" target="172"/>
+<edge id="1042" source="192" target="173"/>
+<edge id="1040" source="192" target="176"/>
+<edge id="1045" source="192" target="181"/>
+<edge id="1023" source="192" target="183"/>
+<edge id="1036" source="192" target="189"/>
+<edge id="1018" source="192" target="191"/>
+<edge id="1051" source="193" target="0"/>
+<edge id="1052" source="193" target="50"/>
+<edge id="1050" source="193" target="53"/>
+<edge id="1049" source="193" target="70"/>
+<edge id="1053" source="193" target="80"/>
+<edge id="1054" source="193" target="130"/>
+<edge id="1047" source="193" target="136"/>
+<edge id="1048" source="193" target="154"/>
+<edge id="1056" source="194" target="25"/>
+<edge id="1061" source="194" target="41"/>
+<edge id="1060" source="194" target="50"/>
+<edge id="1064" source="194" target="70"/>
+<edge id="1065" source="194" target="109"/>
+<edge id="1058" source="194" target="115"/>
+<edge id="1066" source="194" target="118"/>
+<edge id="1063" source="194" target="136"/>
+<edge id="1057" source="194" target="154"/>
+<edge id="1062" source="194" target="173"/>
+<edge id="1059" source="194" target="189"/>
+<edge id="1055" source="194" target="192"/>
+<edge id="1070" source="195" target="41"/>
+<edge id="1069" source="195" target="50"/>
+<edge id="1080" source="195" target="69"/>
+<edge id="1072" source="195" target="70"/>
+<edge id="1074" source="195" target="80"/>
+<edge id="1068" source="195" target="84"/>
+<edge id="1077" source="195" target="102"/>
+<edge id="1073" source="195" target="109"/>
+<edge id="1079" source="195" target="115"/>
+<edge id="1075" source="195" target="118"/>
+<edge id="1071" source="195" target="136"/>
+<edge id="1076" source="195" target="146"/>
+<edge id="1067" source="195" target="154"/>
+<edge id="1081" source="195" target="173"/>
+<edge id="1078" source="195" target="192"/>
+<edge id="1082" source="196" target="118"/>
+<edge id="1086" source="197" target="41"/>
+<edge id="1084" source="197" target="50"/>
+<edge id="1085" source="197" target="80"/>
+<edge id="1083" source="197" target="154"/>
+<edge id="1091" source="198" target="44"/>
+<edge id="1089" source="198" target="50"/>
+<edge id="1092" source="198" target="80"/>
+<edge id="1093" source="198" target="130"/>
+<edge id="1087" source="198" target="136"/>
+<edge id="1090" source="198" target="152"/>
+<edge id="1088" source="198" target="154"/>
+<edge id="1096" source="199" target="50"/>
+<edge id="1094" source="199" target="136"/>
+<edge id="1095" source="199" target="221"/>
+<edge id="1121" source="200" target="15"/>
+<edge id="1140" source="200" target="17"/>
+<edge id="1124" source="200" target="18"/>
+<edge id="1129" source="200" target="23"/>
+<edge id="1128" source="200" target="24"/>
+<edge id="1102" source="200" target="41"/>
+<edge id="1120" source="200" target="48"/>
+<edge id="1100" source="200" target="50"/>
+<edge id="1119" source="200" target="60"/>
+<edge id="1109" source="200" target="63"/>
+<edge id="1131" source="200" target="65"/>
+<edge id="1112" source="200" target="66"/>
+<edge id="1134" source="200" target="68"/>
+<edge id="1115" source="200" target="69"/>
+<edge id="1105" source="200" target="70"/>
+<edge id="1126" source="200" target="71"/>
+<edge id="1125" source="200" target="80"/>
+<edge id="1137" source="200" target="83"/>
+<edge id="1118" source="200" target="84"/>
+<edge id="1103" source="200" target="90"/>
+<edge id="1098" source="200" target="103"/>
+<edge id="1116" source="200" target="116"/>
+<edge id="1107" source="200" target="118"/>
+<edge id="1141" source="200" target="127"/>
+<edge id="1135" source="200" target="130"/>
+<edge id="1139" source="200" target="135"/>
+<edge id="1123" source="200" target="136"/>
+<edge id="1099" source="200" target="137"/>
+<edge id="1127" source="200" target="146"/>
+<edge id="1133" source="200" target="148"/>
+<edge id="1097" source="200" target="154"/>
+<edge id="1130" source="200" target="156"/>
+<edge id="1136" source="200" target="160"/>
+<edge id="1111" source="200" target="162"/>
+<edge id="1108" source="200" target="166"/>
+<edge id="1138" source="200" target="173"/>
+<edge id="1117" source="200" target="174"/>
+<edge id="1114" source="200" target="183"/>
+<edge id="1106" source="200" target="187"/>
+<edge id="1132" source="200" target="188"/>
+<edge id="1104" source="200" target="191"/>
+<edge id="1110" source="200" target="192"/>
+<edge id="1113" source="200" target="193"/>
+<edge id="1101" source="200" target="194"/>
+<edge id="1122" source="200" target="195"/>
+<edge id="1142" source="201" target="113"/>
+<edge id="1143" source="201" target="130"/>
+<edge id="1146" source="202" target="79"/>
+<edge id="1144" source="202" target="136"/>
+<edge id="1145" source="202" target="147"/>
+<edge id="1153" source="203" target="10"/>
+<edge id="1155" source="203" target="41"/>
+<edge id="1151" source="203" target="50"/>
+<edge id="1158" source="203" target="70"/>
+<edge id="1149" source="203" target="84"/>
+<edge id="1159" source="203" target="109"/>
+<edge id="1152" source="203" target="130"/>
+<edge id="1157" source="203" target="136"/>
+<edge id="1148" source="203" target="154"/>
+<edge id="1154" source="203" target="168"/>
+<edge id="1156" source="203" target="173"/>
+<edge id="1150" source="203" target="189"/>
+<edge id="1147" source="203" target="192"/>
+<edge id="1160" source="203" target="200"/>
+<edge id="1167" source="204" target="41"/>
+<edge id="1164" source="204" target="50"/>
+<edge id="1162" source="204" target="57"/>
+<edge id="1165" source="204" target="80"/>
+<edge id="1166" source="204" target="88"/>
+<edge id="1161" source="204" target="136"/>
+<edge id="1163" source="204" target="186"/>
+<edge id="1175" source="205" target="41"/>
+<edge id="1171" source="205" target="50"/>
+<edge id="1174" source="205" target="69"/>
+<edge id="1178" source="205" target="70"/>
+<edge id="1179" source="205" target="80"/>
+<edge id="1170" source="205" target="84"/>
+<edge id="1169" source="205" target="87"/>
+<edge id="1172" source="205" target="130"/>
+<edge id="1177" source="205" target="136"/>
+<edge id="1168" source="205" target="154"/>
+<edge id="1176" source="205" target="173"/>
+<edge id="1173" source="205" target="175"/>
+<edge id="1184" source="206" target="24"/>
+<edge id="1185" source="206" target="102"/>
+<edge id="1182" source="206" target="136"/>
+<edge id="1181" source="206" target="173"/>
+<edge id="1180" source="206" target="192"/>
+<edge id="1183" source="206" target="200"/>
+<edge id="1191" source="207" target="28"/>
+<edge id="1187" source="207" target="45"/>
+<edge id="1192" source="207" target="50"/>
+<edge id="1188" source="207" target="70"/>
+<edge id="1193" source="207" target="130"/>
+<edge id="1190" source="207" target="131"/>
+<edge id="1186" source="207" target="136"/>
+<edge id="1189" source="207" target="169"/>
+<edge id="1196" source="208" target="10"/>
+<edge id="1194" source="208" target="50"/>
+<edge id="1195" source="208" target="149"/>
+<edge id="1197" source="209" target="200"/>
+<edge id="1202" source="210" target="50"/>
+<edge id="1203" source="210" target="80"/>
+<edge id="1200" source="210" target="84"/>
+<edge id="1198" source="210" target="87"/>
+<edge id="1204" source="210" target="111"/>
+<edge id="1201" source="210" target="119"/>
+<edge id="1199" source="210" target="154"/>
+<edge id="1209" source="211" target="20"/>
+<edge id="1211" source="211" target="41"/>
+<edge id="1210" source="211" target="50"/>
+<edge id="1207" source="211" target="84"/>
+<edge id="1208" source="211" target="106"/>
+<edge id="1206" source="211" target="134"/>
+<edge id="1205" source="211" target="154"/>
+<edge id="1212" source="212" target="44"/>
+<edge id="1214" source="212" target="80"/>
+<edge id="1216" source="212" target="111"/>
+<edge id="1215" source="212" target="130"/>
+<edge id="1213" source="212" target="152"/>
+<edge id="1223" source="213" target="20"/>
+<edge id="1227" source="213" target="41"/>
+<edge id="1224" source="213" target="50"/>
+<edge id="1222" source="213" target="70"/>
+<edge id="1225" source="213" target="80"/>
+<edge id="1221" source="213" target="84"/>
+<edge id="1219" source="213" target="87"/>
+<edge id="1218" source="213" target="91"/>
+<edge id="1226" source="213" target="130"/>
+<edge id="1217" source="213" target="136"/>
+<edge id="1220" source="213" target="154"/>
+<edge id="1228" source="214" target="50"/>
+<edge id="1230" source="215" target="20"/>
+<edge id="1231" source="215" target="50"/>
+<edge id="1229" source="215" target="150"/>
+<edge id="1233" source="216" target="173"/>
+<edge id="1232" source="216" target="192"/>
+<edge id="1234" source="216" target="200"/>
+<edge id="1238" source="217" target="41"/>
+<edge id="1236" source="217" target="50"/>
+<edge id="1237" source="217" target="130"/>
+<edge id="1235" source="217" target="145"/>
+<edge id="1241" source="218" target="25"/>
+<edge id="1242" source="218" target="59"/>
+<edge id="1244" source="218" target="70"/>
+<edge id="1245" source="218" target="80"/>
+<edge id="1239" source="218" target="136"/>
+<edge id="1243" source="218" target="154"/>
+<edge id="1240" source="218" target="192"/>
+<edge id="1250" source="219" target="34"/>
+<edge id="1252" source="219" target="41"/>
+<edge id="1249" source="219" target="50"/>
+<edge id="1248" source="219" target="70"/>
+<edge id="1251" source="219" target="130"/>
+<edge id="1246" source="219" target="136"/>
+<edge id="1247" source="219" target="154"/>
+<edge id="1253" source="220" target="50"/>
+<edge id="1254" source="221" target="31"/>
+<edge id="1256" source="221" target="32"/>
+<edge id="1257" source="221" target="41"/>
+<edge id="1255" source="221" target="50"/>
+<edge id="1258" source="222" target="200"/>
+<edge id="1262" source="223" target="4"/>
+<edge id="1269" source="223" target="37"/>
+<edge id="1266" source="223" target="45"/>
+<edge id="1261" source="223" target="50"/>
+<edge id="1267" source="223" target="70"/>
+<edge id="1264" source="223" target="74"/>
+<edge id="1268" source="223" target="80"/>
+<edge id="1260" source="223" target="84"/>
+<edge id="1263" source="223" target="130"/>
+<edge id="1265" source="223" target="136"/>
+<edge id="1259" source="223" target="192"/>
+<edge id="1271" source="224" target="93"/>
+<edge id="1270" source="224" target="136"/>
+<edge id="1272" source="225" target="136"/>
+<edge id="1273" source="225" target="170"/>
+<edge id="1276" source="226" target="50"/>
+<edge id="1275" source="226" target="105"/>
+<edge id="1274" source="226" target="136"/>
+<edge id="1278" source="227" target="36"/>
+<edge id="1277" source="227" target="50"/>
+<edge id="1279" source="228" target="50"/>
+<edge id="1280" source="228" target="130"/>
+<edge id="1281" source="228" target="219"/>
+<edge id="1289" source="229" target="41"/>
+<edge id="1285" source="229" target="50"/>
+<edge id="1284" source="229" target="70"/>
+<edge id="1287" source="229" target="77"/>
+<edge id="1286" source="229" target="130"/>
+<edge id="1282" source="229" target="136"/>
+<edge id="1283" source="229" target="154"/>
+<edge id="1288" source="229" target="176"/>
+<edge id="1290" source="230" target="80"/>
+<edge id="1291" source="231" target="80"/>
+<edge id="1292" source="232" target="200"/>
+<edge id="1294" source="233" target="35"/>
+<edge id="1293" source="233" target="136"/>
+<edge id="1295" source="234" target="50"/>
+<edge id="1296" source="234" target="164"/>
+</edges>
+</graph>
+</gexf>
