@@ -134,19 +134,6 @@
         ratio: _s.camera.ratio
       };
 
-    // Accessors to pin/unpin nodes
-    var fixNode, unfixNode;
-    if (sigma.classes.graph.hasMethod('fixNode')) {
-      fixNode = _s.graph.fixNode;
-    } else {
-      fixNode = function(n) { n.fixed = true; }
-    }
-    if (sigma.classes.graph.hasMethod('unfixNode')) {
-      unfixNode = _s.graph.unfixNode;
-    } else {
-      unfixNode = function(n) { n.fixed = false; }
-    }
-
     if (_easing && (!sigma.plugins || typeof sigma.plugins.animate === 'undefined')) {
       throw new Error('sigma.plugins.animate is not declared');
     }
@@ -223,9 +210,6 @@
         node = nodes[i];
 
         if (hasGeoCoordinates(node)) {
-          // Pin node
-          fixNode(node);
-
           // Store current cartesian coordinates
           if (node.leaflet_x === undefined) {
             node.leaflet_x = node.x;
@@ -566,9 +550,6 @@
 
       for (var i = 0; i < nodes.length; i++) {
         node = nodes[i];
-
-        // Unpin node
-        unfixNode(node);
 
         if (node.leaflet_hidden !== undefined) {
           node.hidden = node.leaflet_hidden;
