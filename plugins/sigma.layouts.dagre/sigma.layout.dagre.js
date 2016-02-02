@@ -173,7 +173,7 @@
       if (!dg) return;
 
       var nodes = dg.nodes().map(function(nid) {
-        return self.sigInst.graph.nodes(nid);
+        return self.sigInst.graph.nodes(nid) || self.sigInst.graph.nodes(Number(nid));
       });
 
       var coord;
