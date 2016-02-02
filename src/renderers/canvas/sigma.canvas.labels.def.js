@@ -20,7 +20,7 @@
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'] || 1,
         fontStyle = settings('fontStyle'),
-        borderSize = settings('borderSize'),
+        borderSize = settings('nodeBorderSize'),
         labelWidth,
         labelOffsetX,
         labelOffsetY,

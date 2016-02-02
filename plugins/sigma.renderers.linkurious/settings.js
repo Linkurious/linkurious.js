@@ -12,6 +12,53 @@
   */
   var settings = {
     /**
+     * NODE BORDERS SETTINGS:
+     * **********************
+     */
+    // {string} Indicates how to choose the nodes border color.
+    //          Available values: "node", "default"
+    nodeBorderColor: 'node,',
+    // defaultNodeBorderColor is set in sigma.settings.
+    // {string} Indicates how to choose the nodes outer border color.
+    //          Available values: "node", "default"
+    nodeOuterBorderColor: '',
+    // {number} The size of the outer border of nodes.
+    nodeOuterBorderSize: 0,
+    // {string} The default node outer border's color.
+    defaultNodeOuterBorderColor: '#000',
+
+    /**
+     * HOVERED NODE BORDERS SETTINGS:
+     * **********************
+     */
+    // {number} The size of the border of hovered nodes.
+    nodeHoverBorderSize: 0,
+    // {string} Indicates how to choose the hovered nodes border color.
+    //          Available values: "node", "default"
+    nodeHoverBorderColor: 'node,',
+    // {number} The default hovered node border's color.
+    defaultNodeHoverBorderColor: '#000',
+
+    /**
+     * ACTIVE NODE BORDERS SETTINGS:
+     * **********************
+     */
+    // {number} The size of the border of active nodes.
+    nodeActiveBorderSize: 0,
+    // {string} Indicates how to choose the active nodes border color.
+    //          Available values: "node", "default"
+    nodeActiveBorderColor: 'node,',
+    // {number} The default active node border's color.
+    defaultNodeActiveBorderColor: '#000',
+    // {string} Indicates how to choose the active nodes outer border color.
+    //          Available values: "node", "default"
+    nodeActiveOuterBorderColor: '',
+    // {number} The size of the outer border of active nodes.
+    nodeActiveOuterBorderSize: 0,
+    // {string} The default active node outer border's color.
+    defaultNodeActiveOuterBorderColor: '#000',
+
+    /**
      * ACTIVE STATE SETTINGS:
      * **********************
      */
@@ -35,22 +82,6 @@
     edgeActiveColor: 'edge',
     // {string}
     defaultEdgeActiveColor: 'rgb(236, 81, 72)',
-
-    /**
-     * NODE BORDERS SETTINGS:
-     * **********************
-     */
-    // {string} Indicates how to choose the nodes border color.
-    //          Available values: "node", "default"
-    nodeBorderColor: 'node,',
-    // defaultNodeBorderColor is set in sigma.settings.
-    // {string} Indicates how to choose the nodes outer border color.
-    //          Available values: "node", "default"
-    nodeOuterBorderColor: '',
-    // {number} The size of the outer border of hovered and active nodes.
-    outerBorderSize: 0,
-    // {string} The default hovered and active node outer border's color.
-    defaultNodeOuterBorderColor: '#000',
 
     /**
      * NODE LEVEL SETTINGS:

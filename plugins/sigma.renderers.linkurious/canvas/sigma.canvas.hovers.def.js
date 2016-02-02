@@ -24,7 +24,12 @@
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'] || 1,
         defaultNodeColor = settings('defaultNodeColor'),
-        borderSize = node.border_size || settings('borderSize'),
+        borderSize = node.active ?
+          node.border_size || settings('nodeActiveBorderSize') || settings('nodeBorderSize') :
+          node.border_size || settings('nodeHoverBorderSize') || settings('nodeBorderSize'),
+        outerBorderSize = node.active ?
+          settings('nodeActiveOuterBorderSize') || settings('nodeOuterBorderSize') :
+          settings('nodeOuterBorderSize'),
         alignment = settings('labelAlignment'),
         fontSize = (settings('labelSize') === 'fixed') ?
           settings('defaultLabelSize') :
@@ -32,8 +37,8 @@
         color = settings('nodeHoverColor') === 'node' ?
           (node.color || defaultNodeColor) :
           settings('defaultNodeHoverColor'),
-        borderColor = settings('nodeBorderColor') === 'default'
-          ? settings('defaultNodeBorderColor')
+        borderColor = settings('nodeHoverBorderColor') === 'default'
+          ? (settings('defaultNodeHoverBorderColor') || settings('defaultNodeBorderColor'))
           : (node.border_color || defaultNodeColor),
         maxLineLength = settings('maxNodeLabelLineLength') || 0,
         level = settings('nodeHoverLevel'),
@@ -77,12 +82,12 @@
       }
     }
 
-    // Node border:
+    // Border:
     if (borderSize > 0) {
       context.beginPath();
-      context.fillStyle = settings('nodeBorderColor') === 'node'
+      context.fillStyle = settings('nodeHoverBorderColor') === 'node'
         ? borderColor
-        : settings('defaultNodeBorderColor');
+        : (settings('defaultNodeHoverBorderColor') || settings('defaultNodeBorderColor'));
       context.arc(
         node[prefix + 'x'],
         node[prefix + 'y'],
@@ -130,7 +135,7 @@
           break;
         case 'left':
           context.textAlign = "right";
-          labelOffsetX = - size - borderSize - settings('outerBorderSize') - 3 - labelWidth;
+          labelOffsetX = - size - borderSize - outerBorderSize - 3;
           break;
         case 'top':
           labelOffsetY = - size - 2 * fontSize / 3;
@@ -150,7 +155,7 @@
         case 'right':
         /* falls through*/
         default:
-          labelOffsetX = size + borderSize + settings('outerBorderSize') + 3;
+          labelOffsetX = size + borderSize + outerBorderSize + 3;
           context.textAlign = "left";
           break;
       }
@@ -215,8 +220,8 @@
 
             context.moveTo(x, y + e);
             context.arcTo(x, y, x - e, y, e);
-            context.lineTo(x - w - borderSize - e, y);
-            context.lineTo(x - w - borderSize - e, y + h);
+            context.lineTo(x - w - borderSize - outerBorderSize - e, y);
+            context.lineTo(x - w - borderSize - outerBorderSize - e, y + h);
             context.lineTo(x - e, y + h);
             context.arcTo(x, y + h, x, y + h - e, e);
             context.lineTo(x, y + e);
@@ -243,8 +248,8 @@
 
             context.moveTo(x, y + e);
             context.arcTo(x, y, x + e, y, e);
-            context.lineTo(x + w + borderSize + e, y);
-            context.lineTo(x + w + borderSize + e, y + h);
+            context.lineTo(x + w + borderSize + outerBorderSize + e, y);
+            context.lineTo(x + w + borderSize + outerBorderSize + e, y + h);
             context.lineTo(x + e, y + h);
             context.arcTo(x, y + h, x, y + h - e, e);
             context.lineTo(x, y + e);

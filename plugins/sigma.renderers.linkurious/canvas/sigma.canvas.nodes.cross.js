@@ -36,8 +36,10 @@
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = node.border_size || settings('borderSize'),
-        outerBorderSize = settings('outerBorderSize'),
+        borderSize = node.border_size || settings('nodeBorderSize'),
+        outerBorderSize = settings('nodeOuterBorderSize'),
+        activeBorderSize = node.border_size || settings('nodeActiveBorderSize'),
+        activeOuterBorderSize = settings('nodeActiveOuterBorderSize'),
         color = o.color || node.color || defaultNodeColor,
         borderColor = settings('nodeBorderColor') === 'default'
           ? settings('defaultNodeBorderColor')
@@ -47,38 +49,58 @@
     // Level:
     sigma.utils.canvas.setLevel(level, context);
 
-    // Color:
     if (node.active) {
+      // Color:
       if (settings('nodeActiveColor') === 'node') {
         color = node.active_color || color;
       }
       else {
         color = settings('defaultNodeActiveColor') || color;
       }
-    }
 
-    // Outer border:
-    if (node.active) {
+      // Outer Border:
+      if (activeOuterBorderSize > 0) {
+        context.beginPath();
+        context.fillStyle = settings('nodeActiveOuterBorderColor') === 'node' ?
+          (color || defaultNodeColor) :
+          settings('defaultNodeActiveOuterBorderColor');
+        context.arc(x, y, size + activeBorderSize + activeOuterBorderSize, 0, Math.PI * 2, true);
+        context.closePath();
+        context.fill();
+      }
+      // Border:
+      if (activeBorderSize > 0) {
+        context.beginPath();
+        context.fillStyle = settings('nodeActiveBorderColor') === 'node'
+          ? borderColor
+          : settings('defaultNodeActiveBorderColor');
+        context.arc(x, y, size + activeBorderSize, 0, Math.PI * 2, true);
+        context.closePath();
+        context.fill();
+      }
+    }
+    else {
+      // Outer Border:
       if (outerBorderSize > 0) {
         context.beginPath();
         context.fillStyle = settings('nodeOuterBorderColor') === 'node' ?
           (color || defaultNodeColor) :
           settings('defaultNodeOuterBorderColor');
-        drawCross(node, x, y, size + borderSize + outerBorderSize, context);
+        context.arc(x, y, size + borderSize + outerBorderSize, 0, Math.PI * 2, true);
         context.closePath();
         context.fill();
       }
-    }
 
-    // Border:
-    if (borderSize > 0) {
-      context.beginPath();
-      context.fillStyle = settings('nodeBorderColor') === 'node'
-        ? borderColor
-        : settings('defaultNodeBorderColor');
-      drawCross(node, x, y, size + borderSize, context);
-      context.closePath();
-      context.fill();
+      // Border:
+      if (borderSize > 0) {
+        context.beginPath();
+        context.fillStyle = settings('nodeBorderColor') === 'node'
+          ? borderColor
+          : settings('defaultNodeBorderColor');
+        context.arc(x, y, size + borderSize, 0, Math.PI * 2, true);
+        context.closePath();
+        context.fill();
+      }
     }
 
     // Shape:

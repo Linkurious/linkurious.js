@@ -41,13 +41,18 @@
         y = node[prefix + 'y'],
         defaultNodeColor = settings('defaultNodeColor'),
         imgCrossOrigin = settings('imgCrossOrigin') || 'anonymous',
-        borderSize = node.border_size || settings('borderSize'),
-        outerBorderSize = settings('outerBorderSize'),
+        borderSize = node.border_size || settings('nodeBorderSize'),
+        outerBorderSize = settings('nodeOuterBorderSize'),
+        activeBorderSize = node.border_size || settings('nodeActiveBorderSize'),
+        activeOuterBorderSize = settings('nodeActiveOuterBorderSize'),
         color = o.color || node.color || defaultNodeColor,
         borderColor = settings('nodeBorderColor') === 'default'
           ? settings('defaultNodeBorderColor')
           : (o.borderColor || node.border_color || defaultNodeColor),
         level = node.active ? settings('nodeActiveLevel') : node.level;
+
+    // Level:
+    sigma.utils.canvas.setLevel(level, context);
 
     if (node.active) {
       // Color:
@@ -58,31 +63,50 @@
         color = settings('defaultNodeActiveColor') || color;
       }
 
-      // Outer border:
+      // Outer Border:
+      if (activeOuterBorderSize > 0) {
+        context.beginPath();
+        context.fillStyle = settings('nodeActiveOuterBorderColor') === 'node' ?
+          (color || defaultNodeColor) :
+          settings('defaultNodeActiveOuterBorderColor');
+        context.arc(x, y, size + activeBorderSize + activeOuterBorderSize, 0, Math.PI * 2, true);
+        context.closePath();
+        context.fill();
+      }
+      // Border:
+      if (activeBorderSize > 0) {
+        context.beginPath();
+        context.fillStyle = settings('nodeActiveBorderColor') === 'node'
+          ? borderColor
+          : settings('defaultNodeActiveBorderColor');
+        context.arc(x, y, size + activeBorderSize, 0, Math.PI * 2, true);
+        context.closePath();
+        context.fill();
+      }
+    }
+    else {
+      // Outer Border:
       if (outerBorderSize > 0) {
         context.beginPath();
         context.fillStyle = settings('nodeOuterBorderColor') === 'node' ?
           (color || defaultNodeColor) :
           settings('defaultNodeOuterBorderColor');
-        drawStar(node, x, y, size + borderSize + outerBorderSize * 2, context);
+        context.arc(x, y, size + borderSize + outerBorderSize, 0, Math.PI * 2, true);
+        context.closePath();
+        context.fill();
+      }
+
+      // Border:
+      if (borderSize > 0) {
+        context.beginPath();
+        context.fillStyle = settings('nodeBorderColor') === 'node'
+          ? borderColor
+          : settings('defaultNodeBorderColor');
+        context.arc(x, y, size + borderSize, 0, Math.PI * 2, true);
         context.closePath();
         context.fill();
       }
     }
-
-    // Border:
-    if (borderSize > 0) {
-      context.beginPath();
-      context.fillStyle = settings('nodeBorderColor') === 'node'
-        ? borderColor
-        : settings('defaultNodeBorderColor');
-      drawStar(node, x, y, size + borderSize, context);
-      context.closePath();
-      context.fill();
-    }
-
-    // Level:
-    sigma.utils.canvas.setLevel(level, context);
 
     // Shape:
     context.fillStyle = color;

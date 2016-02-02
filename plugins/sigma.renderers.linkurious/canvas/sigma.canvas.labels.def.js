@@ -22,7 +22,8 @@
         fontStyle = node.active ?
           settings('activeFontStyle') : settings('fontStyle'),
         borderSize = node.active ?
-          settings('borderSize') + settings('outerBorderSize') : 0,
+          (node.border_size || settings('nodeActiveBorderSize') || settings('nodeBorderSize')) + (settings('nodeActiveOuterBorderSize') || settings('nodeOuterBorderSize')) :
+          settings('nodeBorderSize') + settings('nodeOuterBorderSize'),
         labelWidth,
         maxLineLength = settings('maxNodeLabelLineLength') || 0,
         labelOffsetX,
@@ -76,7 +77,7 @@
         break;
       case 'left':
         context.textAlign = "right";
-        labelOffsetX = - size - borderSize - 3 ;
+        labelOffsetX = - size - borderSize - 3;
         break;
       case 'top':
         labelOffsetY = - size - 2 * fontSize / 3;
@@ -84,6 +85,7 @@
       case 'constrained':
         labelWidth = sigma.utils.canvas.getTextWidth(context,
             settings('approximateLabelWidth'), fontSize, node.label);
+
         if (labelWidth > (size + fontSize / 3) * 2) {
           shouldRender = false;
         }
@@ -91,6 +93,7 @@
       case 'inside':
         labelWidth = sigma.utils.canvas.getTextWidth(context,
             settings('approximateLabelWidth'), fontSize, node.label);
+
         if (labelWidth <= (size + fontSize / 3) * 2) {
           break;
         }

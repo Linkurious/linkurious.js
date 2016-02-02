@@ -25,7 +25,7 @@
         lines,
         baseX,
         baseY,
-        borderSize = settings('borderSize'),
+        borderSize = settings('nodeBorderSize'),
         alignment = settings('labelAlignment'),
         fontStyle = settings('hoverFontStyle') || settings('fontStyle'),
         prefix = settings('prefix') || '',
