@@ -316,8 +316,9 @@
      * animation.
      *
      * @param  {?object} options       The options. Fit to all nodes otherwise.
-     *         {?array}  options.nodeIds The set of node ids.
-     *         {?array}  options.edgeIds The set of edges ids.
+     *         {?number|string|array}  options.nodeIds The set of node ids.
+     *         {?number|string|array}  options.edgeIds The set of edges ids.
+     *         {?boolean}              options.animate Animate the nodes if true.
      * @return {sigma.plugins.leaflet} The plugin instance.
      */
     this.fitBounds = function(options) {
@@ -346,10 +347,15 @@
           o.nodeIds = [o.nodeIds];
         }
         var nodes = o.nodeIds ? _s.graph.nodes(o.nodeIds) : _s.graph.nodes();
-        _map.fitBounds(_self.utils.geoBoundaries(nodes));
+
+        _map.fitBounds(_self.utils.geoBoundaries(nodes), {
+          animate: false
+        });
 
         if (_map.getZoom() === zoom) {
+          _easeEnabled = !!o.animate;
           _self.syncNodes();
+          _easeEnabled = false;
         }
 
         // handler removes itself

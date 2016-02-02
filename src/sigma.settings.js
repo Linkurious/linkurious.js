@@ -68,8 +68,8 @@
     // {number} The oversampling factor used in WebGL renderer.
     webglOversamplingRatio: 2,
     // {number} The size of the border of nodes.
-    borderSize: 0,
-    // {number} The default hovered node border's color.
+    nodeBorderSize: 0,
+    // {number} The default node border's color.
     defaultNodeBorderColor: '#000',
     // {number} The hovered node's label font. If not specified, will heritate
     //          the "font" value.

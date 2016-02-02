@@ -52,28 +52,13 @@
 <!-- END SIGMA IMPORTS -->
 <script src="../plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
 <script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
-<script src="../plugins/sigma.plugins.locate/sigma.plugins.locate.js"></script>
 
 <script src="../plugins/sigma.plugins.leaflet/sigma.plugins.leaflet.js"></script>
 
 <script src="../plugins/sigma.renderers.linkurious/settings.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.nodes.def.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.nodes.fast.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.edges.def.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.edges.fast.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/webgl/sigma.webgl.edges.arrow.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.labels.def.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.hovers.def.js"></script>
 <script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.def.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.cross.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.diamond.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.equilateral.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.square.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.star.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.def.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.curve.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.arrow.js"></script>
-<script src="../plugins/sigma.renderers.linkurious/canvas/sigma.canvas.edges.curvedArrow.js"></script>
 <div id="container">
   <style>
     #map-container,
@@ -132,6 +117,7 @@ sigmaInstance = new sigma({
   graph: g,
   container: 'graph-container',
   settings: {
+    // style the nodes to spot them easily:
     nodeBorderSize: 3,
     defaultNodeBorderColor: '#fff',
     nodeOuterBorderSize: 2,
@@ -178,8 +164,8 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 
 // Instantiate Sigma plugin for Leaflet with optional animation settings
 var leafletPlugin = sigma.plugins.leaflet(sigmaInstance, map, {
-  // easing: 'cubicInOut',
-  // duration: 800
+  easing: 'cubicInOut',
+  duration: 800
 });
 
 leafletPlugin.enable();
