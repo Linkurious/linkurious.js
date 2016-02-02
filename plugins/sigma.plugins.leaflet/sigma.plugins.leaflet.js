@@ -311,22 +311,46 @@
     };
 
     /**
-     * Fit the view to the nodes. If nodes are currently animated, it will postpone
-     * the execution after the end of the animation.
+     * Fit the view to the graph or to the given nodes or edges. If sigma is
+     * currently animated, it will postpone the execution after the end of the
+     * animation.
      *
-     * @param  {?array}   nodes The set of nodes. Fit to all nodes otherwise.
+     * @param  {?object} options       The options. Fit to all nodes otherwise.
+     *         {?array}  options.nodeIds The set of node ids.
+     *         {?array}  options.edgeIds The set of edges ids.
      * @return {sigma.plugins.leaflet} The plugin instance.
      */
-    this.fitBounds = function(nodes) {
+    this.fitBounds = function(options) {
+      var o = options || {};
+      var zoom = _map.getZoom();
       if (_isAnimated) {
         _s.bind('animate.end', fitGeoBounds);
       }
       else {
-        _map.fitBounds(_self.utils.geoBoundaries(nodes || _s.graph.nodes()));
+        fitGeoBounds();
       }
 
       function fitGeoBounds() {
-        _map.fitBounds(_self.utils.geoBoundaries(nodes || _s.graph.nodes()));
+        if (o.edgeIds) {
+          if (!Array.isArray(o.edgeIds)) {
+            o.edgeIds = [o.edgeIds];
+          }
+          o.nodeIds = [];
+          var edges = _s.graph.edges(o.edgeIds);
+          for (var i = 0, l = edges.length; i < l; i++) {
+            o.nodeIds.push(edges[i].source);
+            o.nodeIds.push(edges[i].target);
+          }
+        }
+        if (o.nodeIds && !Array.isArray(o.nodeIds)) {
+          o.nodeIds = [o.nodeIds];
+        }
+        var nodes = o.nodeIds ? _s.graph.nodes(o.nodeIds) : _s.graph.nodes();
+        _map.fitBounds(_self.utils.geoBoundaries(nodes));
+
+        if (_map.getZoom() === zoom) {
+          _self.syncNodes();
+        }
 
         // handler removes itself
         setTimeout(function() {
@@ -335,6 +359,20 @@
       }
 
       return _self;
+    };
+
+    /**
+     * Zoom in the map.
+     */
+    this.zoomIn = function() {
+      _map.zoomIn();
+    };
+
+    /**
+     * Zoom out the map.
+     */
+    this.zoomOut = function() {
+      _map.zoomOut();
     };
 
     /**

@@ -69,8 +69,21 @@ The containers must exactly overlap on the page. We recommend use the same CSS r
 **disable()** : *sigma.plugins.leaflet*
  * The method will restore the original Sigma settings and node coordinates, and unbind event listeners.
 
-**fitBounds()** : *sigma.plugins.leaflet*
- * The method will fit the view to the nodes. If nodes are currently animated, it will postpone the execution after the end of the animation.
+**fitBounds(?*object*)** : *sigma.plugins.leaflet*
+ * The method will fit the view to the graph or to the given nodes or edges. If sigma is currently animated, it will postpone the execution after the end of the animation. Examples:
+
+````javascript
+leafletPlugin.fitBounds();
+leafletPlugin.fitBounds({ nodeIds: 'n0' });
+leafletPlugin.fitBounds({ nodeIds: ['n0', 'n1'] });
+leafletPlugin.fitBounds({ edgeIds: ['e0', 'e1'] });
+````
+
+**zoomIn()** : *sigma.plugins.leaflet*
+ * The method will zoom in the map.
+
+**zoomOut()** : *sigma.plugins.leaflet*
+ * The method will zoom out the map.
 
 **syncNodes(?*array*|*number*|*string*)** : *sigma.plugins.leaflet*
  * The method will update the cartesian coordinates of the given node ids from their geospatial coordinates and refresh the Sigma instance. All nodes will be updated if no parameter is given.
