@@ -539,8 +539,8 @@
   ActiveState.prototype.nodes = function() {
     if (!_activeNodesIndex) return [];
 
-    if (!sigma.forceES5 && Array.from) {
-      return Array.from(_activeNodesIndex.values());
+    if (!sigma.forceES5) {
+      return _activeNodesIndex.valueList();
     }
 
     var id,
@@ -558,8 +558,8 @@
   ActiveState.prototype.edges = function() {
     if (!_activeEdgesIndex) return [];
 
-    if (!sigma.forceES5 && Array.from) {
-      return Array.from(_activeEdgesIndex.values());
+    if (!sigma.forceES5) {
+      return _activeEdgesIndex.valueList();
     }
 
     var id,

@@ -19,68 +19,112 @@
    * have the same signature than the corresponding Map methods.
    */
   function SigmaMap() {
-    this.objects = Object.create(null);
-    this.size = 0;
-  }
-
-  SigmaMap.prototype.set = function (key, value) {
-    if (this.objects[key] === undefined) this.size++;
-
-    this.objects[key] = value;
-  };
-
-  SigmaMap.prototype.get = function (key) {
-    return this.objects[key];
-  };
-
-  SigmaMap.prototype.has = function (key) {
-    return this.objects[key] !== undefined;
-  };
-
-  SigmaMap.prototype.forEach = function (func) {
-    var keys = Object.keys(this.objects);
-    for (var i = 0; i < keys.length; ++i) {
-      var key = keys[i],
-          obj = this.objects[key];
-
-      if (typeof obj !== 'undefined') {
-        func(obj, key);
-      }
-    }
-  };
-
-  SigmaMap.prototype.delete = function (key) {
-    var value = this.objects[key];
-    this.objects[key] = undefined;
-
-    if (value !== undefined) this.size--;
-
-    return value;
-  };
-
-  SigmaMap.prototype.clear = function () {
-    for (var k in this.objects)
-      if (!('hasOwnProperty' in this.objects) || this.objects.hasOwnProperty(k))
-        delete this.objects[k];
-
-    this.size = 0;
-  };
-
-  SigmaMap.prototype.keyList = function () {
     var self = this;
-    return Object.keys(this.objects).filter(function(key) {
-      return self.objects[key] !== undefined;
-    });
-  };
+    var _store;
+
+    if (!sigma.forceES5 &&
+      typeof Map !== 'undefined' &&
+      Map.prototype.keys !== undefined &&
+      Map.prototype.forEach !== undefined
+      && Array.from !== undefined) {
+
+      _store = new Map();
+
+      Object.defineProperty(this, 'size', {
+        get: function() { return _store.size; },
+        set: undefined,
+        enumerable: true
+      });
+
+      this.set = function(key, value) { _store.set('' + key, value); };
+      this.get = function(key) { return _store.get('' + key); };
+      this.has = function(key) { return _store.has('' + key); };
+      this.forEach = function(func) { return _store.forEach(func); };
+      this.delete = function(key) { return _store.delete('' + key); };
+      this.clear = function() { _store.clear(); };
+
+      this.keyList = function () {
+        return Array.from(_store.keys());
+      };
+
+      this.valueList = function () {
+        var values = [];
+        _store.forEach(function(val) {
+          values.push(val);
+        });
+        return values;
+      };
+    }
+    else {
+      _store = Object.create(null);
+      this.size = 0;
+
+      this.keyList = function () {
+        return Object.keys(_store).filter(function(key) {
+          return _store[key] !== undefined;
+        });
+      };
+
+      this.valueList = function () {
+        var keys = Object.keys(_store);
+        var values = [];
+
+        for (var i = 0; i < keys.length; i++) {
+          var val = _store[keys[i]];
+          if (val !== undefined) {
+            values.push(val);
+          }
+        }
+        return values;
+      };
+
+      this.set = function (key, value) {
+        if (_store[key] === undefined) self.size++;
+
+        _store[key] = value;
+      };
+
+      this.get = function (key) {
+        return _store[key];
+      };
+
+      this.has = function (key) {
+        return _store[key] !== undefined;
+      };
+
+      this.forEach = function (func) {
+        var keys = Object.keys(_store);
+        for (var i = 0; i < keys.length; ++i) {
+          var key = keys[i],
+              obj = _store[key];
+
+          if (typeof obj !== 'undefined') {
+            func(obj, key);
+          }
+        }
+      };
+
+      this.delete = function (key) {
+        var value = _store[key];
+        _store[key] = undefined;
+
+        if (value !== undefined) self.size--;
+
+        return value;
+      };
+
+      this.clear = function () {
+        for (var k in _store)
+          if (!('hasOwnProperty' in _store) || _store.hasOwnProperty(k))
+            delete _store[k];
+
+        _store = Object.create(null);
+        self.size = 0;
+      };
+    }
+  }
 
   sigma.utils.map = SigmaMap;
-
-  if (!sigma.forceES5 && typeof Map !== 'undefined' && Map.prototype.keys !== undefined && Array.from !== undefined) {
-    sigma.utils.map = Map;
-    Map.prototype.keyList = function () {
-      return Array.from(this.keys());
-    };
-  }
 
 
   /**
