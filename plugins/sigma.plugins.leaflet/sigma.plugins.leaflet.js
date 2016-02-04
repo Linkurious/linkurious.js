@@ -34,10 +34,66 @@
    * @param  {object} node
    * @return {boolean}
    */
-  function hasGeoCoordinates(node) {
+  function hasNodeGeoCoordinates(node) {
     return node.lat != undefined && node.lng != undefined &&
       typeof node.lat === 'number' && typeof node.lng === 'number';
   }
+
+  // Index of the nodes that have geo coordinates
+  var _geoNodesIndex = new sigma.utils.map();
+
+  /**
+   * Attach methods to the graph to keep indexes updated.
+   * ------------------
+   */
+
+  // Index the node after its insertion in the graph if it has geo coordinates.
+  sigma.classes.graph.attach(
+    'addNode',
+    'sigma.plugins.leaflet.addNode',
+    function(n) {
+      if (hasNodeGeoCoordinates(n)) {
+        _geoNodesIndex.set(n.id, this.nodesIndex.get(n.id));
+      }
+    }
+  );
+
+  // Deindex the node before its deletion from the graph.
+  sigma.classes.graph.attachBefore(
+    'dropNode',
+    'sigma.plugins.leaflet.dropNode',
+    function(id) {
+      _geoNodesIndex.delete(id);
+    }
+  );
+
+  // Deindex all nodes before the graph is cleared.
+  sigma.classes.graph.attachBefore(
+    'clear',
+    'sigma.plugins.leaflet.clear',
+    function() {
+      _geoNodesIndex.clear();
+      _geoNodesIndex = new sigma.utils.map();
+    }
+  );
+
+  /**
+   * This methods returns true if the given node has geo coordinates. If no
+   * node is given, returns true if one node has geo coordinates in the graph.
+   *
+   * @param {?string|number} nodeId The optional node id to check.
+   * @return {boolean}
+   */
+  if (!sigma.classes.graph.hasMethod('hasLatLngCoordinates'))
+    sigma.classes.graph.addMethod('hasLatLngCoordinates', function(nodeId) {
+      if (nodeId !== undefined) {
+        var node = this.nodesIndex.get(nodeId);
+        if (node) {
+          return hasNodeGeoCoordinates(node);
+        }
+      }
+      return _geoNodesIndex.size != 0;
+    });
 
 
   /**
@@ -146,6 +202,19 @@
     }
 
     /**
+     * Return true if at least one node has geographical coordinates.
+     */
+    this.isApplicable = function() {
+      var nodes = _s.graph.nodes();
+      for (var i = 0, l = nodes.length; i < l; i++) {
+        if (hasNodeGeoCoordinates(nodes[i])) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    /**
      * Apply mandatory Sigma settings, update node coordinates from their
      * geospatial coordinates, and bind all event listeners.
      *
@@ -233,7 +302,10 @@
           node.leaflet_y = node.y;
         }
 
-        if (hasGeoCoordinates(node)) {
+        if (hasNodeGeoCoordinates(node)) {
+          // ensures the node is indexed if lat/lng properties have been added
+          _geoNodesIndex.set(node.id, _s.graph.nodes(node.id));
+
           // Compute new cartesian coordinates
           point = _self.utils.latLngToSigmaPoint(node);
 
@@ -253,6 +325,9 @@
           }
         }
         else {
+          // ensures the node is not indexed if lat/lng properties have been removed
+          _geoNodesIndex.delete(node.id);
+
           // Hide node because it doesn't have geo coordinates
           // and store current "hidden" state
           if (node.leaflet_hidden === undefined) {
@@ -540,7 +615,7 @@
 
       for (var i = 0, l = nodes.length; i < l; i++) {
         node = nodes[i];
-        if (node.hidden || !hasGeoCoordinates(node)) {
+        if (node.hidden || !hasNodeGeoCoordinates(node)) {
           continue; // skip node
         }
         maxLat = Math.max(node.lat, maxLat);
