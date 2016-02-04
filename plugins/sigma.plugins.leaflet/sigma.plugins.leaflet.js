@@ -186,6 +186,7 @@
       _isAnimated = false,
 
       // Plugin state
+      _enabled = false,
       _bound = false,
       _settingsApplied = false,
       _locateSettingsApplied = false,
@@ -202,7 +203,9 @@
     }
 
     /**
-     * Return true if at least one node has geographical coordinates.
+     * Check if at least one node has geographical coordinates.
+     *
+     * @return {boolean}
      */
     this.isApplicable = function() {
       var nodes = _s.graph.nodes();
@@ -213,6 +216,15 @@
       }
       return false;
     };
+
+    /**
+     * Check if the plugin is enabled.
+     *
+     * @return {boolean}
+     */
+    this.isEnabled = function() {
+      return _enabled;
+    }
 
     /**
      * Apply mandatory Sigma settings, update node coordinates from their
@@ -240,6 +252,8 @@
       });
       _easeEnabled = false;
 
+      _enabled = true;
+
       return _self;
     };
 
@@ -260,6 +274,8 @@
         _self.dispatchEvent('disabled');
       });
       _easeEnabled = false;
+
+      _enabled = false;
 
       return _self;
     };
@@ -561,6 +577,7 @@
       _self.unbindAll();
       hideMapContainer();
       restoreSigmaSettings();
+      _enabled = false;
 
       _s = undefined;
       _renderer = undefined;

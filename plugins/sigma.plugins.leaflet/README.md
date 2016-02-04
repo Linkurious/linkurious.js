@@ -66,6 +66,9 @@ The containers must exactly overlap on the page. We recommend use the same CSS r
 **isApplicable()** : *boolean*
  * The method will return `true` if at least one node has geographical coordinates.
 
+**isEnabled()** : *boolean*
+ * The method will return `true` if the plugin is enabled.
+
 **enable()** : *sigma.plugins.leaflet*
  * The method will apply mandatory Sigma settings, update node coordinates from their geospatial coordinates, and bind all event listeners.
 
@@ -163,4 +166,4 @@ The plugin is compatible with `sigma.plugins.dragNodes` and `sigma.plugins.anima
 - The mouse wheel will zoom to the center of the view regardless of where the mouse was.
 - Mouse wheel, contextmenu and hover events are not forwarded to Leaflet.
 
-:warning: If you add or remove `lat`/`lng` properties of nodes in the graph directly, you must call `.syncNodes()` otherwise `.isApplicable()` and `sigma.graph.hasLatLngCoordinates()` won't provide accurate results.
+:warning: If you add or remove `lat`/`lng` properties of nodes in the graph directly, you must call `.syncNodes()` otherwise `sigma.graph.hasLatLngCoordinates()` won't provide accurate results.
