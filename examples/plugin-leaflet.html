@@ -168,6 +168,15 @@ var leafletPlugin = sigma.plugins.leaflet(sigmaInstance, map, {
   duration: 800
 });
 
+
+leafletPlugin.bind('enabled', function(event) {
+  console.log(event);
+});
+leafletPlugin.bind('disabled', function(event) {
+  console.log(event);
+});
+
+
 leafletPlugin.enable();
 
 

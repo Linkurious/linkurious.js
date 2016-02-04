@@ -104,10 +104,10 @@ leafletPlugin.fitBounds({ edgeIds: ['e0', 'e1'] });
  * The method will reset the geographical coordinates of the nodes that have been dragged. You must call `.syncNodes()` to apply the changes on the map.
 
 **bindAll()** : *sigma.plugins.leaflet*
- * The method will bind all event listeners.
+ * The method will bind all internal event listeners.
 
 **unbindAll()** : *sigma.plugins.leaflet*
- * The method will unbind all event listeners.
+ * The method will unbind all internal event listeners.
 
 **kill()**
  * The method will unbind all event listeners, restore Sigma settings and remove all references to Sigma and the Leaflet map.
@@ -122,6 +122,20 @@ leafletPlugin.fitBounds({ edgeIds: ['e0', 'e1'] });
  * The method will compute the spatial boundaries of the given nodes. It will ignore hidden nodes and nodes with missing `lat` (latitude) or `lng` (longitude) coordinates.
 
 
+## Events
+
+This plugin provides the following events fired by the instance of the plugin:
+* `enabled`: Fired when the plugin is enabled and node coordinates are synchronized with the map.
+* `disabled`: Fired when the plugin is disabled and original node coordinates are restored.
+
+Exemple of event binding:
+
+````javascript
+leafletPlugin.bind('enabled', function(event) {
+  console.log(event);
+});
+````
+
 ## Compatibility
 
 The plugin is compatible with [Leaflet v0.7.7](https://github.com/Leaflet/Leaflet/releases/tag/v0.7.7) (current stable release).
@@ -129,11 +143,11 @@ The plugin is compatible with [Leaflet v0.7.7](https://github.com/Leaflet/Leafle
 * Sigma nodes are compatible with [Leaflet Point](http://leafletjs.com/reference.html#point) objects because they contain `x` and `y` coordinates.
 * Sigma nodes are compatible with [Leaflet LatLng](http://leafletjs.com/reference.html#latlng) objects when they contain `lat` and `lng` coordinates.
 
-The plugin is compatible with sigma.plugins.dragNodes.
+The plugin is compatible with `sigma.plugins.dragNodes` and `sigma.plugins.animate`.
 
 ## Limitations
 
 - Sigma autoRescale is disabled.
 - Sigma inertia is disabled.
 - The mouse wheel will zoom to the center of the view regardless of where the mouse was.
-- Mouse wheel and hover events are not forwarded to Leaflet.
+- Mouse wheel, contextmenu and hover events are not forwarded to Leaflet.

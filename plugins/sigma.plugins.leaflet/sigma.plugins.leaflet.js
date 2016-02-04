@@ -98,11 +98,18 @@
   /**
    * This function provides geospatial features to Sigma by intergrating Leaflet.
    *
+   * Fired events:
+   * *************
+   * enabled  Fired when the plugin is enabled and node coordinates are synchronized with the map.
+   * disabled Fired when the plugin is disabled and original node coordinates are restored.
+   *
    * @param {sigma}     sigInst     The Sigma instance.
    * @param {leaflet}   leafletMap  The Leaflet map instance.
    * @param {?object}   options     The options.
    */
   function LeafletPlugin(sigInst, leafletMap, options) {
+    sigma.classes.dispatcher.extend(this);
+
     if (typeof L === 'undefined')
       throw new Error('leaflet is not declared');
 
@@ -159,7 +166,9 @@
       _self.bindAll();
 
       _easeEnabled = !!_easing;
-      _self.syncNodes();
+      _self.syncNodes(function() {
+        _self.dispatchEvent('enabled');
+      });
       _easeEnabled = false;
 
       return _self;
@@ -178,7 +187,9 @@
       restoreLocatePluginSettings();
 
       _easeEnabled = !!_easing;
-      restoreGraph();
+      restoreGraph(function() {
+        _self.dispatchEvent('disabled');
+      });
       _easeEnabled = false;
 
       return _self;
@@ -190,9 +201,10 @@
      * All nodes will be updated if no parameter is given.
      *
      * @param {?number|string|array} v One node id or a list of node ids.
+     * @param {?function} callback A callback function triggered after node positions are updated.
      * @return {sigma.plugins.leaflet} The plugin instance.
      */
-    this.syncNodes = function(v) {
+    this.syncNodes = function(v, callback) {
       var nodes, node, point;
 
       if (typeof v === 'string' || typeof v === 'number' || Array.isArray(v)) {
@@ -200,6 +212,10 @@
       }
       else {
         nodes = _s.graph.nodes();
+      }
+
+      if (typeof v === 'function') {
+        callback = v;
       }
 
       if (!Array.isArray(nodes)) {
@@ -247,10 +263,11 @@
       }
 
       if (_easeEnabled) {
-        animate(nodes);
+        animate(nodes, callback);
       }
       else {
         _s.refresh();
+        if (callback) callback();
       }
       return _self;
     };
@@ -542,7 +559,7 @@
      * Restore original cartesian coordinates of the nodes and "hidden" state.
      * Unpin all nodes.
      */
-    function restoreGraph() {
+    function restoreGraph(callback) {
       if (!_s) return;
 
       var nodes = _s.graph.nodes(),
@@ -577,10 +594,11 @@
       }
 
       if (_easeEnabled) {
-        animate(nodes);
+        animate(nodes, callback);
       }
       else {
         _s.refresh();
+        if (callback) callback();
       }
     }
 
@@ -591,7 +609,13 @@
       _isAnimated = !_isAnimated;
     }
 
-    function animate(nodes) {
+    /**
+     * Animate a set of given nodes.
+     *
+     * @param {array} nodes The list of nodes to animate.
+     * @param {?function} callback The function to run after the animation is complete.
+     */
+    function animate(nodes, callback) {
       sigma.plugins.animate(
         _s,
         {
@@ -606,6 +630,7 @@
               nodes[i].leaflet_x_easing = null;
               nodes[i].leaflet_y_easing = null;
             }
+            if (callback) callback();
           },
           duration: _duration
         }
