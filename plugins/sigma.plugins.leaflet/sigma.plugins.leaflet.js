@@ -209,15 +209,15 @@
       for (var i = 0, l = nodes.length; i < l; i++) {
         node = nodes[i];
 
-        if (hasGeoCoordinates(node)) {
-          // Store current cartesian coordinates
-          if (node.leaflet_x === undefined) {
-            node.leaflet_x = node.x;
-          }
-          if (node.leaflet_y === undefined) {
-            node.leaflet_y = node.y;
-          }
+        // Store current cartesian coordinates
+        if (node.leaflet_x === undefined) {
+          node.leaflet_x = node.x;
+        }
+        if (node.leaflet_y === undefined) {
+          node.leaflet_y = node.y;
+        }
 
+        if (hasGeoCoordinates(node)) {
           // Compute new cartesian coordinates
           point = _self.utils.latLngToSigmaPoint(node);
 
@@ -672,16 +672,18 @@
       if (_locateSettingsApplied || typeof sigma.plugins.locate === 'undefined') return;
       _locateSettingsApplied = true;
 
-      // locate plugin must be instanciated before!
-      var locateAnim = sigma.plugins.locate(_s).settings.animation;
+      if (_s) {
+        // locate plugin must be instanciated before!
+        var locateAnim = sigma.plugins.locate(_s).settings.animation;
 
-      _locateAnimationSettings.nodeDuration = locateAnim.node.duration;
-      _locateAnimationSettings.edgeDuration = locateAnim.edge.duration;
-      _locateAnimationSettings.centerDuration = locateAnim.center.duration;
+        _locateAnimationSettings.nodeDuration = locateAnim.node.duration;
+        _locateAnimationSettings.edgeDuration = locateAnim.edge.duration;
+        _locateAnimationSettings.centerDuration = locateAnim.center.duration;
 
-      locateAnim.node.duration = 0;
-      locateAnim.edge.duration = 0;
-      locateAnim.center.duration = 0;
+        locateAnim.node.duration = 0;
+        locateAnim.edge.duration = 0;
+        locateAnim.center.duration = 0;
+      }
     }
 
     /**
@@ -691,12 +693,14 @@
       if (!_locateSettingsApplied || typeof sigma.plugins.locate === 'undefined') return;
       _locateSettingsApplied = false;
 
-      // locate plugin must be instanciated before!
-      var locateAnim = sigma.plugins.locate(_s).settings.animation;
+      if (_s) {
+        // locate plugin must be instanciated before!
+        var locateAnim = sigma.plugins.locate(_s).settings.animation;
 
-      locateAnim.node.duration = _locateAnimationSettings.nodeDuration;
-      locateAnim.edge.duration = _locateAnimationSettings.edgeDuration;
-      locateAnim.center.duration = _locateAnimationSettings.centerDuration;
+        locateAnim.node.duration = _locateAnimationSettings.nodeDuration;
+        locateAnim.edge.duration = _locateAnimationSettings.edgeDuration;
+        locateAnim.center.duration = _locateAnimationSettings.centerDuration;
+      }
     }
 
     /**
