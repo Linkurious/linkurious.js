@@ -4,6 +4,9 @@
   if (typeof sigma === 'undefined')
     throw 'sigma is not declared';
 
+  // Initialize package:
+  sigma.utils.pkg('sigma.plugins.fullScreen');
+
   /**
    * Sigma Fullscreen
    * =============================
@@ -13,20 +16,20 @@
    * @version 0.2
    */
 
-  var _self = null,
+  var _container = null,
       _eventListenerElement = null;
 
   function toggleFullScreen() {
     if (!document.fullscreenElement &&    // alternative standard method
         !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {  // current working methods
-      if (_self.container.requestFullscreen) {
-        _self.container.requestFullscreen();
-      } else if (_self.container.msRequestFullscreen) {
-        _self.container.msRequestFullscreen();
-      } else if (_self.container.mozRequestFullScreen) {
-        _self.container.mozRequestFullScreen();
-      } else if (_self.container.webkitRequestFullscreen) {
-        _self.container.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+      if (_container.requestFullscreen) {
+        _container.requestFullscreen();
+      } else if (_container.msRequestFullscreen) {
+        _container.msRequestFullscreen();
+      } else if (_container.mozRequestFullScreen) {
+        _container.mozRequestFullScreen();
+      } else if (_container.webkitRequestFullscreen) {
+        _container.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
       }
     } else {
       if (document.exitFullscreen) {
@@ -45,18 +48,34 @@
    * This plugin enables the activation of full screen mode by clicking on btn.
    * If btn does not exist, this plugin will leave the full screen mode.
    *
-   * @param  {?object} btn The btn id from the page.
+   * @param  {?object} options The configuration. Can contain:
+   *         {?string|DOMElement} options.container A container object or id,
+   *                              otherwise sigma container is used.
+   *         {?string} options.btnId A btn id.
    */
-  function fullScreen(btn) {
-    _self = this,
+  function fullScreen(options) {
+    var o = options || {};
+
+    if (o.container) {
+      if (typeof o.container === 'object') {
+        _container = o.container;
+      }
+      else {
+        _container = document.getElementById(o.container)
+      }
+    }
+    else {
+      _container = this.container;
+    }
+
     _eventListenerElement = null;
-    
+
     // Get the btn element reference from the DOM
-    if(btn) {
-      _eventListenerElement = document.getElementById(btn.id);
+    if(o.btnId) {
+      _eventListenerElement = document.getElementById(o.btnId);
       _eventListenerElement.removeEventListener("click", toggleFullScreen);
       _eventListenerElement.addEventListener("click", toggleFullScreen);
-    } 
+    }
     else {
       toggleFullScreen();
     }
@@ -67,17 +86,11 @@
    */
   function killFullScreen() {
     toggleFullScreen();
-    _self = null;
-    
+    _container = null;
+
     if (_eventListenerElement)
       _eventListenerElement.removeEventListener("click", toggleFullScreen);
   };
 
-  // Extending canvas and webl renderers
-  sigma.renderers.canvas.prototype.fullScreen = fullScreen;
-  sigma.renderers.webgl.prototype.fullScreen = fullScreen;
-
-  sigma.renderers.canvas.prototype.killFullScreen = killFullScreen;
-  sigma.renderers.webgl.prototype.killFullScreen = killFullScreen;
-
+  sigma.plugins.fullScreen = fullScreen;
 }).call(this);

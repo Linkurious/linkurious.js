@@ -12,19 +12,20 @@ See the following [example code](../../examples/plugin-fullscreen.html) for full
 To use, include all .js files under this folder. Then initialize it as follows with the id of a button element:
 
 ````javascript
-myRenderer.fullScreen({
-  id : 'graph-btn'
+sigma.plugins.fullScreen({
+  container: 'container', // optional, default is sigma container
+  btnId : 'graph-btn'
 });
 ````
 
 The user may leave the fullscreen mode manually. Calling the method with no argument will leave the fullscreen mode as well :
 
 ````javascript
-myRenderer.fullScreen();
+sigma.plugins.fullScreen();
 ````
 
 Kill the plugin instance as follows:
 
 ````javascript
-myRenderer.killFullScreen();
+sigma.plugins.killFullScreen();
 ````

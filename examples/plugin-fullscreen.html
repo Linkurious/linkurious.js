@@ -55,6 +55,7 @@
       left: 0;
       right: 0;
       position: absolute;
+      background: #fff; /* full-screen background, black otherwise */
     }
 
     i {
@@ -153,10 +154,11 @@ s = new sigma({
 });
 
 // Initialize the FullScreen plugin with a button:
-s.renderers[0].fullScreen({
-  id : 'graph-btn'
+sigma.plugins.fullScreen({
+  container: 'container',
+  btnId : 'graph-btn'
 });
 
 // Leave the fullscreen mode:
-// s.renderers[0].fullScreen();
+// sigma.plugins.fullScreen();
 </script>
