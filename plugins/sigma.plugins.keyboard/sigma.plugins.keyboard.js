@@ -63,6 +63,11 @@
 
     sigma.classes.dispatcher.extend(this);
 
+    // needed to provide focus to the graph container
+    // see http://www.dbp-consulting.com/tutorials/canvas/CanvasKeyEvents.html
+    this.domElt.tabIndex = params.tabIndex;
+
+
     function camera(o) {
       // Normalize ratio:
       var ratio = Math.max(
@@ -123,6 +128,34 @@
       });
     };
 
+    function bindAll() {
+      if (params.autofocus) {
+        self.domElt.focus();
+        self.domElt.addEventListener('mouseover', self.focus);
+        self.domElt.addEventListener('mouseout', self.blur);
+      }
+
+      self.domElt.addEventListener('keydown', self.keyDown);
+      self.domElt.addEventListener('keyup', self.keyUp);
+
+      self.bind('37 18+37', moveLeft); // (ALT +) LEFT ARROW
+      self.bind('38 18+38', moveTop); // (ALT +) TOP ARROW
+      self.bind('39 18+39', moveRight); // (ALT +) RIGHT ARROW
+      self.bind('40 18+40', moveDown); // (ALT +) BOTTOM ARROW
+
+      self.bind('32+38 18+32+38', zoomIn); // (ALT +) SPACE + TOP ARROW
+      self.bind('32+40 18+32+40', zoomOut); // (ALT +) SPACE + BOTTOM ARROW
+    }
+
+    function unbindAll() {
+      self.domElt.removeEventListener('mouseover', self.focus);
+      self.domElt.removeEventListener('mouseout', self.blur);
+      self.domElt.removeEventListener('keydown', self.keyDown);
+      self.domElt.removeEventListener('keyup', self.keyUp);
+
+      self.unbind();
+    }
+
     this.keyDown = function(event) {
       if (event.which !== 9 && event.which !== 18 && event.which !== 20 && !self.keys[event.which]) {
         // Do nothing on Tabbing, Alt and Capslock because keyUp won't be triggered
@@ -149,26 +182,14 @@
       return true;
     }
 
-    // needed to provide focus to the graph container
-    // see http://www.dbp-consulting.com/tutorials/canvas/CanvasKeyEvents.html
-    this.domElt.tabIndex = params.tabIndex;
-
-    if (params.autofocus) {
-      this.domElt.focus();
-      this.domElt.addEventListener('mouseover', this.focus, false);
-      this.domElt.addEventListener('mouseout', this.blur, false);
+    this.kill = function() {
+      unbindAll();
+      self.domElt = null;
+      self.keys = {};
+      self.currentEvents = null;
     }
 
-    this.domElt.addEventListener('keydown', this.keyDown, false);
-    this.domElt.addEventListener('keyup', this.keyUp, false);
-
-    this.bind('37 18+37', moveLeft); // (ALT +) LEFT ARROW
-    this.bind('38 18+38', moveTop); // (ALT +) TOP ARROW
-    this.bind('39 18+39', moveRight); // (ALT +) RIGHT ARROW
-    this.bind('40 18+40', moveDown); // (ALT +) BOTTOM ARROW
-
-    this.bind('32+38 18+32+38', zoomIn); // (ALT +) SPACE + TOP ARROW
-    this.bind('32+40 18+32+40', zoomOut); // (ALT +) SPACE + BOTTOM ARROW
+    bindAll();
   };
 
 
@@ -206,14 +227,7 @@
    */
   sigma.plugins.killKeyboard = function(s) {
     if (_instance[s.id] instanceof Keyboard) {
-      _instance[s.id].unbind();
-      _instance[s.id].domElt.removeEventListener('mouseover', _instance[s.id].focus, false);
-      _instance[s.id].domElt.removeEventListener('mouseout', _instance[s.id].blur, false);
-      _instance[s.id].domElt.removeEventListener('keydown', _instance[s.id].keyDown, false);
-      _instance[s.id].domElt.removeEventListener('keyup', _instance[s.id].keyUp, false);
-      _instance[s.id].domElt = null;
-      _instance[s.id].keys = {};
-      _instance[s.id].currentEvents = null;
+      _instance[s.id].kill();
       delete _instance[s.id];
     }
   };
