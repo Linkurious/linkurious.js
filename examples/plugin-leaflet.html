@@ -144,10 +144,11 @@ sigmaInstance = new sigma({
 
 // Instantiate Leaflet
 var map = L.map('map-container', {
-  // avoid unexpected center moves:
+  // avoid unexpected moves:
   scrollWheelZoom: 'center',
   doubleClickZoom: 'center',
-  bounceAtZoomLimits: false
+  bounceAtZoomLimits: false,
+  keyboard: false
 }).setView([48.853, 2.349], 7); // Init view centered on Paris
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {

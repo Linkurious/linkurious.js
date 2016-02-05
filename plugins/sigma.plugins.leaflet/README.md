@@ -22,7 +22,8 @@ var map = L.map('map-container', {
   // avoid unexpected center moves:
   scrollWheelZoom: 'center',
   doubleClickZoom: 'center',
-  bounceAtZoomLimits: false
+  bounceAtZoomLimits: false,
+  keyboard: false
 }).setView([latitude, longitude], zoom);
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
