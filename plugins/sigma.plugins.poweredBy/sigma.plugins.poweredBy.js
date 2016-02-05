@@ -23,7 +23,7 @@
         content = [
           '<a href="' +
           url +
-          '" target="_blank" style="font-family:Lato,sans-serif;font-size:11px;color:#333;text-decoration:none;">' +
+          '" target="_blank" style="font-family:\'Helvetica Neue\',Arial,Helvetica,sans-serif; font-size:11px">' +
           html +
           '</a>'
         ];
@@ -41,10 +41,11 @@
       dom.setAttribute('class', 'sigma-poweredby');
       dom.innerHTML = content.join('');
       dom.style.position = 'absolute';
+      dom.style.padding = '0 5px';
       dom.style.bottom = '2px';
       dom.style.right = '1px';
       dom.style.zIndex = '1000';
-      dom.style.background = 'rgba(255, 255, 255, 0.8)';
+      dom.style.background = 'rgba(255, 255, 255, 0.7)';
 
       this.container.appendChild(dom);
     }

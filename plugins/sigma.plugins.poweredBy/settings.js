@@ -12,7 +12,7 @@
   */
   var settings = {
     // {string}
-    poweredByHTML: 'Powered by Linkurious.js',
+    poweredByHTML: 'Linkurious.js',
     // {number}
     poweredByURL: 'https://github.com/Linkurious/linkurious.js',
     // {string}
