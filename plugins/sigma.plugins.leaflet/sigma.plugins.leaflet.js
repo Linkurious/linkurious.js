@@ -411,6 +411,7 @@
      *         {?number|string|array}  options.nodeIds The set of node ids.
      *         {?number|string|array}  options.edgeIds The set of edges ids.
      *         {?boolean}              options.animate Animate the nodes if true.
+     *         {?function}             options.onComplete The callback function.
      * @return {sigma.plugins.leaflet} The plugin instance.
      */
     this.fitBounds = function(options) {
@@ -446,8 +447,18 @@
 
         if (_map.getZoom() === zoom) {
           _easeEnabled = !!o.animate;
-          _self.syncNodes();
+
+          if (o.onComplete) {
+            _self.syncNodes(o.onComplete);
+          }
+          else {
+            _self.syncNodes();
+          }
+
           _easeEnabled = false;
+        }
+        else if (o.onComplete) {
+          o.onComplete();
         }
 
         // handler removes itself
