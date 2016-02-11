@@ -115,7 +115,7 @@
     }
 
     return res;
-  };
+  }
 
   /**
    * This function will generate a consolidated histogram of values grouped by
@@ -165,7 +165,55 @@
       }
     }
     return d;
-  };
+  }
+
+  /**
+   * Add reference to nodes or edges in histogram bins.
+   *
+   * @param  {object} h         The nodes or edges histograms.
+   * @param  {Vision} vision    The vision object.
+   * @param  {string} p         The property accessor.
+   * @return {array}            The consolidated histogram.
+   */
+  function resolveHistogram(h, vision, p) {
+    var items = vision.get(p),
+      item,
+      value,
+      nBins = h.length,
+      maxOcc = 0;
+
+    for (var bin = 0; bin < nBins; bin++) {
+      h[bin].items = [];
+    }
+
+    Object.keys(items).forEach(function(value) {
+      for (var i = 0; i < items[value].items.length; i++) {
+        item = items[value].items[i];
+        value = strToObjectRef(item, p);
+
+        for (var bin = 0; bin < h.length; bin++) {
+          if ((!'min' in h[bin]) || (!'max' in h[bin]))
+            continue;
+
+          if (h[bin].min <= value && value <= h[bin].max) {
+            h[bin].items.push(item);
+          }
+        }
+      }
+    });
+
+    for (var bin = 0; bin < nBins; bin++) {
+      if (h[bin].items) {
+        maxOcc = (maxOcc > h[bin].items.length) ? maxOcc : h[bin].items.length;
+      }
+    }
+
+    for (var bin = 0; bin < nBins; bin++) {
+      h[bin].itemsRatio = h[bin].items.length / maxOcc;
+    }
+
+    return h;
+  }
 
   /**
    * This constructor instanciates a new vision on a specified dataset (nodes
@@ -1208,6 +1256,7 @@
         throw new Error('The property "'+ property +'" is not sequential.');
 
       var h = histogram(v.histograms[visualVar], property);
+      h = resolveHistogram(h, v, property);
 
       if (visualVar === 'color') {
         if (!self.styles[target].color) {

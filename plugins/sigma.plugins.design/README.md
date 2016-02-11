@@ -519,6 +519,12 @@ The result is an array of bin objects ordered by `bin` ID. Each bin object conta
 * **ratio**
   * The number of values in the current bin divided by the maximum number of values in the largest bin.
   * type: *number*
+* **items**
+  * The nodes or edges for which their property value is grouped in the current bin.
+  * type: *array*
+* **itemsRatio**
+  * The number of nodes or edges in the current bin divided by the maximum number of them in the largest bin.
+  * type: *number*
 * **color** (optional)
   * The color of nodes or edges in hexadecimal, rgb or rgba.
   * type: *string*
