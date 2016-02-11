@@ -105,6 +105,7 @@
  */
 var i,
     s,
+    design,
     N = 10,
     E = 50,
     g = {
@@ -270,7 +271,7 @@ function init () {
   });
 
   // Instanciate the design:
-  var design = sigma.plugins.design(s, {
+  design = sigma.plugins.design(s, {
     styles: myStyles,
     palette: myPalette
   });

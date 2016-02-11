@@ -1202,7 +1202,7 @@
       if (typeof property !== 'string')
         throw new TypeError('Invalid argument: "property" is not a string, was' + property);
 
-      var isSequential = this.isSequential(target, property);
+      var isSequential = self.utils.isSequential(target, property);
 
       if (!isSequential)
         throw new Error('The property "'+ property +'" is not sequential.');
