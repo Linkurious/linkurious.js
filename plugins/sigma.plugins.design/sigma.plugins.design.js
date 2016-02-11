@@ -262,7 +262,7 @@
           isSequential = (typeof val === 'number');
           // TODO: throw error if is number AND (is NaN or is Infinity)
         }
-        }
+      }
 
       // Index the collection:
       this.idx[key] = {};
@@ -353,6 +353,8 @@
             break;
 
           case 'size':
+            if (isSequential === undefined) break;
+
             if (!isSequential)
               throw new Error('One value of the property "' + key + '" is not a number.');
 
