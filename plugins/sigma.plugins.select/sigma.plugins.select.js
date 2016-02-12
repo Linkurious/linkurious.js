@@ -21,42 +21,6 @@
       _spacebar = false,
       _doubleClickingNodes = false;
 
-  /**
-   * Utility function to make the difference between two arrays.
-   * See https://github.com/lodash/lodash/blob/master/lodash.js#L1627
-   *
-   * @param  {array} array  The array to inspect.
-   * @param  {array} values The values to exclude.
-   * @return {array}        Returns the new array of filtered values.
-   */
-  function difference(array, values) {
-    var length = array ? array.length : 0;
-    if (!length) {
-      return [];
-    }
-    var index = -1,
-        result = [],
-        valuesLength = values.length;
-
-    outer:
-    while (++index < length) {
-      var value = array[index];
-
-      if (value === value) {
-        var valuesIndex = valuesLength;
-        while (valuesIndex--) {
-          if (values[valuesIndex] === value) {
-            continue outer;
-          }
-        }
-        result.push(value);
-      }
-      else if (values.indexOf(value) < 0) {
-        result.push(value);
-      }
-    }
-    return result;
-  }
 
   function keyDown(event) {
     _spacebar = event.which === 32;
@@ -99,14 +63,13 @@
      * node is active before any mouse event.
      */
     this.init = function() {
-      var nodes = a.nodes();
-      if (nodes.length) {
-        _nodeReference = nodes[0].id;
+      if (a.nbNodes()) {
+        _nodeReference = a.nodes()[0].id;
       }
     };
 
     /**
-     * This fuction handles the node click event. The clicked nodes are activated.
+     * This fuction handles the node click event. The clicked node is activated.
      * All active nodes are deactivated if one of the active nodes is clicked.
      * The double-clicked nodes are activated.
      * If the Spacebar key is hold, it adds the nodes to the list of active
@@ -119,30 +82,29 @@
       // Prevent nodes to be selected while dragging:
       if (mousemoveCount > 1) return;
 
-      var targets = event.data.node.map(function(n) {
-        return n.id;
-      });
+      var target = event.data.node[0].id;
       var actives = a.nodes().map(function(n) {
         return n.id;
       });
-      var newTargets = difference(targets, actives);
+
+      var newTarget = (actives.indexOf(target) > -1) ? undefined : target;
 
       a.dropEdges();
 
       if (_spacebar) {
-        var existingTargets = difference(targets, newTargets);
-        a.dropNodes(existingTargets);
+        var existingTarget = (newTarget === target) ? undefined : target;
+        a.dropNodes(existingTarget);
       }
       else {
         if (actives.length > 1) {
-          a.addNodes(targets);
+          a.addNodes(target);
         }
 
         var activeNode = a.nodes()[0];
 
         if(activeNode != null) {
           if(_nodeReference === activeNode.id) {
-            if(newTargets.length) {
+            if(newTarget != null) {
               a.dropNodes();
               _nodeReference = null;
             }
@@ -158,11 +120,15 @@
           } else {
             _nodeReference = activeNode.id;
           }
+        } else {
+          _nodeReference = newTarget;
         }
       }
 
-      a.addNodes(newTargets);
-      s.refresh({skipIndexation: true});
+      if (newTarget != null) {
+        a.addNodes(newTarget);
+        s.refresh({skipIndexation: true});
+      }
     };
 
     /**
@@ -178,7 +144,7 @@
     };
 
     /**
-     * This fuction handles the edge click event. The clicked edges are activated.
+     * This fuction handles the edge click event. The clicked edge is activated.
      * The clicked active edges are deactivated.
      * If the Spacebar key is hold, it adds the edges to the list of active
      * edges instead of clearing the list. It clears the list of active nodes. It
@@ -190,37 +156,35 @@
       // Prevent edges to be selected while dragging:
       if (mousemoveCount > 1) return;
 
-      var targets = event.data.edge.map(function(e) {
-        return e.id;
-      });
+      var target = event.data.edge[0].id;
       var actives = a.edges().map(function(e) {
         return e.id;
       });
-      var newTargets = difference(targets, actives);
+
+      var newTarget = (actives.indexOf(target) > -1) ? undefined : target;
 
       a.dropNodes();
       _nodeReference = null;
 
       if (_spacebar) {
-        var existingTargets = difference(targets, newTargets);
-        a.dropEdges(existingTargets);
+        var existingTarget = (newTarget === target) ? undefined : target;
+        a.dropEdges(existingTarget);
       }
       else {
         a.dropEdges();
-        if (actives.length > 1) {
-          a.addEdges(targets);
-        }
       }
 
-      a.addEdges(newTargets);
-      s.refresh({skipIndexation: true});
+      if (newTarget != null) {
+        a.addEdges(newTarget);
+        s.refresh({skipIndexation: true});
+      }
     };
 
     // Select all nodes or deselect them if all nodes are active
     function spaceA() {
       a.dropEdges();
 
-      if (a.nodes().length === s.graph.nodes().length) {
+      if (a.nbNodes() === s.graph.nodes().length) {
         a.dropNodes();
       }
       else {
