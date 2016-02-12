@@ -31,6 +31,12 @@ sigma.plugins.killActiveState();
 **edges()** : *array*
  * The method returns the active edges.
 
+**nbNodes()** : *number*
+ * The method returns the number of active nodes.
+
+**nbEdges()** : *number*
+ * The method returns the number of active edges.
+
 **addNodes()** : *sigma.plugins.activeState*
 **addNodes( *string* )** : *sigma.plugins.activeState*
 **addNodes( *array* )** : *sigma.plugins.activeState*

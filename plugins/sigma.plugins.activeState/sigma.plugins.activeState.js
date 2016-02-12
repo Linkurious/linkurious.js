@@ -570,6 +570,24 @@
     return a;
   };
 
+  /**
+   * This method returns the number of the active edges.
+   * @return {number} The number of active edges.
+   */
+  ActiveState.prototype.nbNodes = function() {
+    if (!_activeNodesIndex) return 0;
+    return _activeNodesIndex.size;
+  };
+
+  /**
+   * This method returns the number of the active nodes.
+   * @return {number} The number of active nodes.
+   */
+  ActiveState.prototype.nbEdges = function() {
+    if (!_activeEdgesIndex) return 0;
+    return _activeEdgesIndex.size;
+  };
+
 
   /**
    * Interface
