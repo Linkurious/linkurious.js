@@ -215,6 +215,46 @@
     return h;
   }
 
+  // Utilities
+  function download(fileEntry, extension, filename) {
+    var blob = null,
+        objectUrl = null,
+        dataUrl = null;
+
+    if(window.Blob){
+      // use Blob if available
+      blob = new Blob([fileEntry], {type: 'text/json'});
+      objectUrl = window.URL.createObjectURL(blob);
+    }
+    else {
+      // else use dataURI
+      dataUrl = 'data:text/json;charset=UTF-8,' + encodeURIComponent(fileEntry);
+    }
+
+    if (navigator.msSaveBlob) { // IE11+ : (has Blob, but not a[download])
+      navigator.msSaveBlob(blob, filename);
+    } else if (navigator.msSaveOrOpenBlob) { // IE10+ : (has Blob, but not a[download])
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      // A-download
+      var anchor = document.createElement('a');
+      anchor.setAttribute('href', (window.Blob) ? objectUrl : dataUrl);
+      anchor.setAttribute('download', filename || 'graph.' + extension);
+
+      // Firefox requires the link to be added to the DOM before it can be clicked.
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
+
+    if (objectUrl) {
+      setTimeout(function() { // Firefox needs a timeout
+        window.URL.revokeObjectURL(objectUrl);
+      }, 0);
+    }
+  }
+
+
   /**
    * This constructor instanciates a new vision on a specified dataset (nodes
    * or edges).
@@ -1149,6 +1189,34 @@
       delete this.palette;
       _visionOnNodes.clear();
       _visionOnEdges.clear();
+    };
+
+    /**
+     * Transform the styles and palette into a JSON representation.
+     *
+     * @param  {object} params The options.
+     * @return {string}        The JSON string.
+     */
+    this.toJSON = function(params) {
+      params = params || {};
+
+      var o = {
+        styles: this.styles,
+        palette: this.palette
+      }
+
+      if (params.pretty) {
+        var jsonString = JSON.stringify(o, null, ' ');
+      }
+      else {
+        var jsonString = JSON.stringify(o);
+      }
+
+      if (params.download) {
+        download(jsonString, 'json', params.filename);
+      }
+
+      return jsonString;
     };
 
     this.utils = {};

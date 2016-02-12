@@ -483,6 +483,37 @@ var newdesign = sigma.plugins.design(sigInst, {
 newdesign.apply(); // yeah!
 ```
 
+### Download styles and palette
+
+You can download styles and palette in JSON:
+
+```javascript
+// Retreive the JSON string
+var jsonString = design.toJSON();
+
+// Download the JSON file
+design.toJSON({
+  download: true,
+  pretty: true,
+  filename: 'myGraphDesign.json'
+})
+```
+
+#### Options
+
+ * **download**
+   * Whether you want the data to be downloaded by the browser.
+   * type: *boolean*
+   * default value: `false`
+ * **pretty**
+   * Whether you want a pretty output for easy read.
+   * type: *boolean*
+   * default value: `false`
+ * **filename**
+   * The full filename for the file to download.
+   * type: *string*
+
+
 ## Utils
 
 ### Data type of a property on nodes or edges
