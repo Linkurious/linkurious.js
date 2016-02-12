@@ -258,6 +258,8 @@
             isHoveredNodeActive,
             dist;
 
+        if (_a.nbNodes() === nodes.length) return;
+
         if (!_enabled || nodes.length < 2) return;
 
         dist = sigma.utils.getDistance(x, y, _node[_prefix + 'x'],_node[_prefix + 'y']);
