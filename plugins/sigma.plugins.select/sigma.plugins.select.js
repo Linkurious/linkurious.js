@@ -94,6 +94,7 @@
       if (_spacebar) {
         var existingTarget = (newTarget === target) ? undefined : target;
         a.dropNodes(existingTarget);
+        s.refresh({skipIndexation: true});
       }
       else {
         if (actives.length > 1) {
@@ -169,6 +170,7 @@
       if (_spacebar) {
         var existingTarget = (newTarget === target) ? undefined : target;
         a.dropEdges(existingTarget);
+        s.refresh({skipIndexation: true});
       }
       else {
         a.dropEdges();
