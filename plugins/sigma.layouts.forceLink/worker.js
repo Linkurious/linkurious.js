@@ -735,7 +735,7 @@
 
       // 2) Repulsion
       //--------------
-      // NOTES: adjustSize = antiCollision & scalingRatio = coefficient
+      // NOTES: adjustSizes = antiCollision & scalingRatio = coefficient
 
       if (W.settings.barnesHutOptimize) {
         coefficient = W.settings.scalingRatio;
@@ -767,7 +767,7 @@
                 xDist = NodeMatrix[np(n, 'x')] - RegionMatrix[rp(r, 'massCenterX')];
                 yDist = NodeMatrix[np(n, 'y')] - RegionMatrix[rp(r, 'massCenterY')];
 
-                if (W.settings.adjustSize) {
+                if (W.settings.adjustSizes) {
 
                   //-- Linear Anti-collision Repulsion
                   if (distance > 0) {
@@ -823,7 +823,7 @@
 
                 distance = Math.sqrt(xDist * xDist + yDist * yDist);
 
-                if (W.settings.adjustSize) {
+                if (W.settings.adjustSizes) {
 
                   //-- Linear Anti-collision Repulsion
                   if (distance > 0) {
@@ -875,7 +875,7 @@
             xDist = NodeMatrix[np(n1, 'x')] - NodeMatrix[np(n2, 'x')];
             yDist = NodeMatrix[np(n1, 'y')] - NodeMatrix[np(n2, 'y')];
 
-            if (W.settings.adjustSize) {
+            if (W.settings.adjustSizes) {
 
               //-- Anticollision Linear Repulsion
               distance = Math.sqrt(xDist * xDist + yDist * yDist) -
