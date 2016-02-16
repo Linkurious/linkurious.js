@@ -258,7 +258,7 @@
             isHoveredNodeActive,
             dist;
 
-        if (_a.nbNodes() === nodes.length) return;
+        if (_a && _a.nbNodes() === nodes.length) return;
 
         if (!_enabled || nodes.length < 2) return;
 
