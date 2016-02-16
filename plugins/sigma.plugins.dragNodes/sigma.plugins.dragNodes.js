@@ -209,7 +209,7 @@
 
       if (_drag) {
         _self.dispatchEvent('drop', {
-          node: _node,
+          node: _draggingNode,
           captor: event,
           renderer: _renderer
         });
@@ -232,6 +232,7 @@
 
       _drag = false;
       _node = null;
+      _draggingNode = null;
     };
 
     function nodeMouseMove(event) {
@@ -348,13 +349,13 @@
         _s.refresh({skipIndexation: true});
 
         _drag = true;
+        _draggingNode = _node;
+
         _self.dispatchEvent('drag', {
-          node: _node,
+          node: _draggingNode,
           captor: event,
           renderer: _renderer
         });
-
-        _draggingNode = _node;
       }
     };
   };
