@@ -183,6 +183,14 @@ var CartoDB_Positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{
   maxZoom: 19
 });
 
+// MapQuestOpen Aerial layer
+var MapQuestOpen_Aerial = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg', {
+  detectRetina: true,
+  attribution: 'Tiles Courtesy of <a href="http://www.mapquest.com/">MapQuest</a> &mdash; Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture, Farm Service Agency',
+  subdomains: '1234',
+  maxZoom: 11
+});
+
 
 // Add City markers
 var london = L.marker([51.505, -0.09]).bindPopup('This is London, UK.'),
@@ -209,6 +217,7 @@ var baseMaps = {
   "Stamen.TonerLite": Stamen_TonerLite,
   "MapBox.Light": MapBox_Light,
   "CartoDB.Positron": CartoDB_Positron,
+  "MapQuestOpen.Aerial": MapQuestOpen_Aerial
 };
 
 var overlayMaps = {
