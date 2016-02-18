@@ -164,11 +164,8 @@
       var n = event.data.leave.nodes[0];
 
       if (_hoveredNode && _hoveredNode.id === n.id) {
-        _hoveredNode = null; // Reset the hovered node ref
-
-        if (_isMouseDown) {
-          _node = null; // Reset the current node
-        }
+        _hoveredNode = null;
+        _node = null;
       }
       else if (!_hoveredNode) {
         _mouse.removeEventListener('mousedown', nodeMouseDown);
@@ -229,8 +226,6 @@
       });
 
       _drag = false;
-      _node = null;
-      _hoveredNode = null;
       _draggingNode = null;
     };
 
