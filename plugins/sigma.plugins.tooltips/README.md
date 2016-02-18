@@ -24,15 +24,15 @@ var tooltipInstance = sigma.plugins.tooltips(
   sigmaInstance,
   sigmaInstance.renderers[0],
   {
-    node: {
+    node: [{
       template: 'Hello node!'
-    },
-    edge: {
+    }],
+    edge: [{
       template: 'Hello edge!'
-    },
-    stage: {
+    }],
+    stage: [{
       template: 'Hello stage!'
-    }
+    }]
   }
 );
 ````
@@ -51,7 +51,7 @@ var prefix = sigmaInstance.renderers[0].camera.prefix;
 
 tooltipInstance.open(
   n, 
-  settings.node, 
+  settings.node[0], 
   n[prefix + 'x'], 
   n[prefix + 'y']
 );
@@ -72,15 +72,18 @@ var config = {...};
 sigma.plugins.tooltips(sigmaInstance, sigmaInstance.renderers[0], config);
 ````
 
-The plugin provides three configuration keys called `stage`, `node`, `edge`. Bound to the relevant Sigma events, the content and style of the tooltip varies if you trigger it for a node, an edge, or the stage.
+The plugin provides three configuration keys called `stage`, `node`, `edge`. Each key contains an array of tooltip options. Bound to the relevant Sigma events, the content and style of the tooltip varies if you trigger it for a node, an edge, or the stage.
 
-For instance, the following configuration enables a tooltip on node click:
+For instance, the following configuration enables a tooltip on node click and another one on node hover:
 ````javascript
 sigma.plugins.tooltips(sigmaInstance, sigmaInstance.renderers[0], {
-  node: {
+  node: [{
     show: 'clickNode',
     template: 'Hello node!'
-  }
+  }, {
+    show: 'hovers',
+    template: 'Hello hovered node!'
+  }]
 });
 ````
 
@@ -139,6 +142,10 @@ This plugins provides the following events:
 * `hidden`: fired when the tooltip is hidden
 
 ## Changelog
+
+### v0.5
+
+  * Support multiple tooltips (thanks @mujx)
 
 ### v0.4
 
