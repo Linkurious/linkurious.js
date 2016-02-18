@@ -35,7 +35,7 @@
    * @return {boolean}
    */
   function hasNodeGeoCoordinates(node) {
-    return node.lat != undefined && node.lng != undefined &&
+    return typeof node.lat != 'undefined' && typeof node.lng != 'undefined' &&
       typeof node.lat === 'number' && typeof node.lng === 'number';
   }
 
@@ -176,6 +176,7 @@
       _map = leafletMap,
       _renderer = options.renderer || _s.renderers[0],
       _dragListener,
+      _filter,
       _sigmaSettings = Object.create(null),
       _locateAnimationSettings = Object.create(null),
 
@@ -265,17 +266,24 @@
      */
     this.disable = function() {
       hideMapContainer();
-      _self.unbindAll();
       restoreSigmaSettings();
       restoreLocatePluginSettings();
 
       _easeEnabled = !!_easing;
+
+      if (_filter) {
+        // must be before unbindAll
+        _filter.undo('geo-coordinates').apply();
+      }
+
       restoreGraph(function() {
         _self.dispatchEvent('disabled');
       });
-      _easeEnabled = false;
 
+      _easeEnabled = false;
       _enabled = false;
+
+      _self.unbindAll();
 
       return _self;
     };
@@ -344,14 +352,18 @@
           // ensures the node is not indexed if lat/lng properties have been removed
           _geoNodesIndex.delete(node.id);
 
-          // Hide node because it doesn't have geo coordinates
-          // and store current "hidden" state
-          if (node.leaflet_hidden === undefined) {
-            node.leaflet_hidden = !!node.hidden;
+          if (!_filter) {
+            // Hide node because it doesn't have geo coordinates
+            // and store current "hidden" state
+            if (node.leaflet_hidden === undefined) {
+              node.leaflet_hidden = !!node.hidden;
+            }
+            node.hidden = true;
           }
-          node.hidden = true;
         }
       }
+
+      applyGeoFilter();
 
       if (_easeEnabled) {
         animate(nodes, callback);
@@ -512,6 +524,28 @@
     };
 
     /**
+     * Bind the given instance of the filter plugin and apply the geo filter.
+     *
+     * @param {sigma.plugins.filter} listener The filter plugin instance.
+     * @return {sigma.plugins.leaflet} The plugin instance.
+     */
+    this.bindFilter = function(filterInstance) {
+      _filter = filterInstance;
+      applyGeoFilter();
+      return _self;
+    };
+
+    /**
+     * Unbind the instance of the filter plugin.
+     *
+     * @return {sigma.plugins.leaflet} The plugin instance.
+     */
+    this.unbindFilter = function() {
+      _filter = undefined;
+      return _self;
+    };
+
+    /**
      * Reset the geographical coordinates of the nodes that have been dragged.
      *
      * @return {sigma.plugins.leaflet} The plugin instance.
@@ -576,6 +610,7 @@
       _s.unbind('animate.end', toggleAnimating);
 
       _self.unbindDragListener();
+      _self.unbindFilter();
 
       return _self;
     };
@@ -671,7 +706,7 @@
       for (var i = 0; i < nodes.length; i++) {
         node = nodes[i];
 
-        if (node.leaflet_hidden !== undefined) {
+        if (!_filter && node.leaflet_hidden !== undefined) {
           node.hidden = node.leaflet_hidden;
           node.leaflet_hidden = undefined;
         }
@@ -702,6 +737,20 @@
       else {
         _s.refresh();
         if (callback) callback();
+      }
+    }
+
+    /**
+     * Apply the geo filter or create it and apply it.
+     */
+    function applyGeoFilter() {
+      if (_filter) {
+        if (_filter.has('geo-coordinates')) {
+          _filter.apply();
+        }
+        else {
+          _filter.nodesBy(hasNodeGeoCoordinates, 'geo-coordinates').apply();
+        }
       }
     }
 

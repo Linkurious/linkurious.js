@@ -158,7 +158,10 @@ The plugin is compatible with [Leaflet v0.7.7](https://github.com/Leaflet/Leafle
 * Sigma nodes are compatible with [Leaflet Point](http://leafletjs.com/reference.html#point) objects because they contain `x` and `y` coordinates.
 * Sigma nodes are compatible with [Leaflet LatLng](http://leafletjs.com/reference.html#latlng) objects when they contain `lat` and `lng` coordinates.
 
-The plugin is compatible with `sigma.plugins.dragNodes` and `sigma.plugins.animate`.
+The plugin is compatible with:
+- `sigma.plugins.dragNodes`: nodes can be dragged and their initial positions reset.
+- `sigma.plugins.animate`: node positions are animated.
+- `sigma.plugins.filter`:`.syncNodes()` will apply a custom filter on nodes called "geo-coordinates", `.disable()` will undo the filter.
 
 ## Limitations
 

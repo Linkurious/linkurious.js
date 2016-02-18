@@ -52,6 +52,7 @@
 <!-- END SIGMA IMPORTS -->
 <script src="../plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
 <script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
+<script src="../plugins/sigma.plugins.filter/sigma.plugins.filter.js"></script>
 
 <script src="../plugins/sigma.plugins.leaflet/sigma.plugins.leaflet.js"></script>
 
@@ -99,6 +100,13 @@ var sigmaInstance,
         lng: 2.349, // mandatory field
         size: 1,
         color: 'rgb(95, 218, 162)'
+      },{
+        id: 'n2',
+        label: 'nowhere',
+        x: Math.random(),
+        y: Math.random(),
+        size: 1,
+        color: 'red'
       }],
       edges: [{
         id: 'e0',
@@ -106,6 +114,12 @@ var sigmaInstance,
         target: 'n1',
         size: 1,
         color: '#000'
+      }, {
+        id: 'e1',
+        source: 'n0',
+        target: 'n2',
+        size: 1,
+        color: 'red'
       }]
     };
 
@@ -241,12 +255,20 @@ leafletPlugin.bind('disabled', function(event) {
   console.log(event);
 });
 
+
 // Initialize the dragNodes plugin:
 var dragListener = sigma.plugins.dragNodes(sigmaInstance, sigmaInstance.renderers[0]);
 
 // The geographical coordinates of the dragged nodes will be updated
 // to their new location to preserve their position during zoom.
 leafletPlugin.bindDragListener(dragListener);
+
+// Initialize the filter plugin:
+var filter = sigma.plugins.filter(sigmaInstance);
+
+// Use a filter to hide nodes with no geo coordinates
+leafletPlugin.bindFilter(filter);
+
 
 leafletPlugin.enable();
 
@@ -259,7 +281,7 @@ map.on("click dblclick contextmenu", function (e) {
 
 // How to add a node and update its coordinates
 sigmaInstance.graph.addNode({
-  id: 'n2',
+  id: 'n3',
   label: 'Berlin',
   x: Math.random(),
   y: Math.random(),
@@ -270,14 +292,14 @@ sigmaInstance.graph.addNode({
 });
 
 sigmaInstance.graph.addEdge({
-  id: 'e1',
+  id: 'e2',
   source: 'n0',
-  target: 'n2',
+  target: 'n3',
   size: 1,
   color: '#000'
 });
 
-leafletPlugin.syncNodes('n2');
+leafletPlugin.syncNodes('n3');
 
 // Fit the view to the graph
 leafletPlugin.fitBounds();
