@@ -607,8 +607,9 @@
 
   /**
    * This method calls the "render" method of each renderer that is bound to
-   * the specified camera. The number of effective renderings is limitated to
-   * one per frame, unless you are using the "force" flag.
+   * the specified camera. To improve the performances, if this method is
+   * called too often, the number of effective renderings is limitated to one
+   * per frame, unless you are using the "force" flag.
    *
    * @param  {sigma.classes.camera} camera The camera to render.
    * @param  {?boolean}             force  If true, will render the camera
@@ -619,36 +620,44 @@
     var i,
         l,
         a,
-        render,
         self = this;
 
-    render = function() {
-      a = self.renderersPerCamera[camera.id];
-      for (i = 0, l = a.length; i < l; i++) {
-        if (self.settings('skipErrors'))
+    if (force) {
+      a = this.renderersPerCamera[camera.id];
+      for (i = 0, l = a.length; i < l; i++)
+        if (this.settings('skipErrors'))
           try {
             a[i].render();
           } catch (e) {
-            if (self.settings('verbose'))
+            if (this.settings('verbose'))
               console.log(
-                'Warning: The renderer "' +
-                  a[i].id +
-                  '" crashed on ".render()"'
+                'Warning: The renderer "'+ a[i].id + '" crashed on ".render()"'
               );
           }
         else
           a[i].render();
-      }
-    };
-
-    if (force) {
-      render();
     } else {
-      self.cameraFrames[camera.id] = render;
-      requestAnimationFrame(function() {
-        self.cameraFrames[camera.id]();
-      });
+      if (!this.cameraFrames[camera.id]) {
+        a = this.renderersPerCamera[camera.id];
+        for (i = 0, l = a.length; i < l; i++)
+          if (this.settings('skipErrors'))
+            try {
+              a[i].render();
+            } catch (e) {
+              if (this.settings('verbose'))
+                console.log(
+                  'Warning: The renderer "'+a[i].id +'" crashed on ".render()"'
+                );
+            }
+          else
+            a[i].render();
+
+        this.cameraFrames[camera.id] = requestAnimationFrame(function() {
+          delete self.cameraFrames[camera.id];
+        });
+      }
     }
+
     return this;
   };
 
