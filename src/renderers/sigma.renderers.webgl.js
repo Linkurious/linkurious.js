@@ -24,9 +24,6 @@
     if (!(options.container instanceof HTMLElement))
       throw 'Container not found.';
 
-    if (!(sigma.utils.isWebGLSupported()))
-      alert('WebGL is not supported by your browser');
-
     var k,
         i,
         l,
@@ -71,6 +68,9 @@
       value: {}
     });
     Object.defineProperty(this, 'edgeFloatArrays', {
+      value: {}
+    });
+    Object.defineProperty(this, 'edgeIndicesArrays', {
       value: {}
     });
 
@@ -136,7 +136,9 @@
         type,
         renderer,
         graph = this.graph,
-        options = sigma.utils.extend(options, this.options);
+        options = sigma.utils.extend(options, this.options),
+        defaultEdgeType = this.settings(options, 'defaultEdgeType'),
+        defaultNodeType = this.settings(options, 'defaultNodeType');
 
     // Empty float arrays:
     for (k in this.nodeFloatArrays)
@@ -145,9 +147,12 @@
     for (k in this.edgeFloatArrays)
       delete this.edgeFloatArrays[k];
 
+    for (k in this.edgeIndicesArrays)
+      delete this.edgeIndicesArrays[k];
+
     // Sort edges and nodes per types:
     for (a = graph.edges(), i = 0, l = a.length; i < l; i++) {
-      type = a[i].type || this.settings(options, 'defaultEdgeType');
+      type = a[i].type || defaultEdgeType;
       k = (type && sigma.webgl.edges[type]) ? type : 'def';
 
       if (!this.edgeFloatArrays[k])
@@ -159,7 +164,7 @@
     }
 
     for (a = graph.nodes(), i = 0, l = a.length; i < l; i++) {
-      type = a[i].type || this.settings(options, 'defaultNodeType');
+      type = a[i].type || defaultNodeType;
       k = (type && sigma.webgl.nodes[type]) ? type : 'def';
 
       if (!this.nodeFloatArrays[k])
@@ -173,12 +178,14 @@
     // Push edges:
     for (k in this.edgeFloatArrays) {
       renderer = sigma.webgl.edges[k];
+      a = this.edgeFloatArrays[k].edges;
 
-      for (a = this.edgeFloatArrays[k].edges, i = 0, l = a.length; i < l; i++) {
-        if (!this.edgeFloatArrays[k].array)
-          this.edgeFloatArrays[k].array = new Float32Array(
-            a.length * renderer.POINTS * renderer.ATTRIBUTES
-          );
+      // Creating the necessary arrays
+      this.edgeFloatArrays[k].array = new Float32Array(
+        a.length * renderer.POINTS * renderer.ATTRIBUTES
+      );
+
+      for (i = 0, l = a.length; i < l; i++) {
 
         // Just check that the edge and both its extremities are visible:
         if (
@@ -196,13 +203,24 @@
             this.settings
           );
       }
+
+      if (typeof renderer.computeIndices === 'function')
+        this.edgeIndicesArrays[k] = renderer.computeIndices(
+          this.edgeFloatArrays[k].array
+        );
     }
 
     // Push nodes:
     for (k in this.nodeFloatArrays) {
       renderer = sigma.webgl.nodes[k];
+      a = this.nodeFloatArrays[k].nodes;
 
-      for (a = this.nodeFloatArrays[k].nodes, i = 0, l = a.length; i < l; i++) {
+      // Creating the necessary arrays
+      this.nodeFloatArrays[k].array = new Float32Array(
+        a.length * renderer.POINTS * renderer.ATTRIBUTES
+      );
+
+      for (i = 0, l = a.length; i < l; i++) {
         if (!this.nodeFloatArrays[k].array)
           this.nodeFloatArrays[k].array = new Float32Array(
             a.length * renderer.POINTS * renderer.ATTRIBUTES
@@ -257,8 +275,6 @@
         drawEdges = this.settings(options, 'drawEdges'),
         drawNodes = this.settings(options, 'drawNodes');
 
-    this.dispatchEvent('beforeRender');
-
     // Call the resize function:
     this.resize(false);
 
@@ -292,6 +308,7 @@
               arr,
               end,
               start,
+              indices,
               renderer,
               batchSize,
               currentProgram;
@@ -305,6 +322,7 @@
           i = 0;
           renderer = sigma.webgl.edges[a[i]];
           arr = this.edgeFloatArrays[a[i]].array;
+          indices = this.edgeIndicesArrays[a[i]];
           start = 0;
           end = Math.min(
             start + batchSize * renderer.POINTS,
@@ -333,7 +351,8 @@
                     'webglOversamplingRatio'
                   ),
                   start: start,
-                  count: end - start
+                  count: end - start,
+                  indicesData: indices
                 }
               );
             }
@@ -391,7 +410,8 @@
                 width: this.width,
                 height: this.height,
                 ratio: this.camera.ratio,
-                scalingRatio: this.settings(options, 'webglOversamplingRatio')
+                scalingRatio: this.settings(options, 'webglOversamplingRatio'),
+                indicesData: this.edgeIndicesArrays[k]
               }
             );
           }
@@ -454,13 +474,14 @@
         }, key);
       };
 
-      sigma.renderers.canvas.applyRenderers({
-        renderers: sigma.canvas.labels,
-        type: 'nodes',
-        ctx: this.contexts.labels,
-        elements: a,
-        settings: o
-      });
+      for (i = 0, l = a.length; i < l; i++)
+        if (!a[i].hidden)
+          (
+            sigma.canvas.labels[
+              a[i].type ||
+              this.settings(options, 'defaultNodeType')
+            ] || sigma.canvas.labels.def
+          )(a[i], this.contexts.labels, o);
     }
 
     this.dispatchEvent('render');
