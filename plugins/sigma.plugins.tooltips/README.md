@@ -72,7 +72,7 @@ var config = {...};
 sigma.plugins.tooltips(sigmaInstance, sigmaInstance.renderers[0], config);
 ````
 
-The plugin provides three configuration keys called `stage`, `node`, `edge`. Each key contains an array of tooltip options. Bound to the relevant Sigma events, the content and style of the tooltip varies if you trigger it for a node, an edge, or the stage.
+The plugin provides three configuration keys called `stage`, `node`, `edge`. Each key contains an array of tooltip options or a single object of options. Bound to the relevant Sigma events, the content and style of the tooltip varies if you trigger it for a node, an edge, or the stage.
 
 For instance, the following configuration enables a tooltip on node click and another one on node hover:
 ````javascript
