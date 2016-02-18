@@ -199,7 +199,7 @@ sigma.plugins.tooltips(s, s.renderers[0], {
 */
 
 var config = {
-  node: {
+  node: [{
     show: 'hovers',
     hide: 'hovers',
     cssClass: 'sigma-tooltip',
@@ -228,6 +228,26 @@ var config = {
       //var el = document.createElement('div');
       //return el.innerHTML = Mustache.render(template, node);
     }
+  }, {
+    show: 'rightClickNode',
+    cssClass: 'sigma-tooltip',
+    position: 'right',
+    template:
+    '<div class="arrow"></div>' +
+    ' <div class="sigma-tooltip-header">{{label}}</div>' +
+    '  <div class="sigma-tooltip-body">' +
+    '   <p> Context menu for {{data.name}} </p>' +
+    '  </div>' +
+    ' <div class="sigma-tooltip-footer">Number of connections: {{degree}}</div>',
+    renderer: function(node, template) {
+      node.degree = this.degree(node.id);
+      return Mustache.render(template, node);
+    }
+  }],
+  stage: {
+    template:
+    '<div class="arrow"></div>' +
+    '<div class="sigma-tooltip-header"> Menu </div>'
   }
 };
 
@@ -238,7 +258,7 @@ var tooltips = sigma.plugins.tooltips(s, s.renderers[0], config);
 // Manually open a tooltip on a node:
 var n = s.graph.nodes('n10');
 var prefix = s.renderers[0].camera.prefix;
-tooltips.open(n, config.node, n[prefix + 'x'], n[prefix + 'y']);
+tooltips.open(n, config.node[0], n[prefix + 'x'], n[prefix + 'y']);
 
 
 tooltips.bind('shown', function(event) {

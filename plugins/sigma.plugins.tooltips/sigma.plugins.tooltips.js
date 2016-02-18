@@ -26,7 +26,7 @@
       show: 'rightClickStage',
       hide: 'clickStage',
       cssClass: 'sigma-tooltip',
-      position: '',       // top | bottom | left | right
+      position: 'top',    // top | bottom | left | right
       autoadjust: false,
       delay: 0,
       hideDelay: 0,
@@ -37,7 +37,7 @@
       show: 'clickNode',
       hide: 'clickStage',
       cssClass: 'sigma-tooltip',
-      position: '',       // top | bottom | left | right
+      position: 'top',    // top | bottom | left | right
       autoadjust: false,
       delay: 0,
       hideDelay: 0,
@@ -48,7 +48,7 @@
       show: 'clickEdge',
       hide: 'clickStage',
       cssClass: 'sigma-tooltip',
-      position: '',       // top | bottom | left | right
+      position: 'top',    // top | bottom | left | right
       autoadjust: false,
       delay: 0,
       hideDelay: 0,
@@ -69,8 +69,9 @@
    * *********************************
    * Enable node tooltips by adding the "node" key to the options object.
    * Enable edge tooltips by adding the "edge" key to the options object.
-   * Each value must be an object. Here is the exhaustive list of every
-   * accepted parameters in these objects:
+   * Each value could be an array of objects for multiple tooltips,
+   * or an object for one tooltip.
+   * Here is the exhaustive list of every accepted parameter in these objects:
    *
    *   {?string}   show       The event that triggers the tooltip. Default
    *                          values: "clickNode", "clickEdge". Other suggested
@@ -118,14 +119,38 @@
    */
   function Tooltips(s, renderer, options) {
     var self = this,
-        so = sigma.utils.extend(options.stage, settings.stage),
-        no = sigma.utils.extend(options.node, settings.node),
-        eo = sigma.utils.extend(options.edge, settings.edge),
         _tooltip,
         _timeoutHandle,
         _timeoutHideHandle,
+        _stageTooltips = [],
+        _nodeTooltips = [],
+        _edgeTooltips = [],
         _mouseOverTooltip = false,
         _doubleClick = false;
+
+    if (Array.isArray(options.stage)) {
+      for (var i = 0; i < options.stage.length; i++) {
+        _stageTooltips.push(sigma.utils.extend(options.stage[i], settings.stage));
+      }
+    } else {
+      _stageTooltips.push(sigma.utils.extend(options.stage, settings.stage));
+    }
+
+    if (Array.isArray(options.node)) {
+      for (var i = 0; i < options.node.length; i++) {
+        _nodeTooltips.push(sigma.utils.extend(options.node[i], settings.node));
+      }
+    } else {
+      _nodeTooltips.push(sigma.utils.extend(options.node, settings.node));
+    }
+
+    if (Array.isArray(options.edge)) {
+      for (var i = 0; i < options.edge.length; i++) {
+        _edgeTooltips.push(sigma.utils.extend(options.edge[i], settings.edge));
+      }
+    } else {
+      _edgeTooltips.push(sigma.utils.extend(options.edge, settings.edge));
+    }
 
     sigma.classes.dispatcher.extend(this);
 
@@ -348,57 +373,34 @@
       _timeoutHandle = null;
       _timeoutHideHandle = null;
       _doubleClick = false;
-    }
-
-    this.unbindEvents = function() {
-      if (options.stage) {
-        s.unbind(so.show);
-        s.unbind(so.hide);
-        if (so.show !== 'doubleClickStage') {
-          s.unbind('doubleClickStage');
-        }
-      }
-      if (options.node) {
-        s.unbind(no.show);
-        s.unbind(no.hide);
-        if (no.show !== 'doubleClickNode') {
-          s.unbind('doubleClickNode');
-        }
-      }
-      if (options.edge) {
-        s.unbind(eo.show);
-        s.unbind(eo.hide);
-        if (eo.show !== 'doubleClickEdge') {
-          s.unbind('doubleClickEdge');
-        }
-      }
-      if (no.show === 'rightClickNode' ||
-          eo.show === 'rightClickEdge') {
-        renderer.container.removeEventListener(
-          'contextmenu',
-          contextmenuListener
-        );
-      }
+      _stageTooltips = [];
+      _nodeTooltips = [];
+      _edgeTooltips = [];
     };
 
-    // STAGE tooltip:
-    if (options.stage) {
-      if (options.stage.renderer !== undefined &&
-          typeof options.stage.renderer !== 'function')
-        throw new TypeError('"options.stage.renderer" is not a function, was ' + options.stage.renderer);
+    this.unbindEvents = function() {
+      var tooltips = _stageTooltips.concat(_nodeTooltips).concat(_edgeTooltips);
 
-      if (options.stage.position !== undefined) {
-        if (options.stage.position !== 'top' &&
-            options.stage.position !== 'bottom' &&
-            options.stage.position !== 'left' &&
-            options.stage.position !== 'right' &&
-            options.stage.position !== 'css') {
-          throw new Error('"options.position" is not "top", "bottom", "left", "right", or "css", was ' + options.position);
+      for (var i = 0; i < tooltips.length; i++) {
+        s.unbind(tooltips[i].show);
+        s.unbind(tooltips[i].hide);
+
+        if (tooltips[i].show === 'rightClickNode' || tooltips[i].show === 'rightClickEdge') {
+          renderer.container.removeEventListener(
+            'contextmenu',
+            contextmenuListener
+          );
         }
       }
+      // Remove the default event handlers
+      s.unbind('doubleClickStage');
+      s.unbind('doubleClickNode');
+      s.unbind('doubleClickEdge');
+    };
 
-      s.bind(so.show, function(event) {
-        if (so.show !== 'doubleClickStage' && _doubleClick) {
+    this.bindStageEvents = function(tooltip) {
+      s.bind(tooltip.show, function(event) {
+        if (tooltip.show !== 'doubleClickStage' && _doubleClick) {
           return;
         }
 
@@ -409,50 +411,24 @@
         _timeoutHandle = setTimeout(function() {
           self.open(
             null,
-            so,
+            tooltip,
             clientX,
             clientY,
             self.dispatchEvent.bind(self,'shown', event.data));
-        }, so.delay);
+        }, tooltip.delay);
       });
 
-      s.bind(so.hide, function(event) {
+      s.bind(tooltip.hide, function(event) {
         var p = _tooltip;
         delayedCancel(settings.stage.hideDelay);
         if (p)
           self.dispatchEvent('hidden', event.data);
       });
+    };
 
-      if (so.show !== 'doubleClickStage') {
-        s.bind('doubleClickStage', function(event) {
-          cancel();
-          _doubleClick = true;
-          self.dispatchEvent('hidden', event.data);
-          setTimeout(function() {
-            _doubleClick = false;
-          }, settings.doubleClickDelay);
-        })
-      }
-    }
-
-    // NODE tooltip:
-    if (options.node) {
-      if (options.node.renderer !== undefined &&
-          typeof options.node.renderer !== 'function')
-        throw new TypeError('"options.node.renderer" is not a function, was ' + options.node.renderer);
-
-      if (options.node.position !== undefined) {
-        if (options.node.position !== 'top' &&
-            options.node.position !== 'bottom' &&
-            options.node.position !== 'left' &&
-            options.node.position !== 'right' &&
-            options.node.position !== 'css') {
-          throw new Error('"options.position" is not "top", "bottom", "left", "right", or "css", was ' + options.position);
-        }
-      }
-
-      s.bind(no.show, function(event) {
-        if (no.show !== 'doubleClickNode' && _doubleClick) {
+    this.bindNodeEvents = function(tooltip) {
+      s.bind(tooltip.show, function(event) {
+        if (tooltip.show !== 'doubleClickNode' && _doubleClick) {
           return;
         }
 
@@ -469,14 +445,14 @@
         _timeoutHandle = setTimeout(function() {
           self.open(
             n,
-            no,
+            tooltip,
             clientX,
             clientY,
             self.dispatchEvent.bind(self,'shown', event.data));
-        }, no.delay);
+        }, tooltip.delay);
       });
 
-      s.bind(no.hide, function(event) {
+      s.bind(tooltip.hide, function(event) {
         if (event.data.leave && event.data.leave.nodes.length == 0)
           return
         var p = _tooltip;
@@ -484,37 +460,11 @@
         if (p)
           self.dispatchEvent('hidden', event.data);
       });
+    };
 
-      if (no.show !== 'doubleClickNode') {
-        s.bind('doubleClickNode', function(event) {
-          cancel();
-          _doubleClick = true;
-          self.dispatchEvent('hidden', event.data);
-          setTimeout(function() {
-            _doubleClick = false;
-          }, settings.doubleClickDelay);
-        })
-      }
-    }
-
-    // EDGE tooltip:
-    if (options.edge) {
-      if (options.edge.renderer !== undefined &&
-          typeof options.edge.renderer !== 'function')
-        throw new TypeError('"options.edge.renderer" is not a function, was ' + options.edge.renderer);
-
-      if (options.edge.position !== undefined) {
-        if (options.edge.position !== 'top' &&
-            options.edge.position !== 'bottom' &&
-            options.edge.position !== 'left' &&
-            options.edge.position !== 'right' &&
-            options.edge.position !== 'css') {
-          throw new Error('"options.position" is not "top", "bottom", "left", "right", or "css", was ' + options.position);
-        }
-      }
-
-      s.bind(eo.show, function(event) {
-        if (eo.show !== 'doubleClickEdge' && _doubleClick) {
+    this.bindEdgeEvents = function(tooltip) {
+      s.bind(tooltip.show, function(event) {
+        if (tooltip.show !== 'doubleClickEdge' && _doubleClick) {
           return;
         }
 
@@ -531,14 +481,14 @@
         _timeoutHandle = setTimeout(function() {
           self.open(
             e,
-            eo,
+            tooltip,
             clientX,
             clientY,
             self.dispatchEvent.bind(self,'shown', event.data));
-        }, eo.delay);
+        }, tooltip.delay);
       });
 
-      s.bind(eo.hide, function(event) {
+      s.bind(tooltip.hide, function(event) {
         if (event.data.leave && event.data.leave.edges.length == 0)
           return
         var p = _tooltip;
@@ -546,8 +496,123 @@
         if (p)
           self.dispatchEvent('hidden', event.data);
       });
+    };
 
-      if (eo.show !== 'doubleClickEdge') {
+    // STAGE tooltip:
+    if (options.stage) {
+      var hasDoubleClickStage = false;
+
+      for (var i = 0; i < _stageTooltips.length; i++) {
+        if (_stageTooltips[i].renderer !== null &&
+            typeof _stageTooltips[i].renderer !== 'function')
+          throw new TypeError('"options.stage.renderer" is not a function, was ' + _stageTooltips[i].renderer);
+
+        if (_stageTooltips[i].position !== undefined) {
+          if (_stageTooltips[i].position !== 'top' &&
+              _stageTooltips[i].position !== 'bottom' &&
+              _stageTooltips[i].position !== 'left' &&
+              _stageTooltips[i].position !== 'right' &&
+              _stageTooltips[i].position !== 'css') {
+            throw new Error('"options.position" is not "top", "bottom", "left", "right", or "css", was ' + _stageTooltips[i].position);
+          }
+        }
+
+        if (_stageTooltips[i].show === 'doubleClickStage') {
+          hasDoubleClickStage = true;
+        }
+      }
+
+      for (var i = 0; i < _stageTooltips.length; i++) {
+        this.bindStageEvents(_stageTooltips[i]);
+      }
+
+      if (!hasDoubleClickStage) {
+        s.bind('doubleClickStage', function(event) {
+          cancel();
+          _doubleClick = true;
+          self.dispatchEvent('hidden', event.data);
+          setTimeout(function() {
+            _doubleClick = false;
+          }, settings.doubleClickDelay);
+        });
+      }
+    }
+
+    // NODE tooltip:
+    if (options.node) {
+      var hasRightClickNode = false;
+      var hasDoubleClickNode = false;
+
+      for (var i = 0; i < _nodeTooltips.length; i++) {
+        if (_nodeTooltips[i].renderer !== null &&
+            typeof _nodeTooltips[i].renderer !== 'function')
+          throw new TypeError('"options.node.renderer" is not a function, was ' + _nodeTooltips[i].renderer);
+
+        if (_nodeTooltips[i].position !== undefined) {
+          if (_nodeTooltips[i].position !== 'top' &&
+              _nodeTooltips[i].position !== 'bottom' &&
+              _nodeTooltips[i].position !== 'left' &&
+              _nodeTooltips[i].position !== 'right' &&
+              _nodeTooltips[i].position !== 'css') {
+            throw new Error('"options.position" is not "top", "bottom", "left", "right", or "css", was ' + _nodeTooltips[i].position);
+          }
+        }
+
+        if (_nodeTooltips[i].show === 'doubleClickNode') {
+          hasDoubleClickNode = true;
+        } else if (_nodeTooltips[i].show === 'rightClickNode') {
+          hasRightClickNode = true;
+        }
+      }
+
+      for (var i = 0; i < _nodeTooltips.length; i++) {
+        this.bindNodeEvents(_nodeTooltips[i]);
+      }
+
+      if (!hasDoubleClickNode) {
+        s.bind('doubleClickNode', function(event) {
+          cancel();
+          _doubleClick = true;
+          self.dispatchEvent('hidden', event.data);
+          setTimeout(function() {
+            _doubleClick = false;
+          }, settings.doubleClickDelay);
+        });
+      }
+    }
+
+    // EDGE tooltip:
+    if (options.edge) {
+      var hasRightClickEdge = false;
+      var hasDoubleClickEdge = false;
+
+      for (var i = 0; i < _edgeTooltips.length; i++) {
+        if (_edgeTooltips[i].renderer !== null &&
+            typeof _edgeTooltips[i].renderer !== 'function')
+          throw new TypeError('"options.edge.renderer" is not a function, was ' + _edgeTooltips[i].renderer);
+
+        if (_edgeTooltips[i].position !== undefined) {
+          if (_edgeTooltips[i].position !== 'top' &&
+              _edgeTooltips[i].position !== 'bottom' &&
+              _edgeTooltips[i].position !== 'left' &&
+              _edgeTooltips[i].position !== 'right' &&
+              _edgeTooltips[i].position !== 'css') {
+            throw new Error('"options.position" is not "top", "bottom", "left", "right", or "css", was ' + _edgeTooltips[i].position);
+          }
+        }
+
+        if (_edgeTooltips[i].show === 'doubleClickEdge') {
+          hasDoubleClickEdge = true;
+        } else if (_edgeTooltips[i].show === 'rightClickEdge') {
+          hasRightClickEdge = true;
+        }
+      }
+
+      for (var i = 0; i < _edgeTooltips.length; i++) {
+        this.bindEdgeEvents(_edgeTooltips[i]);
+      }
+
+      if (!hasDoubleClickEdge) {
         s.bind('doubleClickEdge', function(event) {
           cancel();
           _doubleClick = true;
@@ -561,7 +626,7 @@
 
     // Prevent the browser context menu to appear
     // if the right click event is already handled:
-    if (no.show === 'rightClickNode' || eo.show === 'rightClickEdge') {
+    if (hasRightClickNode || hasRightClickEdge) {
       renderer.container.addEventListener(
         'contextmenu',
         contextmenuListener
