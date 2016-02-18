@@ -57,8 +57,7 @@
       _prefix = renderer.options.prefix,
       _node = null,
       _draggingNode = null,
-      _hoverStack = [],
-      _hoverIndex = {},
+      _hoveredNode = null,
       _isMouseDown = false,
       _isMouseOverCanvas = false,
       _drag = false,
@@ -87,8 +86,7 @@
       _enabled = false;
       _node = null,
       _draggingNode = null,
-      _hoverStack = [],
-      _hoverIndex = {},
+      _hoveredNode = null;
       _isMouseDown = false,
       _isMouseOverCanvas = false,
       _drag = false,
@@ -125,14 +123,14 @@
       _body.removeEventListener('mousemove', nodeMouseMove);
       _body.removeEventListener('mouseup', nodeMouseUp);
 
-      if (!_hoverStack.length) {
+      if (!_hoveredNode) {
         _node = null;
       }
       else {
         // Drag node right after click instead of needing mouse out + mouse over:
         setTimeout(function() {
-          // Set the current node to be the last one in the array
-          _node = _hoverStack[_hoverStack.length - 1];
+          // Set the current node to be the last hovered node
+          _node = _hoveredNode;
           _mouse.addEventListener('mousedown', nodeMouseDown);
         }, 0);
       }
@@ -143,18 +141,18 @@
         return;
       }
       var n = event.data.enter.nodes[0];
+
       // Don't treat the node if it is already registered
-      if (_hoverIndex[n.id]) {
+      if (_hoveredNode && _hoveredNode.id === n.id) {
         return;
       }
 
-      // Add node to array of current nodes over
-      _hoverStack.push(n);
-      _hoverIndex[n.id] = true;
+      // Set reference to the hovered node
+      _hoveredNode = n;
 
       if(!_isMouseDown) {
-        // Set the current node to be the last one in the array
-        _node = _hoverStack[_hoverStack.length - 1];
+        // Set the current node to be the last hovered node
+        _node = _hoveredNode;
         _mouse.addEventListener('mousedown', nodeMouseDown);
       }
     };
@@ -164,15 +162,15 @@
         return;
       }
       var n = event.data.leave.nodes[0];
-      // Remove the node from the array
-      var indexCheck = _hoverStack.map(function(e) { return e; }).indexOf(n);
-      _hoverStack.splice(indexCheck, 1);
-      delete _hoverIndex[n.id];
 
-      if(_hoverStack.length && ! _isMouseDown) {
-        // On out, set the current node to be the next stated in array
-        _node = _hoverStack[_hoverStack.length - 1];
-      } else {
+      if (_hoveredNode && _hoveredNode.id === n.id) {
+        _hoveredNode = null; // Reset the hovered node ref
+
+        if (_isMouseDown) {
+          _node = null; // Reset the current node
+        }
+      }
+      else if (!_hoveredNode) {
         _mouse.removeEventListener('mousedown', nodeMouseDown);
       }
     };
@@ -232,6 +230,7 @@
 
       _drag = false;
       _node = null;
+      _hoveredNode = null;
       _draggingNode = null;
     };
 
