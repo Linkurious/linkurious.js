@@ -271,6 +271,10 @@
      * @returns {Array<string>}         List of lines
      */
     function getLines(text, maxLineLength) {
+      if (text == null) {
+        return [];
+      }
+
       if (maxLineLength <= 1) {
         return [text];
       }
