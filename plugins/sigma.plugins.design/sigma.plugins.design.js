@@ -1270,6 +1270,9 @@
         if (found) {
           v.dataTypes[property] = { sequential: isSequential };
         }
+        else if(v.dataTypes[property]) {
+          v.dataTypes[property].sequential = undefined;
+        }
       }
 
       return (v.dataTypes[property] || {}).sequential;
