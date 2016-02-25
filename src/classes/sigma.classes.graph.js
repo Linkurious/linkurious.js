@@ -388,6 +388,14 @@
     } else
       validNode = node;
 
+    // Try to fix the node coordinates
+    if (typeof validNode.x !== 'number') {
+      validNode.x = parseFloat(validNode.x);
+    }
+    if (typeof validNode.y !== 'number') {
+      validNode.y = parseFloat(validNode.y);
+    }
+
     // Check the "immutable" option:
     if (this.settings('immutable'))
       Object.defineProperty(validNode, 'id', {
