@@ -388,12 +388,20 @@
     } else
       validNode = node;
 
-    // Try to fix the node coordinates
-    if (typeof validNode.x !== 'number') {
+    // Try to fix the node coordinates and size
+    if (validNode.x !== undefined && typeof validNode.x !== 'number') {
       validNode.x = parseFloat(validNode.x);
     }
-    if (typeof validNode.y !== 'number') {
+    if (validNode.y !== undefined && typeof validNode.y !== 'number') {
       validNode.y = parseFloat(validNode.y);
+    }
+    if (validNode.size !== undefined && typeof validNode.size !== 'number') {
+      validNode.size = parseFloat(validNode.size);
+    }
+
+    // Check node size
+    if (!validNode.size || validNode.size <= 0) {
+      validNode.size = 1;
     }
 
     // Check the "immutable" option:
@@ -461,6 +469,16 @@
           validEdge[k] = edge[k];
     } else
       validEdge = edge;
+
+    // Try to fix the edge size
+    if (validEdge.size !== undefined && typeof validEdge.size !== 'number') {
+      validEdge.size = parseFloat(validEdge.size);
+    }
+
+    // Check edge size
+    if (!validEdge.size || validEdge.size <= 0) {
+      validEdge.size = 1;
+    }
 
     // Check the "immutable" option:
     if (this.settings('immutable')) {
