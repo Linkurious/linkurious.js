@@ -10,19 +10,23 @@ test('Basic manipulation', function() {
           {
             id: 'n0',
             label: 'Node 0',
-            myNodeAttr: 123
+            myNodeAttr: 123,
+            size: 1
           },
           {
             id: 'n1',
-            label: 'Node 1'
+            label: 'Node 1',
+            size: 1
           },
           {
             id: 'n2',
-            label: 'Node 2'
+            label: 'Node 2',
+            size: 1
           },
           {
             id: 'n3',
-            label: 'Node 3'
+            label: 'Node 3',
+            size: 1
           }
         ],
         edges: [
@@ -30,27 +34,32 @@ test('Basic manipulation', function() {
             id: 'e0',
             source: 'n0',
             target: 'n1',
-            myEdgeAttr: 123
+            myEdgeAttr: 123,
+            size: 1
           },
           {
             id: 'e1',
             source: 'n1',
-            target: 'n2'
+            target: 'n2',
+            size: 1
           },
           {
             id: 'e2',
             source: 'n1',
-            target: 'n3'
+            target: 'n3',
+            size: 1
           },
           {
             id: 'e3',
             source: 'n2',
-            target: 'n3'
+            target: 'n3',
+            size: 1
           },
           {
             id: 'e4',
             source: 'n2',
-            target: 'n2'
+            target: 'n2',
+            size: 1
           }
         ]
       };
@@ -534,6 +543,7 @@ test('Builtin indexes', function() {
           e0: {
             id: "e0",
             myEdgeAttr: 123,
+            size: 1,
             source: "n0",
             target: "n1"
           }
@@ -543,6 +553,7 @@ test('Builtin indexes', function() {
         n1: {
           e1: {
             id: "e1",
+            size: 1,
             source: "n1",
             target: "n2"
           }
@@ -570,6 +581,7 @@ test('Builtin indexes', function() {
           e0: {
             id: "e0",
             myEdgeAttr: 123,
+            size: 1,
             source: "n0",
             target: "n1"
           }
@@ -579,6 +591,7 @@ test('Builtin indexes', function() {
         n2: {
           e1: {
             id: "e1",
+            size: 1,
             source: "n1",
             target: "n2"
           }
@@ -606,6 +619,7 @@ test('Builtin indexes', function() {
           e0: {
             id: "e0",
             myEdgeAttr: 123,
+            size: 1,
             source: "n0",
             target: "n1"
           }
@@ -616,6 +630,7 @@ test('Builtin indexes', function() {
           e0: {
             id: "e0",
             myEdgeAttr: 123,
+            size: 1,
             source: "n0",
             target: "n1"
           }
@@ -623,6 +638,7 @@ test('Builtin indexes', function() {
         n2: {
           e1: {
             id: "e1",
+            size: 1,
             source: "n1",
             target: "n2"
           }
@@ -632,6 +648,7 @@ test('Builtin indexes', function() {
         n1: {
           e1: {
             id: "e1",
+            size: 1,
             source: "n1",
             target: "n2"
           }
@@ -662,6 +679,7 @@ test('Builtin indexes', function() {
           e0: {
             id: "e0",
             myEdgeAttr: 123,
+            size: 1,
             source: "n0",
             target: "n1"
           }
@@ -688,6 +706,7 @@ test('Builtin indexes', function() {
           e0: {
             id: "e0",
             myEdgeAttr: 123,
+            size: 1,
             source: "n0",
             target: "n1"
           }
@@ -714,6 +733,7 @@ test('Builtin indexes', function() {
           e0: {
             id: "e0",
             myEdgeAttr: 123,
+            size: 1,
             source: "n0",
             target: "n1"
           }
@@ -724,6 +744,7 @@ test('Builtin indexes', function() {
           e0: {
             id: "e0",
             myEdgeAttr: 123,
+            size: 1,
             source: "n0",
             target: "n1"
           }

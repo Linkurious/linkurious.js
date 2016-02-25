@@ -202,12 +202,6 @@ test('API', function(assert) {
     '"apply(\'nodes\', \'size\')" applies node size'
   );
 
-  strictEqual(
-    s.graph.nodes('n3').size,
-    undefined,
-    '"apply(\'nodes\', \'size\')" does not apply node size if the property is missing on the node'
-  );
-
 
   // check reset node color
   // see https://github.com/jacomyal/sigma.js/issues/500
@@ -239,12 +233,6 @@ test('API', function(assert) {
   strictEqual(
     s.graph.nodes('n0').size,
     1,
-    '"reset(\'nodes\', \'size\')" reset node size'
-  );
-
-  strictEqual(
-    s.graph.nodes('n1').size,
-    undefined,
     '"reset(\'nodes\', \'size\')" reset node size'
   );
 
