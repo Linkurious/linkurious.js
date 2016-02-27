@@ -717,7 +717,7 @@
   /**
    * The current version of sigma:
    */
-  sigma.version = '1.4.0';
+  sigma.version = '1.5.0';
 
 
   /**

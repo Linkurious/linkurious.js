@@ -1,5 +1,40 @@
 ## linkurious.js - changelog:
 
+#### 1.5.0 (February 27, 2016)
+
+This release improves rendering performance by x7 and reduces memory used indexes by x2. Indexes will use ES6 Map instead of Object if possible. It also provides a new plugin to integrate geospatial visualization with Leaflet. Rendering of node border has been changed (breaking) with new settings:
+
+- Rename `borderSize` to `nodeBorderSize`
+- Rename `outerBorderColor` to `nodeOuterBorderColor`
+- Add `nodeBorderColor`, `nodeOuterBorderColor`, `nodeOuterBorderSize`, `defaultNodeOuterBorderColor`
+- Add `nodeHoverBorderColor`, `nodeHoverOuterBorderColor`
+- Add `nodeActiveBorderSize`, `nodeActiveBorderColor`, `nodeActiveOuterBorderColor`, `nodeActiveOuterBorderSize`, `defaultNodeActiveOuterBorderColor`
+
+**Core:**
+- #348 Defaut size to added nodes and edges
+- #347 Convert x,y,size as number if they are string
+- Fix #342 Regression: slow camera
+- #333 Distinct border settings to nodes, hovered nodes, active nodes (**BREAKING CHANGES**)
+- #330 Fire `coordinatesUpdated` event
+- #329 Add `zoomOnLocation` setting
+- Fix #328 Node coordinates change if autoRescale array doesn't contain 'nodesPosition'
+- #284 Make local indexes more memory-efficient
+
+**Plugins:**
+- Fix #341 ForceAtlas2 adjustSizes setting is ignored (thanks @rangeonnicolas)
+- #340 plugins.activeState: get nb active nodes and edges in O(1)
+- #339 plugins.dragNodes: prevent drag if all nodes are active
+- #338 plugins.design: add downloadable palette and styles as .toJSON()
+- #337 plugins.design: add reference to items in histogram
+- Fix #336 plugins.design: 'One value of the property x is not a number.' thrown if sequential property has no value
+- #335 plugins.fullScreen should be able to display control UI elements
+- Fix #334 layouts.dagre: exception if node ids are numbers
+- #332 Support for multiple tooltips (thanks @mujx)
+- Fix #326 plugins.dragNodes: wrong mouse canvas if it is not the last canvas element
+- Fix #325 plugins.select: Two adjacent nodes can be selected after selecting an adjacent edge
+- #150 Add Leaflet integration for geospatial
+- Fix #120 exports.svg: images are cut-off in Inkscape and browser
+
 #### 1.4.0 (December 17, 2015)
 
 This release fixes multiple rendering issues. It provides better support to SVG renderers and export.
