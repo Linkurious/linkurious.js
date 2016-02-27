@@ -3,6 +3,16 @@
 
   var __instances = {};
 
+  // Deal with resize:
+  window.addEventListener('resize', function() {
+    for (var key in __instances) {
+      if (__instances.hasOwnProperty(key)) {
+        var instance = __instances[key];
+        instance.refresh();
+      }
+    }
+  });
+
   /**
    * This is the sigma instances constructor. One instance of sigma represent
    * one graph. It is possible to represent this grapĥ with several renderers
@@ -74,8 +84,7 @@
 
     // Private attributes:
     // *******************
-    var _self = this,
-        _conf = conf || {};
+    var _conf = conf || {};
 
     // Little shortcut:
     // ****************
@@ -220,11 +229,6 @@
       this.refresh();
     }
 
-    // Deal with resize:
-    window.addEventListener('resize', function() {
-      if (_self.settings)
-        _self.refresh();
-    });
   };
 
 
@@ -263,6 +267,7 @@
     }
 
     camera.bind('coordinatesUpdated', function(e) {
+      self.dispatchEvent('coordinatesUpdated');
       self.renderCamera(camera);
     });
 
@@ -602,8 +607,9 @@
 
   /**
    * This method calls the "render" method of each renderer that is bound to
-   * the specified camera. The number of effective renderings is limitated to
-   * one per frame, unless you are using the "force" flag.
+   * the specified camera. To improve the performances, if this method is
+   * called too often, the number of effective renderings is limitated to one
+   * per frame, unless you are using the "force" flag.
    *
    * @param  {sigma.classes.camera} camera The camera to render.
    * @param  {?boolean}             force  If true, will render the camera
@@ -614,36 +620,44 @@
     var i,
         l,
         a,
-        render,
         self = this;
 
-    render = function() {
-      a = self.renderersPerCamera[camera.id];
-      for (i = 0, l = a.length; i < l; i++) {
-        if (self.settings('skipErrors'))
+    if (force) {
+      a = this.renderersPerCamera[camera.id];
+      for (i = 0, l = a.length; i < l; i++)
+        if (this.settings('skipErrors'))
           try {
             a[i].render();
           } catch (e) {
-            if (self.settings('verbose'))
+            if (this.settings('verbose'))
               console.log(
-                'Warning: The renderer "' +
-                  a[i].id +
-                  '" crashed on ".render()"'
+                'Warning: The renderer "'+ a[i].id + '" crashed on ".render()"'
               );
           }
         else
           a[i].render();
-      }
-    };
-
-    if (force) {
-      render();
     } else {
-      self.cameraFrames[camera.id] = render;
-      requestAnimationFrame(function() {
-        self.cameraFrames[camera.id]();
-      });
+      if (!this.cameraFrames[camera.id]) {
+        a = this.renderersPerCamera[camera.id];
+        for (i = 0, l = a.length; i < l; i++)
+          if (this.settings('skipErrors'))
+            try {
+              a[i].render();
+            } catch (e) {
+              if (this.settings('verbose'))
+                console.log(
+                  'Warning: The renderer "'+a[i].id +'" crashed on ".render()"'
+                );
+            }
+          else
+            a[i].render();
+
+        this.cameraFrames[camera.id] = requestAnimationFrame(function() {
+          delete self.cameraFrames[camera.id];
+        });
+      }
     }
+
     return this;
   };
 
@@ -703,9 +717,13 @@
   /**
    * The current version of sigma:
    */
-  sigma.version = '1.3.0';
+  sigma.version = '1.5.0';
 
 
+  /**
+   * Disable ES6 features if true:
+   */
+  sigma.forceES5 = false;
 
 
   /**
@@ -1739,6 +1757,121 @@ if (typeof exports !== 'undefined') {
   /**
    * MISC UTILS:
    */
+
+
+  /**
+   * SigmaMap wraps an ES6 Object. Methods set, get, has, forEach, delete, and clear
+   * have the same signature than the corresponding Map methods.
+   */
+  function SigmaMap() {
+    var self = this;
+    var _store;
+
+    if (!sigma.forceES5 &&
+      typeof Map !== 'undefined' &&
+      Map.prototype.keys !== undefined &&
+      Map.prototype.forEach !== undefined
+      && Array.from !== undefined) {
+
+      _store = new Map();
+
+      Object.defineProperty(this, 'size', {
+        get: function() { return _store.size; },
+        set: undefined,
+        enumerable: true
+      });
+
+      this.set = function(key, value) { _store.set('' + key, value); };
+      this.get = function(key) { return _store.get('' + key); };
+      this.has = function(key) { return _store.has('' + key); };
+      this.forEach = function(func) { return _store.forEach(func); };
+      this.delete = function(key) { return _store.delete('' + key); };
+      this.clear = function() { _store.clear(); };
+
+      this.keyList = function () {
+        return Array.from(_store.keys());
+      };
+
+      this.valueList = function () {
+        var values = [];
+        _store.forEach(function(val) {
+          values.push(val);
+        });
+        return values;
+      };
+    }
+    else {
+      _store = Object.create(null);
+      this.size = 0;
+
+      this.keyList = function () {
+        return Object.keys(_store).filter(function(key) {
+          return _store[key] !== undefined;
+        });
+      };
+
+      this.valueList = function () {
+        var keys = Object.keys(_store);
+        var values = [];
+
+        for (var i = 0; i < keys.length; i++) {
+          var val = _store[keys[i]];
+          if (val !== undefined) {
+            values.push(val);
+          }
+        }
+        return values;
+      };
+
+      this.set = function (key, value) {
+        if (_store[key] === undefined) self.size++;
+
+        _store[key] = value;
+      };
+
+      this.get = function (key) {
+        return _store[key];
+      };
+
+      this.has = function (key) {
+        return _store[key] !== undefined;
+      };
+
+      this.forEach = function (func) {
+        var keys = Object.keys(_store);
+        for (var i = 0; i < keys.length; ++i) {
+          var key = keys[i],
+              obj = _store[key];
+
+          if (typeof obj !== 'undefined') {
+            func(obj, key);
+          }
+        }
+      };
+
+      this.delete = function (key) {
+        var value = _store[key];
+        _store[key] = undefined;
+
+        if (value !== undefined) self.size--;
+
+        return value;
+      };
+
+      this.clear = function () {
+        for (var k in _store)
+          if (!('hasOwnProperty' in _store) || _store.hasOwnProperty(k))
+            delete _store[k];
+
+        _store = Object.create(null);
+        self.size = 0;
+      };
+    }
+  }
+
+  sigma.utils.map = SigmaMap;
+
+
   /**
    * This function takes any number of objects as arguments, copies from each
    * of these objects each pair key/value into a new object, and finally
@@ -1846,41 +1979,56 @@ if (typeof exports !== 'undefined') {
    * returns an integer equal to "r * 255 * 255 + g * 255 + b", to gain some
    * memory in the data given to WebGL shaders.
    *
+   * Note that the function actually caches its results for better performance.
+   *
    * @param  {string} val The hexa or rgba color.
    * @return {number}     The number value.
    */
-  sigma.utils.floatColor = function(val) {
-    var result = [0, 0, 0];
+  var floatColorCache = {};
 
-    if (val.match(/^#/)) {
-      val = (val || '').replace(/^#/, '');
-      result = (val.length === 3) ?
-        [
-          parseInt(val.charAt(0) + val.charAt(0), 16),
-          parseInt(val.charAt(1) + val.charAt(1), 16),
-          parseInt(val.charAt(2) + val.charAt(2), 16)
-        ] :
-        [
-          parseInt(val.charAt(0) + val.charAt(1), 16),
-          parseInt(val.charAt(2) + val.charAt(3), 16),
-          parseInt(val.charAt(4) + val.charAt(5), 16)
-        ];
+  sigma.utils.floatColor = function(val) {
+
+    // Is the color already computed?
+    if (floatColorCache[val])
+      return floatColorCache[val];
+
+    var original = val,
+        r = 0,
+        g = 0,
+        b = 0;
+
+    if (val[0] === '#') {
+      val = val.slice(1);
+
+      if (val.length === 3) {
+        r = parseInt(val.charAt(0) + val.charAt(0), 16);
+        g = parseInt(val.charAt(1) + val.charAt(1), 16);
+        b = parseInt(val.charAt(2) + val.charAt(2), 16);
+      }
+      else {
+        r = parseInt(val.charAt(0) + val.charAt(1), 16);
+        g = parseInt(val.charAt(2) + val.charAt(3), 16);
+        b = parseInt(val.charAt(4) + val.charAt(5), 16);
+      }
     } else if (val.match(/^ *rgba? *\(/)) {
       val = val.match(
         /^ *rgba? *\( *([0-9]*) *, *([0-9]*) *, *([0-9]*) *(,.*)?\) *$/
       );
-      result = [
-        +val[1],
-        +val[2],
-        +val[3]
-      ];
+      r = +val[1];
+      g = +val[2];
+      b = +val[3];
     }
 
-    return (
-      result[0] * 256 * 256 +
-      result[1] * 256 +
-      result[2]
+    var color = (
+      r * 256 * 256 +
+      g * 256 +
+      b
     );
+
+    // Caching the color
+    floatColorCache[original] = color;
+
+    return color;
   };
 
     /**
@@ -3122,8 +3270,8 @@ if (typeof exports !== 'undefined') {
     // {number} The oversampling factor used in WebGL renderer.
     webglOversamplingRatio: 2,
     // {number} The size of the border of nodes.
-    borderSize: 0,
-    // {number} The default hovered node border's color.
+    nodeBorderSize: 0,
+    // {number} The default node border's color.
     defaultNodeBorderColor: '#000',
     // {number} The hovered node's label font. If not specified, will heritate
     //          the "font" value.
@@ -3241,6 +3389,8 @@ if (typeof exports !== 'undefined') {
     zoomMin: 0.0625,
     // {number} The maximum zooming level.
     zoomMax: 2,
+    // {boolean} Defines whether the zoom focuses on the mouse location.
+    zoomOnLocation: true,
     // {number} The duration of animations following a mouse scrolling.
     mouseZoomDuration: 200,
     // {number} The duration of animations following a mouse double click.
@@ -3712,8 +3862,8 @@ if (typeof exports !== 'undefined') {
        * ***************
        * These indexes just index data by ids.
        */
-      nodesIndex: Object.create(null),
-      edgesIndex: Object.create(null),
+      nodesIndex: new sigma.utils.map(),
+      edgesIndex: new sigma.utils.map(),
 
       /**
        * LOCAL INDEXES:
@@ -3721,13 +3871,9 @@ if (typeof exports !== 'undefined') {
        * These indexes refer from node to nodes. Each key is an id, and each
        * value is the array of the ids of related nodes.
        */
-      inNeighborsIndex: Object.create(null),
-      outNeighborsIndex: Object.create(null),
-      allNeighborsIndex: Object.create(null),
-
-      inNeighborsCount: Object.create(null),
-      outNeighborsCount: Object.create(null),
-      allNeighborsCount: Object.create(null)
+      inNeighborsIndex: new sigma.utils.map(),
+      outNeighborsIndex: new sigma.utils.map(),
+      allNeighborsIndex: new sigma.utils.map()
     };
 
     // Execute bindings:
@@ -4026,7 +4172,7 @@ if (typeof exports !== 'undefined') {
     if (typeof node.id !== 'string' && typeof node.id !== 'number')
       throw 'The node must have a string or number id.';
 
-    if (this.nodesIndex[node.id])
+    if (this.nodesIndex.get(node.id))
       throw 'The node "' + node.id + '" already exists.';
 
     var k,
@@ -4041,6 +4187,22 @@ if (typeof exports !== 'undefined') {
     } else
       validNode = node;
 
+    // Try to fix the node coordinates and size
+    if (validNode.x !== undefined && typeof validNode.x !== 'number') {
+      validNode.x = parseFloat(validNode.x);
+    }
+    if (validNode.y !== undefined && typeof validNode.y !== 'number') {
+      validNode.y = parseFloat(validNode.y);
+    }
+    if (validNode.size !== undefined && typeof validNode.size !== 'number') {
+      validNode.size = parseFloat(validNode.size);
+    }
+
+    // Check node size
+    if (!validNode.size || validNode.size <= 0) {
+      validNode.size = 1;
+    }
+
     // Check the "immutable" option:
     if (this.settings('immutable'))
       Object.defineProperty(validNode, 'id', {
@@ -4051,17 +4213,13 @@ if (typeof exports !== 'undefined') {
       validNode.id = id;
 
     // Add empty containers for edges indexes:
-    this.inNeighborsIndex[id] = Object.create(null);
-    this.outNeighborsIndex[id] = Object.create(null);
-    this.allNeighborsIndex[id] = Object.create(null);
-
-    this.inNeighborsCount[id] = 0;
-    this.outNeighborsCount[id] = 0;
-    this.allNeighborsCount[id] = 0;
+    this.inNeighborsIndex.set(id, new sigma.utils.map());
+    this.outNeighborsIndex.set(id, new sigma.utils.map());
+    this.allNeighborsIndex.set(id, new sigma.utils.map());
 
     // Add the node to indexes:
     this.nodesArray.push(validNode);
-    this.nodesIndex[validNode.id] = validNode;
+    this.nodesIndex.set(validNode.id, validNode);
 
     // Return the current instance:
     return this;
@@ -4090,14 +4248,14 @@ if (typeof exports !== 'undefined') {
       throw 'The edge must have a string or number id.';
 
     if ((typeof edge.source !== 'string' && typeof edge.source !== 'number') ||
-        !this.nodesIndex[edge.source])
+        !this.nodesIndex.get(edge.source))
       throw 'The edge source must have an existing node id.';
 
     if ((typeof edge.target !== 'string' && typeof edge.target !== 'number') ||
-        !this.nodesIndex[edge.target])
+        !this.nodesIndex.get(edge.target))
       throw 'The edge target must have an existing node id.';
 
-    if (this.edgesIndex[edge.id])
+    if (this.edgesIndex.get(edge.id))
       throw 'The edge "' + edge.id + '" already exists.';
 
     var k,
@@ -4110,6 +4268,16 @@ if (typeof exports !== 'undefined') {
           validEdge[k] = edge[k];
     } else
       validEdge = edge;
+
+    // Try to fix the edge size
+    if (validEdge.size !== undefined && typeof validEdge.size !== 'number') {
+      validEdge.size = parseFloat(validEdge.size);
+    }
+
+    // Check edge size
+    if (!validEdge.size || validEdge.size <= 0) {
+      validEdge.size = 1;
+    }
 
     // Check the "immutable" option:
     if (this.settings('immutable')) {
@@ -4135,39 +4303,33 @@ if (typeof exports !== 'undefined') {
 
     // Add the edge to indexes:
     this.edgesArray.push(validEdge);
-    this.edgesIndex[validEdge.id] = validEdge;
+    this.edgesIndex.set(validEdge.id, validEdge);
 
-    if (!this.inNeighborsIndex[validEdge.target][validEdge.source])
-      this.inNeighborsIndex[validEdge.target][validEdge.source] =
-        Object.create(null);
-    this.inNeighborsIndex[validEdge.target][validEdge.source][validEdge.id] =
-      validEdge;
+    if (!this.inNeighborsIndex.get(validEdge.target).get(validEdge.source))
+      this.inNeighborsIndex.get(validEdge.target).set(validEdge.source,
+        new sigma.utils.map());
+    this.inNeighborsIndex.get(validEdge.target).get(validEdge.source).set(validEdge.id,
+      validEdge);
 
-    if (!this.outNeighborsIndex[validEdge.source][validEdge.target])
-      this.outNeighborsIndex[validEdge.source][validEdge.target] =
-        Object.create(null);
-    this.outNeighborsIndex[validEdge.source][validEdge.target][validEdge.id] =
-      validEdge;
+    if (!this.outNeighborsIndex.get(validEdge.source).get(validEdge.target))
+      this.outNeighborsIndex.get(validEdge.source).set(validEdge.target,
+        new sigma.utils.map());
+    this.outNeighborsIndex.get(validEdge.source).get(validEdge.target).set(validEdge.id,
+      validEdge);
 
-    if (!this.allNeighborsIndex[validEdge.source][validEdge.target])
-      this.allNeighborsIndex[validEdge.source][validEdge.target] =
-        Object.create(null);
-    this.allNeighborsIndex[validEdge.source][validEdge.target][validEdge.id] =
-      validEdge;
+    if (!this.allNeighborsIndex.get(validEdge.source).get(validEdge.target))
+      this.allNeighborsIndex.get(validEdge.source).set(validEdge.target,
+        new sigma.utils.map());
+    this.allNeighborsIndex.get(validEdge.source).get(validEdge.target).set(validEdge.id,
+      validEdge);
 
     if (validEdge.target !== validEdge.source) {
-      if (!this.allNeighborsIndex[validEdge.target][validEdge.source])
-        this.allNeighborsIndex[validEdge.target][validEdge.source] =
-          Object.create(null);
-      this.allNeighborsIndex[validEdge.target][validEdge.source][validEdge.id] =
-        validEdge;
+      if (!this.allNeighborsIndex.get(validEdge.target).get(validEdge.source))
+        this.allNeighborsIndex.get(validEdge.target).set(validEdge.source,
+          new sigma.utils.map());
+      this.allNeighborsIndex.get(validEdge.target).get(validEdge.source).set(validEdge.id,
+        validEdge);
     }
-
-    // Keep counts up to date:
-    this.inNeighborsCount[validEdge.target]++;
-    this.outNeighborsCount[validEdge.source]++;
-    this.allNeighborsCount[validEdge.target]++;
-    this.allNeighborsCount[validEdge.source]++;
 
     return this;
   });
@@ -4186,13 +4348,13 @@ if (typeof exports !== 'undefined') {
         arguments.length !== 1)
       throw 'dropNode: Wrong arguments.';
 
-    if (!this.nodesIndex[id])
+    if (!this.nodesIndex.get(id))
       throw 'The node "' + id + '" does not exist.';
 
     var i, k, l;
 
     // Remove the node from indexes:
-    delete this.nodesIndex[id];
+    this.nodesIndex.delete(id);
     for (i = 0, l = this.nodesArray.length; i < l; i++)
       if (this.nodesArray[i].id === id) {
         this.nodesArray.splice(i, 1);
@@ -4205,19 +4367,16 @@ if (typeof exports !== 'undefined') {
         this.dropEdge(this.edgesArray[i].id);
 
     // Remove related edge indexes:
-    delete this.inNeighborsIndex[id];
-    delete this.outNeighborsIndex[id];
-    delete this.allNeighborsIndex[id];
+    this.inNeighborsIndex.delete(id);
+    this.outNeighborsIndex.delete(id);
+    this.allNeighborsIndex.delete(id);
 
-    delete this.inNeighborsCount[id];
-    delete this.outNeighborsCount[id];
-    delete this.allNeighborsCount[id];
-
-    for (k in this.nodesIndex) {
-      delete this.inNeighborsIndex[k][id];
-      delete this.outNeighborsIndex[k][id];
-      delete this.allNeighborsIndex[k][id];
-    }
+    var self = this;
+    this.nodesIndex.forEach(function(n, k) {
+      self.inNeighborsIndex.get(k).delete(id);
+      self.outNeighborsIndex.get(k).delete(id);
+      self.allNeighborsIndex.get(k).delete(id);
+    });
 
     return this;
   });
@@ -4235,42 +4394,37 @@ if (typeof exports !== 'undefined') {
         arguments.length !== 1)
       throw 'dropEdge: Wrong arguments.';
 
-    if (!this.edgesIndex[id])
+    if (!this.edgesIndex.get(id))
       throw 'The edge "' + id + '" does not exist.';
 
     var i, l, edge;
 
     // Remove the edge from indexes:
-    edge = this.edgesIndex[id];
-    delete this.edgesIndex[id];
+    edge = this.edgesIndex.get(id);
+    this.edgesIndex.delete(id);
     for (i = 0, l = this.edgesArray.length; i < l; i++)
       if (this.edgesArray[i].id === id) {
         this.edgesArray.splice(i, 1);
         break;
       }
 
-    delete this.inNeighborsIndex[edge.target][edge.source][edge.id];
-    if (!Object.keys(this.inNeighborsIndex[edge.target][edge.source]).length)
-      delete this.inNeighborsIndex[edge.target][edge.source];
+    this.inNeighborsIndex.get(edge.target).get(edge.source).delete(edge.id);
+    if (this.inNeighborsIndex.get(edge.target).get(edge.source).size == 0)
+      this.inNeighborsIndex.get(edge.target).delete(edge.source);
 
-    delete this.outNeighborsIndex[edge.source][edge.target][edge.id];
-    if (!Object.keys(this.outNeighborsIndex[edge.source][edge.target]).length)
-      delete this.outNeighborsIndex[edge.source][edge.target];
+    this.outNeighborsIndex.get(edge.source).get(edge.target).delete(edge.id);
+    if (this.outNeighborsIndex.get(edge.source).get(edge.target).size == 0)
+      this.outNeighborsIndex.get(edge.source).delete(edge.target);
 
-    delete this.allNeighborsIndex[edge.source][edge.target][edge.id];
-    if (!Object.keys(this.allNeighborsIndex[edge.source][edge.target]).length)
-      delete this.allNeighborsIndex[edge.source][edge.target];
+    this.allNeighborsIndex.get(edge.source).get(edge.target).delete(edge.id);
+    if (this.allNeighborsIndex.get(edge.source).get(edge.target).size == 0)
+      this.allNeighborsIndex.get(edge.source).delete(edge.target);
 
     if (edge.target !== edge.source) {
-      delete this.allNeighborsIndex[edge.target][edge.source][edge.id];
-      if (!Object.keys(this.allNeighborsIndex[edge.target][edge.source]).length)
-        delete this.allNeighborsIndex[edge.target][edge.source];
+      this.allNeighborsIndex.get(edge.target).get(edge.source).delete(edge.id);
+      if (this.allNeighborsIndex.get(edge.target).get(edge.source).size == 0)
+        this.allNeighborsIndex.get(edge.target).delete(edge.source);
     }
-
-    this.inNeighborsCount[edge.target]--;
-    this.outNeighborsCount[edge.source]--;
-    this.allNeighborsCount[edge.source]--;
-    this.allNeighborsCount[edge.target]--;
 
     return this;
   });
@@ -4292,9 +4446,6 @@ if (typeof exports !== 'undefined') {
     delete this.inNeighborsIndex;
     delete this.outNeighborsIndex;
     delete this.allNeighborsIndex;
-    delete this.inNeighborsCount;
-    delete this.outNeighborsCount;
-    delete this.allNeighborsCount;
   });
 
   /**
@@ -4310,15 +4461,12 @@ if (typeof exports !== 'undefined') {
     // Due to GC issues, I prefer not to create new object. These objects are
     // only available from the methods and attached functions, but still, it is
     // better to prevent ghost references to unrelevant data...
-    __emptyObject(this.nodesIndex);
-    __emptyObject(this.edgesIndex);
-    __emptyObject(this.nodesIndex);
-    __emptyObject(this.inNeighborsIndex);
-    __emptyObject(this.outNeighborsIndex);
-    __emptyObject(this.allNeighborsIndex);
-    __emptyObject(this.inNeighborsCount);
-    __emptyObject(this.outNeighborsCount);
-    __emptyObject(this.allNeighborsCount);
+    this.nodesIndex.clear();
+    this.edgesIndex.clear();
+    this.nodesIndex.clear();
+    this.inNeighborsIndex.clear();
+    this.outNeighborsIndex.clear();
+    this.allNeighborsIndex.clear();
 
     return this;
   });
@@ -4387,7 +4535,7 @@ if (typeof exports !== 'undefined') {
     // Return the related node:
     if (arguments.length === 1 &&
         (typeof v === 'string' || typeof v === 'number'))
-      return this.nodesIndex[v];
+      return this.nodesIndex.get(v);
 
     // Return an array of the related node:
     if (
@@ -4400,7 +4548,7 @@ if (typeof exports !== 'undefined') {
 
       for (i = 0, l = v.length; i < l; i++)
         if (typeof v[i] === 'string' || typeof v[i] === 'number')
-          a.push(this.nodesIndex[v[i]]);
+          a.push(this.nodesIndex.get(v[i]));
         else
           throw 'nodes: Wrong arguments.';
 
@@ -4423,13 +4571,13 @@ if (typeof exports !== 'undefined') {
   graph.addMethod('degree', function(v, which) {
     // Check which degree is required:
     which = {
-      'in': this.inNeighborsCount,
-      'out': this.outNeighborsCount
-    }[which || ''] || this.allNeighborsCount;
+      'in': this.inNeighborsIndex,
+      'out': this.outNeighborsIndex
+    }[which || ''] || this.allNeighborsIndex;
 
     // Return the related node:
     if (typeof v === 'string' || typeof v === 'number')
-      return which[v];
+      return which.get(v).size;
 
     // Return an array of the related node:
     if (Object.prototype.toString.call(v) === '[object Array]') {
@@ -4439,7 +4587,7 @@ if (typeof exports !== 'undefined') {
 
       for (i = 0, l = v.length; i < l; i++)
         if (typeof v[i] === 'string' || typeof v[i] === 'number')
-          a.push(which[v[i]]);
+          a.push(which.get(v[i]).size);
         else
           throw 'degree: Wrong arguments.';
 
@@ -4468,7 +4616,7 @@ if (typeof exports !== 'undefined') {
     // Return the related edge:
     if (arguments.length === 1 &&
         (typeof v === 'string' || typeof v === 'number'))
-      return this.edgesIndex[v];
+      return this.edgesIndex.get(v);
 
     // Return an array of the related edge:
     if (
@@ -4481,7 +4629,7 @@ if (typeof exports !== 'undefined') {
 
       for (i = 0, l = v.length; i < l; i++)
         if (typeof v[i] === 'string' || typeof v[i] === 'number')
-          a.push(this.edgesIndex[v[i]]);
+          a.push(this.edgesIndex.get(v[i]));
         else
           throw 'edges: Wrong arguments.';
 
@@ -4563,7 +4711,8 @@ if (typeof exports !== 'undefined') {
     var i,
         l,
         c = coordinates || {},
-        keys = ['x', 'y', 'ratio', 'angle'];
+        keys = ('ratio' in coordinates && !this.settings('zoomOnLocation'))
+          ? ['ratio', 'angle'] : ['x', 'y', 'ratio', 'angle'];
 
     for (i = 0, l = keys.length; i < l; i++)
       if (c[keys[i]] !== undefined) {
@@ -4606,23 +4755,23 @@ if (typeof exports !== 'undefined') {
     var i,
         l,
         node,
-        cos = Math.cos(this.angle),
-        sin = Math.sin(this.angle),
+        relCos = Math.cos(this.angle) / this.ratio,
+        relSin = Math.sin(this.angle) / this.ratio,
         nodeRatio = Math.pow(this.ratio, this.settings('nodesPowRatio')),
-        edgeRatio = Math.pow(this.ratio, this.settings('edgesPowRatio'));
+        edgeRatio = Math.pow(this.ratio, this.settings('edgesPowRatio')),
+        xOffset = (options.width || 0) / 2 - this.x * relCos - this.y * relSin,
+        yOffset = (options.height || 0) / 2 - this.y * relCos + this.x * relSin;
 
     for (i = 0, l = nodes.length; i < l; i++) {
       node = nodes[i];
       node[write + 'x'] =
-        (
-          ((node[read + 'x'] || 0) - this.x) * cos +
-          ((node[read + 'y'] || 0) - this.y) * sin
-        ) / this.ratio + (options.width || 0) / 2;
+        (node[read + 'x'] || 0) * relCos +
+        (node[read + 'y'] || 0) * relSin +
+        xOffset;
       node[write + 'y'] =
-        (
-          ((node[read + 'y'] || 0) - this.y) * cos -
-          ((node[read + 'x'] || 0) - this.x) * sin
-        ) / this.ratio + (options.height || 0) / 2;
+        (node[read + 'y'] || 0) * relCos -
+        (node[read + 'x'] || 0) * relSin +
+        yOffset;
       node[write + 'size'] =
         (node[read + 'size'] || 0) /
         nodeRatio;
@@ -6859,9 +7008,6 @@ if (typeof exports !== 'undefined') {
     if (!(options.container instanceof HTMLElement))
       throw 'Container not found.';
 
-    if (!(sigma.utils.isWebGLSupported()))
-      alert('WebGL is not supported by your browser');
-
     var k,
         i,
         l,
@@ -6906,6 +7052,9 @@ if (typeof exports !== 'undefined') {
       value: {}
     });
     Object.defineProperty(this, 'edgeFloatArrays', {
+      value: {}
+    });
+    Object.defineProperty(this, 'edgeIndicesArrays', {
       value: {}
     });
 
@@ -6971,7 +7120,9 @@ if (typeof exports !== 'undefined') {
         type,
         renderer,
         graph = this.graph,
-        options = sigma.utils.extend(options, this.options);
+        options = sigma.utils.extend(options, this.options),
+        defaultEdgeType = this.settings(options, 'defaultEdgeType'),
+        defaultNodeType = this.settings(options, 'defaultNodeType');
 
     // Empty float arrays:
     for (k in this.nodeFloatArrays)
@@ -6980,9 +7131,12 @@ if (typeof exports !== 'undefined') {
     for (k in this.edgeFloatArrays)
       delete this.edgeFloatArrays[k];
 
+    for (k in this.edgeIndicesArrays)
+      delete this.edgeIndicesArrays[k];
+
     // Sort edges and nodes per types:
     for (a = graph.edges(), i = 0, l = a.length; i < l; i++) {
-      type = a[i].type || this.settings(options, 'defaultEdgeType');
+      type = a[i].type || defaultEdgeType;
       k = (type && sigma.webgl.edges[type]) ? type : 'def';
 
       if (!this.edgeFloatArrays[k])
@@ -6994,7 +7148,7 @@ if (typeof exports !== 'undefined') {
     }
 
     for (a = graph.nodes(), i = 0, l = a.length; i < l; i++) {
-      type = a[i].type || this.settings(options, 'defaultNodeType');
+      type = a[i].type || defaultNodeType;
       k = (type && sigma.webgl.nodes[type]) ? type : 'def';
 
       if (!this.nodeFloatArrays[k])
@@ -7008,12 +7162,14 @@ if (typeof exports !== 'undefined') {
     // Push edges:
     for (k in this.edgeFloatArrays) {
       renderer = sigma.webgl.edges[k];
+      a = this.edgeFloatArrays[k].edges;
 
-      for (a = this.edgeFloatArrays[k].edges, i = 0, l = a.length; i < l; i++) {
-        if (!this.edgeFloatArrays[k].array)
-          this.edgeFloatArrays[k].array = new Float32Array(
-            a.length * renderer.POINTS * renderer.ATTRIBUTES
-          );
+      // Creating the necessary arrays
+      this.edgeFloatArrays[k].array = new Float32Array(
+        a.length * renderer.POINTS * renderer.ATTRIBUTES
+      );
+
+      for (i = 0, l = a.length; i < l; i++) {
 
         // Just check that the edge and both its extremities are visible:
         if (
@@ -7031,13 +7187,24 @@ if (typeof exports !== 'undefined') {
             this.settings
           );
       }
+
+      if (typeof renderer.computeIndices === 'function')
+        this.edgeIndicesArrays[k] = renderer.computeIndices(
+          this.edgeFloatArrays[k].array
+        );
     }
 
     // Push nodes:
     for (k in this.nodeFloatArrays) {
       renderer = sigma.webgl.nodes[k];
+      a = this.nodeFloatArrays[k].nodes;
 
-      for (a = this.nodeFloatArrays[k].nodes, i = 0, l = a.length; i < l; i++) {
+      // Creating the necessary arrays
+      this.nodeFloatArrays[k].array = new Float32Array(
+        a.length * renderer.POINTS * renderer.ATTRIBUTES
+      );
+
+      for (i = 0, l = a.length; i < l; i++) {
         if (!this.nodeFloatArrays[k].array)
           this.nodeFloatArrays[k].array = new Float32Array(
             a.length * renderer.POINTS * renderer.ATTRIBUTES
@@ -7092,8 +7259,6 @@ if (typeof exports !== 'undefined') {
         drawEdges = this.settings(options, 'drawEdges'),
         drawNodes = this.settings(options, 'drawNodes');
 
-    this.dispatchEvent('beforeRender');
-
     // Call the resize function:
     this.resize(false);
 
@@ -7127,6 +7292,7 @@ if (typeof exports !== 'undefined') {
               arr,
               end,
               start,
+              indices,
               renderer,
               batchSize,
               currentProgram;
@@ -7140,6 +7306,7 @@ if (typeof exports !== 'undefined') {
           i = 0;
           renderer = sigma.webgl.edges[a[i]];
           arr = this.edgeFloatArrays[a[i]].array;
+          indices = this.edgeIndicesArrays[a[i]];
           start = 0;
           end = Math.min(
             start + batchSize * renderer.POINTS,
@@ -7168,7 +7335,8 @@ if (typeof exports !== 'undefined') {
                     'webglOversamplingRatio'
                   ),
                   start: start,
-                  count: end - start
+                  count: end - start,
+                  indicesData: indices
                 }
               );
             }
@@ -7226,7 +7394,8 @@ if (typeof exports !== 'undefined') {
                 width: this.width,
                 height: this.height,
                 ratio: this.camera.ratio,
-                scalingRatio: this.settings(options, 'webglOversamplingRatio')
+                scalingRatio: this.settings(options, 'webglOversamplingRatio'),
+                indicesData: this.edgeIndicesArrays[k]
               }
             );
           }
@@ -7289,13 +7458,14 @@ if (typeof exports !== 'undefined') {
         }, key);
       };
 
-      sigma.renderers.canvas.applyRenderers({
-        renderers: sigma.canvas.labels,
-        type: 'nodes',
-        ctx: this.contexts.labels,
-        elements: a,
-        settings: o
-      });
+      for (i = 0, l = a.length; i < l; i++)
+        if (!a[i].hidden)
+          (
+            sigma.canvas.labels[
+              a[i].type ||
+              this.settings(options, 'defaultNodeType')
+            ] || sigma.canvas.labels.def
+          )(a[i], this.contexts.labels, o);
     }
 
     this.dispatchEvent('render');
@@ -8408,7 +8578,20 @@ if (typeof exports !== 'undefined') {
           'varying vec4 color;',
 
           'void main(void) {',
-            'gl_FragColor = color;',
+            'float border = 0.01;',
+            'float radius = 0.5;',
+
+            'vec4 color0 = vec4(0.0, 0.0, 0.0, 0.0);',
+            'vec2 m = gl_PointCoord - vec2(0.5, 0.5);',
+            'float dist = radius - sqrt(m.x * m.x + m.y * m.y);',
+
+            'float t = 0.0;',
+            'if (dist > border)',
+              't = 1.0;',
+            'else if (dist > 0.0)',
+              't = dist / border;',
+
+            'gl_FragColor = mix(color0, color, t);',
           '}'
         ].join('\n'),
         gl.FRAGMENT_SHADER
@@ -9242,7 +9425,7 @@ if (typeof exports !== 'undefined') {
         prefix = settings('prefix') || '',
         size = node[prefix + 'size'] || 1,
         fontStyle = settings('fontStyle'),
-        borderSize = settings('borderSize'),
+        borderSize = settings('nodeBorderSize'),
         labelWidth,
         labelOffsetX,
         labelOffsetY,
@@ -9414,7 +9597,7 @@ if (typeof exports !== 'undefined') {
         lines,
         baseX,
         baseY,
-        borderSize = settings('borderSize'),
+        borderSize = settings('nodeBorderSize'),
         alignment = settings('labelAlignment'),
         fontStyle = settings('hoverFontStyle') || settings('fontStyle'),
         prefix = settings('prefix') || '',
@@ -10905,50 +11088,52 @@ if (typeof exports !== 'undefined') {
         ns = ~rescaleSettings.indexOf('nodeSize'),
         es = ~rescaleSettings.indexOf('edgeSize');
 
-    /**
-     * First, we compute the scaling ratio, without considering the sizes
-     * of the nodes : Each node will have its center in the canvas, but might
-     * be partially out of it.
-     */
-    scale = settings('scalingMode') === 'outside' ?
-      Math.max(
-        w / Math.max(maxX - minX, 1),
-        h / Math.max(maxY - minY, 1)
-      ) :
-      Math.min(
-        w / Math.max(maxX - minX, 1),
-        h / Math.max(maxY - minY, 1)
-      );
+    if (np) {
+      /**
+       * First, we compute the scaling ratio, without considering the sizes
+       * of the nodes : Each node will have its center in the canvas, but might
+       * be partially out of it.
+       */
+      scale = settings('scalingMode') === 'outside' ?
+        Math.max(
+          w / Math.max(maxX - minX, 1),
+          h / Math.max(maxY - minY, 1)
+        ) :
+        Math.min(
+          w / Math.max(maxX - minX, 1),
+          h / Math.max(maxY - minY, 1)
+        );
 
-    /**
-     * Then, we correct that scaling ratio considering a margin, which is
-     * basically the size of the biggest node.
-     * This has to be done as a correction since to compare the size of the
-     * biggest node to the X and Y values, we have to first get an
-     * approximation of the scaling ratio.
-     **/
-    margin =
-      (
-        settings('rescaleIgnoreSize') ?
-          0 :
-          (settings('maxNodeSize') || sizeMax) / scale
-      ) +
-      (settings('sideMargin') || 0);
-    maxX += margin;
-    minX -= margin;
-    maxY += margin;
-    minY -= margin;
+      /**
+       * Then, we correct that scaling ratio considering a margin, which is
+       * basically the size of the biggest node.
+       * This has to be done as a correction since to compare the size of the
+       * biggest node to the X and Y values, we have to first get an
+       * approximation of the scaling ratio.
+       **/
+      margin =
+        (
+          settings('rescaleIgnoreSize') ?
+            0 :
+            (settings('maxNodeSize') || sizeMax) / scale
+        ) +
+        (settings('sideMargin') || 0);
+      maxX += margin;
+      minX -= margin;
+      maxY += margin;
+      minY -= margin;
 
-    // Fix the scaling with the new extrema:
-    scale = settings('scalingMode') === 'outside' ?
-      Math.max(
-        w / Math.max(maxX - minX, 1),
-        h / Math.max(maxY - minY, 1)
-      ) :
-      Math.min(
-        w / Math.max(maxX - minX, 1),
-        h / Math.max(maxY - minY, 1)
-      );
+      // Fix the scaling with the new extrema:
+      scale = settings('scalingMode') === 'outside' ?
+        Math.max(
+          w / Math.max(maxX - minX, 1),
+          h / Math.max(maxY - minY, 1)
+        ) :
+        Math.min(
+          w / Math.max(maxX - minX, 1),
+          h / Math.max(maxY - minY, 1)
+        );
+    }
 
     // Size homothetic parameters:
     if (!settings('maxNodeSize') && !settings('minNodeSize')) {
@@ -10981,10 +11166,17 @@ if (typeof exports !== 'undefined') {
     for (i = 0, l = n.length; i < l; i++) {
       n[i][writePrefix + 'size'] =
         n[i][readPrefix + 'size'] * (ns ? a : 1) + (ns ? b : 0);
-      n[i][writePrefix + 'x'] =
-        (n[i][readPrefix + 'x'] - (maxX + minX) / 2) * (np ? scale : 1);
-      n[i][writePrefix + 'y'] =
-        (n[i][readPrefix + 'y'] - (maxY + minY) / 2) * (np ? scale : 1);
+
+      if (np) {
+        n[i][writePrefix + 'x'] =
+          (n[i][readPrefix + 'x'] - (maxX + minX) / 2) * scale;
+        n[i][writePrefix + 'y'] =
+          (n[i][readPrefix + 'y'] - (maxY + minY) / 2) * scale;
+      }
+      else {
+        n[i][writePrefix + 'x'] = n[i][readPrefix + 'x'];
+        n[i][writePrefix + 'y'] = n[i][readPrefix + 'y'];
+      }
     }
   };
 
