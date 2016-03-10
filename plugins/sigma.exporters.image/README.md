@@ -1,4 +1,4 @@
-sigma.plugins.image
+sigma.exporters.image
 =====================
 
 Plugin developed by [Martin de la Taille](https://github.com/martindelataille) for [Linkurious](https://github.com/Linkurious) and published under the [MIT](LICENSE) license.
