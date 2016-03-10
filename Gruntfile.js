@@ -81,6 +81,7 @@ module.exports = function(grunt) {
     'layouts.forceAtlas2',
     'layouts.forceLink',
     'layouts.fruchtermanReingold',
+    'layouts.noverlap',
     'parsers.cypher',
     'parsers.gexf',
     'parsers.json',
