@@ -66,7 +66,7 @@
         alignNodeSiblings: false,
         nodeSiblingsScale: 1,
         nodeSiblingsAngleMin: 0,
-        minNodeDistance: 15
+        minNodeDistance: 0
       }
     };
 
