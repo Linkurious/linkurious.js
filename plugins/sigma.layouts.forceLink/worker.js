@@ -741,7 +741,7 @@
               //-- Anticollision Linear Repulsion
               distance = Math.sqrt(xDist * xDist + yDist * yDist) -
                 NodeMatrix[np(n1, 'size')] -
-                NodeMatrix[np(n2, 'size')] - minNodeDistance;
+                NodeMatrix[np(n2, 'size')];
 
               if (distance > 0) {
                 factor = coefficient *
@@ -772,7 +772,7 @@
             else {
 
               //-- Linear Repulsion
-              distance = Math.sqrt(xDist * xDist + yDist * yDist) - minNodeDistance;
+              distance = Math.sqrt(xDist * xDist + yDist * yDist);
 
               if (distance > 0) {
                 factor = coefficient *
@@ -850,7 +850,7 @@
             (xDist * xDist + yDist * yDist) -
             NodeMatrix[np(n1, 'size')] -
             NodeMatrix[np(n2, 'size')]
-          );
+          ) - minNodeDistance;
 
           if (W.settings.linLogMode) {
             if (W.settings.outboundAttractionDistribution) {
@@ -889,7 +889,7 @@
         }
         else {
 
-          distance = Math.sqrt(xDist * xDist + yDist * yDist);
+          distance = Math.sqrt(xDist * xDist + yDist * yDist) - minNodeDistance;
 
           if (W.settings.linLogMode) {
             if (W.settings.outboundAttractionDistribution) {
