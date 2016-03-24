@@ -172,6 +172,7 @@
     params.tmpContainer = params.tmpContainer || 'image-container';
 
     var pixelRatio = sigma.utils.getPixelRatio();
+    var webglOversamplingRatio = s.settings('webglOversamplingRatio');
     var el = document.getElementById(params.tmpContainer);
 
     if (!el) {
@@ -191,7 +192,11 @@
         drawLabels: !!params.labels
       }
     });
+
     renderer.camera.ratio = (params.zoomRatio > 0) ? params.zoomRatio : 1;
+    if (!params.size) {
+      renderer.camera.ratio *= pixelRatio;
+    }
 
     var webgl = renderer instanceof sigma.renderers.webgl,
         sized = false,
@@ -217,15 +222,18 @@
         _canvas.height = ratio.height;
 
         if (webgl && context instanceof WebGLRenderingContext) {
-          _canvas.width  *= 0.5;
-          _canvas.height *= 0.5;
+          _canvas.width  /= webglOversamplingRatio;
+          _canvas.height /= webglOversamplingRatio;
         }
 
         sized = true;
       }
 
       if (context instanceof WebGLRenderingContext)
-        _canvasContext.drawImage(canvas, 0, 0, canvas.width / 2, canvas.height / 2);
+        _canvasContext.drawImage(canvas, 0, 0,
+          canvas.width / webglOversamplingRatio,
+          canvas.height / webglOversamplingRatio
+      );
       else
         _canvasContext.drawImage(canvas, 0, 0);
 
@@ -246,9 +254,6 @@
   * @param {params}  Options
   */
   Image.prototype.draw = function(r, params, ratio) {
-    if(!params.size || params.size < 1)
-      params.size = window.innerWidth;
-
     var webgl = r instanceof sigma.renderers.webgl,
         sized = false,
         doneContexts = [];
@@ -276,18 +281,21 @@
         if(!params.clip) {
           width = _canvas.width;
           height = _canvas.height;
-        } else {
+        }
+        else {
+          var size = (!params.size || params.size < 1) ? window.innerWidth : params.size;
           width = canvas.width;
           height = canvas.height;
-          ratio = calculateAspectRatioFit(width, height, params.size);
+          ratio = calculateAspectRatioFit(width, height, size);
         }
 
         merged.width = ratio.width;
         merged.height = ratio.height;
 
         if (!webgl && !context instanceof WebGLRenderingContext) {
-          merged.width *= 2;
-          merged.height *=2;
+          var webglOversamplingRatio = s.settings('webglOversamplingRatio');
+          merged.width *= webglOversamplingRatio;
+          merged.height *= webglOversamplingRatio;
         }
 
         sized = true;
@@ -300,10 +308,13 @@
         }
       }
 
-      if(params.clip)
-        mergedContext.drawImage(canvas, 0, 0, merged.width, merged.height);
-      else
-        mergedContext.drawImage(_canvas, 0, 0, merged.width, merged.height);
+      mergedContext.drawImage(
+        (params.clip) ? canvas : _canvas,
+        0,
+        0,
+        merged.width,
+        merged.height
+      );
 
       doneContexts.push(context);
     });
