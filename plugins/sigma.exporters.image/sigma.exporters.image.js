@@ -140,7 +140,6 @@
       throw Error('sigma.renderers.image: unsupported format "' + params.format + '".');
 
     var ratio = calculateRatio(s, r, params);
-
     var batchEdgesDrawing = s.settings('batchEdgesDrawing');
     if (batchEdgesDrawing) {
       s.settings('batchEdgesDrawing', false); // it may crash if true
@@ -172,15 +171,17 @@
   Image.prototype.clone = function(s, params, ratio) {
     params.tmpContainer = params.tmpContainer || 'image-container';
 
+    var pixelRatio = sigma.utils.getPixelRatio();
     var el = document.getElementById(params.tmpContainer);
+
     if (!el) {
       el =  document.createElement("div");
       el.id = params.tmpContainer;
       document.body.appendChild(el);
     }
     el.setAttribute("style",
-        'width:' + ratio.width + 'px;' +
-        'height:' + Math.round(ratio.height) + 'px;');
+      'width:' + Math.round(ratio.width / pixelRatio) + 'px;' +
+      'height:' + Math.round(ratio.height / pixelRatio) + 'px;');
 
     var renderer = s.addRenderer({
       container: document.getElementById(params.tmpContainer),
@@ -245,7 +246,6 @@
   * @param {params}  Options
   */
   Image.prototype.draw = function(r, params, ratio) {
-
     if(!params.size || params.size < 1)
       params.size = window.innerWidth;
 
