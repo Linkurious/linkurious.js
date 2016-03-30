@@ -1,5 +1,11 @@
 ## linkurious.js - changelog:
 
+#### 1.5.1 (March 30, 2016)
+
+**Plugins:**
+- #351 layouts.forceLink Layout pulls nodes too close together
+- #285 Fix exporters.image: Incomplete image export on Retina screen
+
 #### 1.5.0 (February 27, 2016)
 
 This release improves rendering performance by x7 and reduces memory used indexes by x2. Indexes will use ES6 Map instead of Object if possible. It also provides a new plugin to integrate geospatial visualization with Leaflet. Rendering of node border has been changed (breaking) with new settings:
