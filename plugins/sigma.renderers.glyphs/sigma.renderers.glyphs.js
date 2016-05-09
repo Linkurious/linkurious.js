@@ -55,7 +55,7 @@
       this.domElements['glyphs'].height = this.container.offsetHeight;
       this.container.insertBefore(
         this.domElements['glyphs'],
-        this.domElements['glyphs'].previousSibling
+        this.domElements['mouse']
       );
     }
     this.drawingContext = this.domElements['glyphs'].getContext('2d');
