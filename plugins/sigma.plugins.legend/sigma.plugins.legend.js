@@ -78,7 +78,7 @@
     this.addWidget('edge', 'color');
     this.addWidget('edge', 'type');
 
-    var drawLayout = function () {
+    var initDrawLayout = function () {
       if (renderer.container.offsetWidth) {
         setupCanvas(this._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
         this.draw();
@@ -87,7 +87,7 @@
       }
     }.bind(this);
 
-    drawLayout();
+    initDrawLayout();
   }
 
 
