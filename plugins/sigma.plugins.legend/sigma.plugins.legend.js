@@ -290,7 +290,7 @@
     var nbWidgetsBuilt = 0,
         nbWidgets = Object.keys(legendPlugin.widgets).length;
 
-    iterate(legendPlugin.widgets, function (value) {
+    iterate(legendPlugin.widgets, function (value, name) {
       buildWidget(value, function () {
         ++nbWidgetsBuilt;
         if (callback && nbWidgetsBuilt === nbWidgets) {
@@ -305,17 +305,17 @@
    * Does not build widgets.
    * Draw the legend at the end.
    */
-  function drawLayout(legendPlugin) {
-    var vs = legendPlugin._visualSettings,
-        placement = legendPlugin.placement,
+  function drawLayout(self) {
+    var vs = self._visualSettings,
+        placement = self.placement,
         horizontal = placement === 'top' || placement === 'bottom',
-        maxHeight = legendPlugin._canvas.height,
-        maxWidth = legendPlugin._canvas.width,
-        textWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'text'),
-        nodeWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'node'),
-        edgeWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'edge'),
+        maxHeight = self._canvas.height,
+        maxWidth = self._canvas.width,
+        textWidgets = getUnpinnedWidgets(self.widgets, 'text'),
+        nodeWidgets = getUnpinnedWidgets(self.widgets, 'node'),
+        edgeWidgets = getUnpinnedWidgets(self.widgets, 'edge'),
         widgetLists = [textWidgets, nodeWidgets, edgeWidgets],
-        height = horizontal ? getMaxHeight(legendPlugin.widgets) + vs.legendOuterMargin * 2 : maxHeight,
+        height = horizontal ? getMaxHeight(self.widgets) + vs.legendOuterMargin * 2 : maxHeight,
         maxNbCols = Math.floor(maxWidth / vs.totalWidgetWidth),
         cols = initializeColumns(horizontal ? maxNbCols : 1, vs.legendOuterMargin * 2),
         colIndex = 0,
@@ -355,17 +355,17 @@
 
           if (widgetsToDisplay.length > 0) {
             if (horizontal) {
-             if (colIndex === maxNbCols - 1) {
-               cols = initializeColumns(maxNbCols, vs.legendOuterMargin * 2);
-               height += 30;
-               tryAgain = true;
-               if (height > maxHeight) {
-                 notEnoughSpace = true;
-               }
-               break;
-             } else {
+              if (colIndex === maxNbCols - 1) {
+                cols = initializeColumns(maxNbCols, vs.legendOuterMargin * 2);
+                height += 30; // Arbitrary
+                tryAgain = true;
+                if (height > maxHeight) {
+                  //notEnoughSpace = true;
+                }
+                break;
+              } else {
                 ++colIndex;
-             }
+              }
             } else if (cols.length === maxNbCols) {
               notEnoughSpace = true;
               break;
@@ -404,18 +404,18 @@
           legendWidth = nbCols * (vs.totalWidgetWidth + vs.legendOuterMargin) + vs.legendOuterMargin,
           legendHeight = cols.reduce(function (previous, value) { return ( previous > value.height ? previous : value.height ); }, 0);
 
-      legendPlugin.boundingBox = {
+      self.boundingBox = {
         w: legendWidth,
         h: legendHeight,
-        x: legendPlugin.placement === 'right' ? maxWidth - legendWidth : 0,
-        y: legendPlugin.placement === 'bottom' ? maxHeight - legendHeight : 0
+        x: self.placement === 'right' ? maxWidth - legendWidth : 0,
+        y: self.placement === 'bottom' ? maxHeight - legendHeight : 0
       };
     } else {
-      legendPlugin.boundingBox = {x:0, y:0, w:0, h:0};
+      self.boundingBox = {x:0, y:0, w:0, h:0};
     }
 
-    drawLegend(legendPlugin);
-    legendPlugin.enoughSpace = !notEnoughSpace;
+    drawLegend(self);
+    self.enoughSpace = !notEnoughSpace;
   }
 
   function initializeColumns(number, initialHeight) {
@@ -567,7 +567,7 @@
     var vs = widget._legendPlugin._visualSettings;
 
     if (widget.visualVar === 'size') {
-      widget.svg = drawSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.unit)
+      widget.svg = drawSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.unit);
     } else if (widget.elementType !== 'text') {
       widget.svg = drawNonSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.visualVar, widget.unit);
     } else {
