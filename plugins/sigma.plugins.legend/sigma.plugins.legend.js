@@ -83,7 +83,7 @@
         setupCanvas(this._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
         this.draw();
       } else {
-        setTimeout(drawLayout, 200);
+        setTimeout(initDrawLayout, 200);
       }
     }.bind(this);
 
