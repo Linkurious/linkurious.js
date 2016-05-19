@@ -166,6 +166,9 @@
      * CAPTORS SETTINGS:
      * *****************
      */
+    // {boolean} If true, the user will need to click on the visualization element
+    // in order to focus it
+    clickToFocus: false,
     // {boolean}
     touchEnabled: true,
     // {boolean}
