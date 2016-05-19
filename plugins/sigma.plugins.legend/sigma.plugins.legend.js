@@ -53,7 +53,8 @@
     //this._canvas = renderer.domElements['legend'];
     this._canvas.style.position = 'absolute';
     this._canvas.style.pointerEvents = 'none';
-    setupCanvas(this._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
+    this._renderer = renderer;
+
     renderer.container.appendChild(this._canvas);
 
     window.addEventListener('resize', function () {
@@ -77,7 +78,16 @@
     this.addWidget('edge', 'color');
     this.addWidget('edge', 'type');
 
-    this.draw();
+    var drawLayout = function () {
+      if (renderer.container.offsetWidth) {
+        setupCanvas(this._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
+        this.draw();
+      } else {
+        setTimeout(drawLayout, 200);
+      }
+    }.bind(this);
+
+    drawLayout();
   }
 
 
@@ -311,6 +321,10 @@
         colIndex = 0,
         tryAgain = true,
         notEnoughSpace = false;
+
+    if (cols.length === 0) {
+      return;
+    }
 
     while (tryAgain && !notEnoughSpace) {
       tryAgain = false;
@@ -1285,10 +1299,8 @@
    * Must be called whenever the graph's design changes.
    */
   LegendPlugin.prototype.draw = function (callback) {
-    var self = this,
-        pixelRatio = this._visualSettings.pixelRatio;
+    var self = this;
 
-    //setupCanvas(this._canvas, this._canvas.width / pixelRatio, this._canvas.height / pixelRatio, this._visualSettings.pixelRatio);
     buildLegendWidgets(this, function () {
       drawLayout(self);
       if (callback) {
