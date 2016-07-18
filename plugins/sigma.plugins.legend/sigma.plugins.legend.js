@@ -659,10 +659,10 @@
     ctx.drawImage(widget.img, widget.x, widget.y);
     if (widget.elementType === 'node' && widget.visualVar === 'icon') {
       ctx.textBaseline = 'middle';
-      iterate(widget.svg.icons, function (value, content) {
+      widget.svg.icons.forEach(function (value) {
         ctx.fillStyle = value.color;
         ctx.font = value.fontSize + 'px ' + value.font;
-        ctx.fillText(content, widget.x + value.x, widget.y + value.y);
+        ctx.fillText(value.content, widget.x + value.x, widget.y + value.y);
       });
     }
   }
@@ -883,7 +883,7 @@
         isInteger = boundaries.min % 1 == 0 && boundaries.max % 1 == 0;
     }
 
-    svg.icons = {};
+    svg.icons = [];
 
     drawBackground(svg, vs, height);
     drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
@@ -913,14 +913,15 @@
           drawCircle(svg, vs.legendInnerMargin + vs.legendFontSize / 2, offsetY, vs.legendFontSize / 2, value);
         }
       } else if (visualVar === 'icon') {
-        svg.icons[value.content] = {
+        svg.icons.push({
+          content: value.content,
           font: value.font,
           fontSize: vs.legendFontSize,
           //color: value.color,
           color: vs.legendFontColor,
           x: vs.legendInnerMargin,
           y: offsetY
-        };
+        });
       } else if (visualVar === 'type') {
         if (elementType === 'edge') {
           drawEdge(vs, svg, value, vs.legendInnerMargin, leftColumnWidth - vs.legendInnerMargin, offsetY, vs.legendFontSize / 3);
@@ -1502,9 +1503,8 @@
         str += widget.svg.innerHTML;
         if (widget.visualVar === 'icon') {
           var tmpSvg = document.createElement('svg');
-          iterate(widget.svg.icons, function (value, content) {
-            drawText(vs, tmpSvg, content, value.x, value.y, 'left', vs.legendFontColor, value.font,
-              vs.legendFontSize, 'central');
+          widget.svg.icons.forEach(function (value) {
+            drawText(vs, tmpSvg, value.content, value.x, value.y, 'left', vs.legendFontColor, value.font, vs.legendFontSize, 'central');
           });
           str += tmpSvg.innerHTML;
         }
