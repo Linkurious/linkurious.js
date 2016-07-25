@@ -2055,7 +2055,6 @@
       throw Error('sigma.renderers.image: unsupported format "' + params.format + '".');
 
     var ratio = calculateRatio(s, r, params);
-
     var batchEdgesDrawing = s.settings('batchEdgesDrawing');
     if (batchEdgesDrawing) {
       s.settings('batchEdgesDrawing', false); // it may crash if true
@@ -2087,15 +2086,18 @@
   Image.prototype.clone = function(s, params, ratio) {
     params.tmpContainer = params.tmpContainer || 'image-container';
 
+    var pixelRatio = sigma.utils.getPixelRatio();
+    var webglOversamplingRatio = s.settings('webglOversamplingRatio');
     var el = document.getElementById(params.tmpContainer);
+
     if (!el) {
       el =  document.createElement("div");
       el.id = params.tmpContainer;
       document.body.appendChild(el);
     }
     el.setAttribute("style",
-        'width:' + ratio.width + 'px;' +
-        'height:' + Math.round(ratio.height) + 'px;');
+      'width:' + Math.round(ratio.width / pixelRatio) + 'px;' +
+      'height:' + Math.round(ratio.height / pixelRatio) + 'px;');
 
     var renderer = s.addRenderer({
       container: document.getElementById(params.tmpContainer),
@@ -2105,7 +2107,11 @@
         drawLabels: !!params.labels
       }
     });
+
     renderer.camera.ratio = (params.zoomRatio > 0) ? params.zoomRatio : 1;
+    if (!params.size) {
+      renderer.camera.ratio *= pixelRatio;
+    }
 
     var webgl = renderer instanceof sigma.renderers.webgl,
         sized = false,
@@ -2131,15 +2137,18 @@
         _canvas.height = ratio.height;
 
         if (webgl && context instanceof WebGLRenderingContext) {
-          _canvas.width  *= 0.5;
-          _canvas.height *= 0.5;
+          _canvas.width  /= webglOversamplingRatio;
+          _canvas.height /= webglOversamplingRatio;
         }
 
         sized = true;
       }
 
       if (context instanceof WebGLRenderingContext)
-        _canvasContext.drawImage(canvas, 0, 0, canvas.width / 2, canvas.height / 2);
+        _canvasContext.drawImage(canvas, 0, 0,
+          canvas.width / webglOversamplingRatio,
+          canvas.height / webglOversamplingRatio
+      );
       else
         _canvasContext.drawImage(canvas, 0, 0);
 
@@ -2160,10 +2169,6 @@
   * @param {params}  Options
   */
   Image.prototype.draw = function(r, params, ratio) {
-
-    if(!params.size || params.size < 1)
-      params.size = window.innerWidth;
-
     var webgl = r instanceof sigma.renderers.webgl,
         sized = false,
         doneContexts = [];
@@ -2191,18 +2196,21 @@
         if(!params.clip) {
           width = _canvas.width;
           height = _canvas.height;
-        } else {
+        }
+        else {
+          var size = (!params.size || params.size < 1) ? window.innerWidth : params.size;
           width = canvas.width;
           height = canvas.height;
-          ratio = calculateAspectRatioFit(width, height, params.size);
+          ratio = calculateAspectRatioFit(width, height, size);
         }
 
         merged.width = ratio.width;
         merged.height = ratio.height;
 
         if (!webgl && !context instanceof WebGLRenderingContext) {
-          merged.width *= 2;
-          merged.height *=2;
+          var webglOversamplingRatio = s.settings('webglOversamplingRatio');
+          merged.width *= webglOversamplingRatio;
+          merged.height *= webglOversamplingRatio;
         }
 
         sized = true;
@@ -2215,10 +2223,13 @@
         }
       }
 
-      if(params.clip)
-        mergedContext.drawImage(canvas, 0, 0, merged.width, merged.height);
-      else
-        mergedContext.drawImage(_canvas, 0, 0, merged.width, merged.height);
+      mergedContext.drawImage(
+        (params.clip) ? canvas : _canvas,
+        0,
+        0,
+        merged.width,
+        merged.height
+      );
 
       doneContexts.push(context);
     });
@@ -4176,7 +4187,8 @@
         // node siblings:
         alignNodeSiblings: false,
         nodeSiblingsScale: 1,
-        nodeSiblingsAngleMin: 0
+        nodeSiblingsAngleMin: 0,
+        minNodeDistance: 0
       }
     };
 
@@ -4213,147 +4225,15 @@
      * Return the euclidian distance between two points of a plane
      * with an orthonormal basis.
      *
-     * @param  {number} x1  The X coordinate of the first point.
-     * @param  {number} y1  The Y coordinate of the first point.
-     * @param  {number} x2  The X coordinate of the second point.
-     * @param  {number} y2  The Y coordinate of the second point.
+     * @param  {number} x0  The X coordinate of the first point.
+     * @param  {number} y0  The Y coordinate of the first point.
+     * @param  {number} x1  The X coordinate of the second point.
+     * @param  {number} y1  The Y coordinate of the second point.
      * @return {number}     The euclidian distance.
      */
     function getDistance(x0, y0, x1, y1) {
       return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
-    };
-
-    /**
-     * Return the coordinates of the intersection points of two circles.
-     *
-     * @param  {number} x0  The X coordinate of center location of the first
-     *                      circle.
-     * @param  {number} y0  The Y coordinate of center location of the first
-     *                      circle.
-     * @param  {number} r0  The radius of the first circle.
-     * @param  {number} x1  The X coordinate of center location of the second
-     *                      circle.
-     * @param  {number} y1  The Y coordinate of center location of the second
-     *                      circle.
-     * @param  {number} r1  The radius of the second circle.
-     * @return {xi,yi}      The coordinates of the intersection points.
-     */
-    function getCircleIntersection(x0, y0, r0, x1, y1, r1) {
-      // http://stackoverflow.com/a/12219802
-      var a, dx, dy, d, h, rx, ry, x2, y2;
-
-      // dx and dy are the vertical and horizontal distances between the circle
-      // centers:
-      dx = x1 - x0;
-      dy = y1 - y0;
-
-      // Determine the straight-line distance between the centers:
-      d = Math.sqrt((dy * dy) + (dx * dx));
-
-      // Check for solvability:
-      if (d > (r0 + r1)) {
-          // No solution. circles do not intersect.
-          return false;
-      }
-      if (d < Math.abs(r0 - r1)) {
-          // No solution. one circle is contained in the other.
-          return false;
-      }
-
-      //'point 2' is the point where the line through the circle intersection
-      // points crosses the line between the circle centers.
-
-      // Determine the distance from point 0 to point 2:
-      a = ((r0 * r0) - (r1 * r1) + (d * d)) / (2.0 * d);
-
-      // Determine the coordinates of point 2:
-      x2 = x0 + (dx * a / d);
-      y2 = y0 + (dy * a / d);
-
-      // Determine the distance from point 2 to either of the intersection
-      // points:
-      h = Math.sqrt((r0 * r0) - (a * a));
-
-      // Determine the offsets of the intersection points from point 2:
-      rx = -dy * (h / d);
-      ry = dx * (h / d);
-
-      // Determine the absolute intersection points:
-      var xi = x2 + rx;
-      var xi_prime = x2 - rx;
-      var yi = y2 + ry;
-      var yi_prime = y2 - ry;
-
-      return {xi: xi, xi_prime: xi_prime, yi: yi, yi_prime: yi_prime};
-    };
-
-    /**
-     * Find the intersection between two lines, two segments, or one line and one segment.
-     * http://jsfiddle.net/justin_c_rounds/Gd2S2/
-     *
-     * @param  {number} line1x1  The X coordinate of the start point of the first line.
-     * @param  {number} line1y1  The Y coordinate of the start point of the first line.
-     * @param  {number} line1x2  The X coordinate of the end point of the first line.
-     * @param  {number} line1y2  The Y coordinate of the end point of the first line.v
-     * @param  {number} line2x1  The X coordinate of the start point of the second line.
-     * @param  {number} line2y1  The Y coordinate of the start point of the second line.
-     * @param  {number} line2x2  The X coordinate of the end point of the second line.
-     * @param  {number} line2y2  The Y coordinate of the end point of the second line.
-     * @return {object}           The coordinates of the intersection point.
-     */
-    function getLinesIntersection(line1x1, line1y1, line1x2, line1y2, line2x1, line2y1, line2x2, line2y2) {
-      // if the lines intersect, the result contains the x and y of the intersection
-      // (treating the lines as infinite) and booleans for whether line segment 1 or
-      // line segment 2 contain the point
-      var
-        denominator,
-        a,
-        b,
-        numerator1,
-        numerator2,
-        result = {
-          x: null,
-          y: null,
-          onLine1: false,
-          onLine2: false
-      };
-
-      denominator =
-        ((line2y2 - line2y1) * (line1x2 - line1x1)) -
-        ((line2x2 - line2x1) * (line1y2 - line1y1));
-
-      if (denominator == 0) {
-          return result;
-      }
-
-      a = line1y1 - line2y1;
-      b = line1x1 - line2x1;
-
-      numerator1 = ((line2x2 - line2x1) * a) - ((line2y2 - line2y1) * b);
-      numerator2 = ((line1x2 - line1x1) * a) - ((line1y2 - line1y1) * b);
-
-      a = numerator1 / denominator;
-      b = numerator2 / denominator;
-
-      // if we cast these lines infinitely in both directions, they intersect here:
-      result.x = line1x1 + (a * (line1x2 - line1x1));
-      result.y = line1y1 + (a * (line1y2 - line1y1));
-      /*
-      // it is worth noting that this should be the same as:
-        x = line2x1 + (b * (line2x2 - line2x1));
-        y = line2x1 + (b * (line2y2 - line2y1));
-      */
-      // if line1 is a segment and line2 is infinite, they intersect if:
-      if (a > 0 && a < 1) {
-          result.onLine1 = true;
-      }
-      // if line2 is a segment and line1 is infinite, they intersect if:
-      if (b > 0 && b < 1) {
-          result.onLine2 = true;
-      }
-      // if line1 and line2 are segments, they intersect if both of the above are true
-      return result;
-    };
+    }
 
     /**
      * Scale a value from the range [baseMin, baseMax] to the range
@@ -4368,7 +4248,7 @@
      */
     function scaleRange(value, baseMin, baseMax, limitMin, limitMax) {
       return ((limitMax - limitMin) * (value - baseMin) / (baseMax - baseMin)) + limitMin;
-    };
+    }
 
     /**
      * Get the angle of the vector (in radian).
@@ -4378,7 +4258,7 @@
      */
     function getVectorAngle(v) {
       return Math.acos( v.x / Math.sqrt(v.x * v.x + v.y * v.y) );
-    };
+    }
 
     /**
      * Get the normal vector of the line segment, i.e. the vector
@@ -4398,7 +4278,7 @@
         xi_prime:   bY - aY,
         yi_prime: -(bX - aX)
       };
-    };
+    }
 
     /**
      * Get the normalized vector.
@@ -4410,9 +4290,9 @@
     function getNormalizedVector(v, length) {
       return {
         x: (v.xi_prime - v.xi) / length,
-        y: (v.yi_prime - v.yi) / length,
+        y: (v.yi_prime - v.yi) / length
       };
-    };
+    }
 
     /**
      * Get the a point the line segment [A,B] at a specified distance percentage
@@ -4431,8 +4311,6 @@
         y: aY + (bY - aY) * t
       };
     }
-
-
 
     /**
      * Matrices properties accessors
@@ -4513,13 +4391,6 @@
               'Inexistant region property given (' + p + ').');
     }
 
-    // DEBUG
-    function nan(v) {
-      if (isNaN(v))
-        throw new TypeError('NaN alert!');
-    }
-
-
     /**
      * Algorithm initialization
      */
@@ -4562,7 +4433,8 @@
           mass,
           distance,
           size,
-          factor;
+          factor,
+          minNodeDistance = W.settings.minNodeDistance;
 
       // 1) Initializing layout data
       //-----------------------------
@@ -5077,10 +4949,7 @@
 
       // 4) Attraction
       //---------------
-      coefficient = 1 *
-        (W.settings.outboundAttractionDistribution ?
-          outboundAttCompensation :
-          1);
+      coefficient = 1 * (W.settings.outboundAttractionDistribution ? outboundAttCompensation : 1);
 
       // TODO: simplify distance
       // TODO: coefficient is always used as -c --> optimize?
@@ -5103,7 +4972,7 @@
             (xDist * xDist + yDist * yDist) -
             NodeMatrix[np(n1, 'size')] -
             NodeMatrix[np(n2, 'size')]
-          );
+          ) - minNodeDistance;
 
           if (W.settings.linLogMode) {
             if (W.settings.outboundAttractionDistribution) {
@@ -5142,7 +5011,7 @@
         }
         else {
 
-          distance = Math.sqrt(xDist * xDist + yDist * yDist);
+          distance = Math.sqrt(xDist * xDist + yDist * yDist) - minNodeDistance;
 
           if (W.settings.linLogMode) {
             if (W.settings.outboundAttractionDistribution) {
@@ -5426,7 +5295,7 @@
                 // New vector of angle PI - angleMin
                 nNormaleVector = {
                   x: Math.cos(Math.PI - angleMin) * 2,
-                  y: Math.sin(Math.PI - angleMin) * 2,
+                  y: Math.sin(Math.PI - angleMin) * 2
                 };
               }
               else if ((angle > 2 * Math.PI - angleMin) ||
@@ -5435,7 +5304,7 @@
                 // New vector of angle angleMin
                 nNormaleVector = {
                   x: Math.cos(angleMin) * 2,
-                  y: Math.sin(angleMin) * 2,
+                  y: Math.sin(angleMin) * 2
                 };
               }
             }
@@ -5664,6 +5533,7 @@
     sigma.layouts.getForceLinkWorker = getWorkerFn;
   }
 }).call(this);
+
 ;(function(undefined) {
   'use strict';
 
@@ -6473,6 +6343,414 @@
   };
 }).call(this);
 
+;(function(undefined) {
+  'use strict';
+
+  if (typeof sigma === 'undefined')
+    throw new Error('sigma is not declared');
+
+  // Initialize package:
+  sigma.utils.pkg('sigma.layouts.noverlap');
+
+  /**
+   * Noverlap Layout
+   * ===============================
+   *
+   * Author: @apitts / Andrew Pitts
+   * Algorithm: @jacomyma / Mathieu Jacomy (originally contributed to Gephi and ported to sigma.js under the MIT license by @andpitts with permission)
+   * Acknowledgement: @sheyman / Sébastien Heymann (some inspiration has been taken from other MIT licensed layout algorithms authored by @sheyman)
+   * Version: 0.1
+   */
+
+  var settings = {
+    speed: 3,
+    scaleNodes: 1.2,
+    nodeMargin: 5.0,
+    gridSize: 20,
+    permittedExpansion: 1.1,
+    rendererIndex: 0,
+    maxIterations: 500
+  };
+
+  var _instance = {};
+
+  /**
+   * Event emitter Object
+   * ------------------
+   */
+  var _eventEmitter = {};
+
+   /**
+   * Noverlap Object
+   * ------------------
+   */
+  function Noverlap() {
+    var self = this;
+
+    this.init = function (sigInst, options) {
+      options = options || {};
+
+      // Properties
+      this.sigInst = sigInst;
+      this.config = sigma.utils.extend(options, settings);
+      this.easing = options.easing;
+      this.duration = options.duration;
+
+      if (options.nodes) {
+        this.nodes = options.nodes;
+        delete options.nodes;
+      }
+
+      if (!sigma.plugins || typeof sigma.plugins.animate === 'undefined') {
+        throw new Error('sigma.plugins.animate is not declared');
+      }
+
+      // State
+      this.running = false;
+    };
+
+    /**
+     * Single layout iteration.
+     */
+    this.atomicGo = function () {
+      if (!this.running || this.iterCount < 1) return false;
+
+      var nodes = this.nodes || this.sigInst.graph.nodes(),
+          nodesCount = nodes.length,
+          i,
+          n,
+          n1,
+          n2,
+          xmin = Infinity,
+          xmax = -Infinity,
+          ymin = Infinity,
+          ymax = -Infinity,
+          xwidth,
+          yheight,
+          xcenter,
+          ycenter,
+          grid,
+          row,
+          col,
+          minXBox,
+          maxXBox,
+          minYBox,
+          maxYBox,
+          adjacentNodes,
+          subRow,
+          subCol,
+          nxmin,
+          nxmax,
+          nymin,
+          nymax;
+
+      this.iterCount--;
+      this.running = false;
+
+      for (i=0; i < nodesCount; i++) {
+        n = nodes[i];
+        n.dn.dx = 0;
+        n.dn.dy = 0;
+
+        //Find the min and max for both x and y across all nodes
+        xmin = Math.min(xmin, n.dn_x - (n.dn_size*self.config.scaleNodes + self.config.nodeMargin) );
+        xmax = Math.max(xmax, n.dn_x + (n.dn_size*self.config.scaleNodes + self.config.nodeMargin) );
+        ymin = Math.min(ymin, n.dn_y - (n.dn_size*self.config.scaleNodes + self.config.nodeMargin) );
+        ymax = Math.max(ymax, n.dn_y + (n.dn_size*self.config.scaleNodes + self.config.nodeMargin) );
+
+      }
+
+      xwidth = xmax - xmin;
+      yheight = ymax - ymin;
+      xcenter = (xmin + xmax) / 2;
+      ycenter = (ymin + ymax) / 2;
+      xmin = xcenter - self.config.permittedExpansion*xwidth / 2;
+      xmax = xcenter + self.config.permittedExpansion*xwidth / 2;
+      ymin = ycenter - self.config.permittedExpansion*yheight / 2;
+      ymax = ycenter + self.config.permittedExpansion*yheight / 2;
+
+      grid = {}; //An object of objects where grid[row][col] is an array of node ids representing nodes that fall in that grid. Nodes can fall in more than one grid
+
+      for(row = 0; row < self.config.gridSize; row++) {
+        grid[row] = {};
+        for(col = 0; col < self.config.gridSize; col++) {
+          grid[row][col] = [];
+        }
+      }
+
+      //Place nodes in grid
+      for (i=0; i < nodesCount; i++) {
+        n = nodes[i];
+
+        nxmin = n.dn_x - (n.dn_size*self.config.scaleNodes + self.config.nodeMargin);
+        nxmax = n.dn_x + (n.dn_size*self.config.scaleNodes + self.config.nodeMargin);
+        nymin = n.dn_y - (n.dn_size*self.config.scaleNodes + self.config.nodeMargin);
+        nymax = n.dn_y + (n.dn_size*self.config.scaleNodes + self.config.nodeMargin);
+
+        minXBox = Math.floor(self.config.gridSize* (nxmin - xmin) / (xmax - xmin) );
+        maxXBox = Math.floor(self.config.gridSize* (nxmax - xmin) / (xmax - xmin) );
+        minYBox = Math.floor(self.config.gridSize* (nymin - ymin) / (ymax - ymin) );
+        maxYBox = Math.floor(self.config.gridSize* (nymax - ymin) / (ymax - ymin) );
+        for(col = minXBox; col <= maxXBox; col++) {
+          for(row = minYBox; row <= maxYBox; row++) {
+            grid[row][col].push(n.id);
+          }
+        }
+      }
+
+
+      adjacentNodes = {}; //An object that stores the node ids of adjacent nodes (either in same grid box or adjacent grid box) for all nodes
+
+      for(row = 0; row < self.config.gridSize; row++) {
+        for(col = 0; col < self.config.gridSize; col++) {
+          grid[row][col].forEach(function(nodeId) {
+            if(!adjacentNodes[nodeId]) {
+              adjacentNodes[nodeId] = [];
+            }
+            for(subRow = Math.max(0, row - 1); subRow <= Math.min(row + 1, self.config.gridSize - 1); subRow++) {
+              for(subCol = Math.max(0, col - 1); subCol <= Math.min(col + 1,  self.config.gridSize - 1); subCol++) {
+                grid[subRow][subCol].forEach(function(subNodeId) {
+                  if(subNodeId !== nodeId && adjacentNodes[nodeId].indexOf(subNodeId) === -1) {
+                    adjacentNodes[nodeId].push(subNodeId);
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+
+      //If two nodes overlap then repulse them
+      for (i=0; i < nodesCount; i++) {
+        n1 = nodes[i];
+        adjacentNodes[n1.id].forEach(function(nodeId) {
+          var n2 = self.sigInst.graph.nodes(nodeId);
+          var xDist = n2.dn_x - n1.dn_x;
+          var yDist = n2.dn_y - n1.dn_y;
+          var dist = Math.sqrt(xDist*xDist + yDist*yDist);
+          var collision = (dist < ((n1.dn_size*self.config.scaleNodes + self.config.nodeMargin) + (n2.dn_size*self.config.scaleNodes + self.config.nodeMargin)));
+          if(collision) {
+            self.running = true;
+            if(dist > 0) {
+              n2.dn.dx += xDist / dist * (1 + n1.dn_size);
+              n2.dn.dy += yDist / dist * (1 + n1.dn_size);
+            } else {
+              n2.dn.dx += xwidth * 0.01 * (0.5 - Math.random());
+              n2.dn.dy += yheight * 0.01 * (0.5 - Math.random());
+            }
+          }
+        });
+      }
+
+      for (i=0; i < nodesCount; i++) {
+        n = nodes[i];
+        if(!n.fixed) {
+          n.dn_x = n.dn_x + n.dn.dx * 0.1 * self.config.speed;
+          n.dn_y = n.dn_y + n.dn.dy * 0.1 * self.config.speed;
+        }
+      }
+
+      if(this.running && this.iterCount < 1) {
+        this.running = false;
+      }
+
+      return this.running;
+    };
+
+    this.go = function () {
+      this.iterCount = this.config.maxIterations;
+
+      while (this.running) {
+        this.atomicGo();
+      };
+
+      this.stop();
+    };
+
+    this.start = function() {
+      if (this.running) return;
+
+      var nodes = this.sigInst.graph.nodes();
+
+      var prefix = this.sigInst.renderers[self.config.rendererIndex].options.prefix;
+
+      this.running = true;
+
+      // Init nodes
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].dn_x = nodes[i][prefix + 'x'];
+        nodes[i].dn_y = nodes[i][prefix + 'y'];
+        nodes[i].dn_size = nodes[i][prefix + 'size'];
+        nodes[i].dn = {
+          dx: 0,
+          dy: 0
+        };
+      }
+      _eventEmitter[self.sigInst.id].dispatchEvent('start');
+      this.go();
+    };
+
+    this.stop = function() {
+      var nodes = this.sigInst.graph.nodes();
+
+      this.running = false;
+
+      if (this.easing) {
+        _eventEmitter[self.sigInst.id].dispatchEvent('interpolate');
+        sigma.plugins.animate(
+          self.sigInst,
+          {
+            x: 'dn_x',
+            y: 'dn_y'
+          },
+          {
+            easing: self.easing,
+            onComplete: function() {
+              self.sigInst.refresh();
+              for (var i = 0; i < nodes.length; i++) {
+                nodes[i].dn = null;
+                nodes[i].dn_x = null;
+                nodes[i].dn_y = null;
+              }
+              _eventEmitter[self.sigInst.id].dispatchEvent('stop');
+            },
+            duration: self.duration
+          }
+        );
+      }
+      else {
+        // Apply changes
+        for (var i = 0; i < nodes.length; i++) {
+          nodes[i].x = nodes[i].dn_x;
+          nodes[i].y = nodes[i].dn_y;
+        }
+
+        this.sigInst.refresh();
+
+        for (var i = 0; i < nodes.length; i++) {
+          nodes[i].dn = null;
+          nodes[i].dn_x = null;
+          nodes[i].dn_y = null;
+        }
+        _eventEmitter[self.sigInst.id].dispatchEvent('stop');
+      }
+    };
+
+    this.kill = function() {
+      this.sigInst = null;
+      this.config = null;
+      this.easing = null;
+    };
+  };
+
+  /**
+   * Interface
+   * ----------
+   */
+
+  /**
+   * Configure the layout algorithm.
+
+   * Recognized options:
+   * **********************
+   * Here is the exhaustive list of every accepted parameter in the settings
+   * object:
+   *
+   *   {?number}            speed               A larger value increases the convergence speed at the cost of precision
+   *   {?number}            scaleNodes          The ratio to scale nodes by - a larger ratio will lead to more space around larger nodes
+   *   {?number}            nodeMargin          A fixed margin to apply around nodes regardless of size
+   *   {?number}            maxIterations       The maximum number of iterations to perform before the layout completes.
+   *   {?integer}           gridSize            The number of rows and columns to use when partioning nodes into a grid for efficient computation
+   *   {?number}            permittedExpansion  A permitted expansion factor to the overall size of the network applied at each iteration
+   *   {?integer}           rendererIndex       The index of the renderer to use for node co-ordinates. Defaults to zero.
+   *   {?(function|string)} easing              Either the name of an easing in the sigma.utils.easings package or a function. If not specified, the
+   *                                            quadraticInOut easing from this package will be used instead.
+   *   {?number}            duration            The duration of the animation. If not specified, the "animationsTime" setting value of the sigma instance will be used instead.
+   *
+   *
+   * @param  {object} config  The optional configuration object.
+   *
+   * @return {sigma.classes.dispatcher} Returns an event emitter.
+   */
+  sigma.prototype.configNoverlap = function(config) {
+
+    var sigInst = this;
+
+    if (!config) throw new Error('Missing argument: "config"');
+
+    // Create instance if undefined
+    if (!_instance[sigInst.id]) {
+      _instance[sigInst.id] = new Noverlap();
+
+      _eventEmitter[sigInst.id] = {};
+      sigma.classes.dispatcher.extend(_eventEmitter[sigInst.id]);
+
+      // Binding on kill to clear the references
+      sigInst.bind('kill', function() {
+        _instance[sigInst.id].kill();
+        _instance[sigInst.id] = null;
+        _eventEmitter[sigInst.id] = null;
+      });
+    }
+
+    _instance[sigInst.id].init(sigInst, config);
+
+    return _eventEmitter[sigInst.id];
+  };
+
+  /**
+   * Start the layout algorithm. It will use the existing configuration if no
+   * new configuration is passed.
+
+   * Recognized options:
+   * **********************
+   * Here is the exhaustive list of every accepted parameter in the settings
+   * object
+   *
+   *   {?number}            speed               A larger value increases the convergence speed at the cost of precision
+   *   {?number}            scaleNodes          The ratio to scale nodes by - a larger ratio will lead to more space around larger nodes
+   *   {?number}            nodeMargin          A fixed margin to apply around nodes regardless of size
+   *   {?number}            maxIterations       The maximum number of iterations to perform before the layout completes.
+   *   {?integer}           gridSize            The number of rows and columns to use when partioning nodes into a grid for efficient computation
+   *   {?number}            permittedExpansion  A permitted expansion factor to the overall size of the network applied at each iteration
+   *   {?integer}           rendererIndex       The index of the renderer to use for node co-ordinates. Defaults to zero.
+   *   {?(function|string)} easing              Either the name of an easing in the sigma.utils.easings package or a function. If not specified, the
+   *                                            quadraticInOut easing from this package will be used instead.
+   *   {?number}            duration            The duration of the animation. If not specified, the "animationsTime" setting value of the sigma instance will be used instead.
+   *
+   *
+   *
+   * @param  {object} config  The optional configuration object.
+   *
+   * @return {sigma.classes.dispatcher} Returns an event emitter.
+   */
+
+  sigma.prototype.startNoverlap = function(config) {
+
+    var sigInst = this;
+
+    if (config) {
+      this.configNoverlap(sigInst, config);
+    }
+
+    _instance[sigInst.id].start();
+
+    return _eventEmitter[sigInst.id];
+  };
+
+  /**
+   * Returns true if the layout has started and is not completed.
+   *
+   * @return {boolean}
+   */
+  sigma.prototype.isNoverlapRunning = function() {
+
+    var sigInst = this;
+
+    return !!_instance[sigInst.id] && _instance[sigInst.id].running;
+  };
+
+}).call(this);
 ;(function (undefined) {
     'use strict';
 
@@ -10232,7 +10510,8 @@ sigma.plugins.colorbrewer = {YlGn: {
     //this._canvas = renderer.domElements['legend'];
     this._canvas.style.position = 'absolute';
     this._canvas.style.pointerEvents = 'none';
-    setupCanvas(this._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
+    this._renderer = renderer;
+
     renderer.container.appendChild(this._canvas);
 
     window.addEventListener('resize', function () {
@@ -10256,7 +10535,16 @@ sigma.plugins.colorbrewer = {YlGn: {
     this.addWidget('edge', 'color');
     this.addWidget('edge', 'type');
 
-    this.draw();
+    var initDrawLayout = function () {
+      if (renderer.container.offsetWidth) {
+        setupCanvas(this._canvas, renderer.container.offsetWidth, renderer.container.offsetHeight, pixelRatio);
+        this.draw();
+      } else {
+        setTimeout(initDrawLayout, 200);
+      }
+    }.bind(this);
+
+    initDrawLayout();
   }
 
 
@@ -10459,7 +10747,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     var nbWidgetsBuilt = 0,
         nbWidgets = Object.keys(legendPlugin.widgets).length;
 
-    iterate(legendPlugin.widgets, function (value) {
+    iterate(legendPlugin.widgets, function (value, name) {
       buildWidget(value, function () {
         ++nbWidgetsBuilt;
         if (callback && nbWidgetsBuilt === nbWidgets) {
@@ -10474,22 +10762,26 @@ sigma.plugins.colorbrewer = {YlGn: {
    * Does not build widgets.
    * Draw the legend at the end.
    */
-  function drawLayout(legendPlugin) {
-    var vs = legendPlugin._visualSettings,
-        placement = legendPlugin.placement,
+  function drawLayout(self) {
+    var vs = self._visualSettings,
+        placement = self.placement,
         horizontal = placement === 'top' || placement === 'bottom',
-        maxHeight = legendPlugin._canvas.height,
-        maxWidth = legendPlugin._canvas.width,
-        textWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'text'),
-        nodeWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'node'),
-        edgeWidgets = getUnpinnedWidgets(legendPlugin.widgets, 'edge'),
+        maxHeight = self._canvas.height,
+        maxWidth = self._canvas.width,
+        textWidgets = getUnpinnedWidgets(self.widgets, 'text'),
+        nodeWidgets = getUnpinnedWidgets(self.widgets, 'node'),
+        edgeWidgets = getUnpinnedWidgets(self.widgets, 'edge'),
         widgetLists = [textWidgets, nodeWidgets, edgeWidgets],
-        height = horizontal ? getMaxHeight(legendPlugin.widgets) + vs.legendOuterMargin * 2 : maxHeight,
+        height = horizontal ? getMaxHeight(self.widgets) + vs.legendOuterMargin * 2 : maxHeight,
         maxNbCols = Math.floor(maxWidth / vs.totalWidgetWidth),
         cols = initializeColumns(horizontal ? maxNbCols : 1, vs.legendOuterMargin * 2),
         colIndex = 0,
         tryAgain = true,
         notEnoughSpace = false;
+
+    if (cols.length === 0) {
+      return;
+    }
 
     while (tryAgain && !notEnoughSpace) {
       tryAgain = false;
@@ -10520,17 +10812,17 @@ sigma.plugins.colorbrewer = {YlGn: {
 
           if (widgetsToDisplay.length > 0) {
             if (horizontal) {
-             if (colIndex === maxNbCols - 1) {
-               cols = initializeColumns(maxNbCols, vs.legendOuterMargin * 2);
-               height += 30;
-               tryAgain = true;
-               if (height > maxHeight) {
-                 notEnoughSpace = true;
-               }
-               break;
-             } else {
+              if (colIndex === maxNbCols - 1) {
+                cols = initializeColumns(maxNbCols, vs.legendOuterMargin * 2);
+                height += 30; // Arbitrary
+                tryAgain = true;
+                if (height > maxHeight) {
+                  //notEnoughSpace = true;
+                }
+                break;
+              } else {
                 ++colIndex;
-             }
+              }
             } else if (cols.length === maxNbCols) {
               notEnoughSpace = true;
               break;
@@ -10569,18 +10861,18 @@ sigma.plugins.colorbrewer = {YlGn: {
           legendWidth = nbCols * (vs.totalWidgetWidth + vs.legendOuterMargin) + vs.legendOuterMargin,
           legendHeight = cols.reduce(function (previous, value) { return ( previous > value.height ? previous : value.height ); }, 0);
 
-      legendPlugin.boundingBox = {
+      self.boundingBox = {
         w: legendWidth,
         h: legendHeight,
-        x: legendPlugin.placement === 'right' ? maxWidth - legendWidth : 0,
-        y: legendPlugin.placement === 'bottom' ? maxHeight - legendHeight : 0
+        x: self.placement === 'right' ? maxWidth - legendWidth : 0,
+        y: self.placement === 'bottom' ? maxHeight - legendHeight : 0
       };
     } else {
-      legendPlugin.boundingBox = {x:0, y:0, w:0, h:0};
+      self.boundingBox = {x:0, y:0, w:0, h:0};
     }
 
-    drawLegend(legendPlugin);
-    legendPlugin.enoughSpace = !notEnoughSpace;
+    drawLegend(self);
+    self.enoughSpace = !notEnoughSpace;
   }
 
   function initializeColumns(number, initialHeight) {
@@ -10732,7 +11024,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     var vs = widget._legendPlugin._visualSettings;
 
     if (widget.visualVar === 'size') {
-      widget.svg = drawSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.unit)
+      widget.svg = drawSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.unit);
     } else if (widget.elementType !== 'text') {
       widget.svg = drawNonSizeLegend(vs, widget._sigmaInstance.graph, widget._designPlugin, widget.elementType, widget.visualVar, widget.unit);
     } else {
@@ -10824,10 +11116,10 @@ sigma.plugins.colorbrewer = {YlGn: {
     ctx.drawImage(widget.img, widget.x, widget.y);
     if (widget.elementType === 'node' && widget.visualVar === 'icon') {
       ctx.textBaseline = 'middle';
-      iterate(widget.svg.icons, function (value, content) {
+      widget.svg.icons.forEach(function (value) {
         ctx.fillStyle = value.color;
         ctx.font = value.fontSize + 'px ' + value.font;
-        ctx.fillText(content, widget.x + value.x, widget.y + value.y);
+        ctx.fillText(value.content, widget.x + value.x, widget.y + value.y);
       });
     }
   }
@@ -11048,7 +11340,7 @@ sigma.plugins.colorbrewer = {YlGn: {
         isInteger = boundaries.min % 1 == 0 && boundaries.max % 1 == 0;
     }
 
-    svg.icons = {};
+    svg.icons = [];
 
     drawBackground(svg, vs, height);
     drawWidgetTitle(vs, svg, getPropertyName(styles[visualVar].by), unit);
@@ -11078,14 +11370,15 @@ sigma.plugins.colorbrewer = {YlGn: {
           drawCircle(svg, vs.legendInnerMargin + vs.legendFontSize / 2, offsetY, vs.legendFontSize / 2, value);
         }
       } else if (visualVar === 'icon') {
-        svg.icons[value.content] = {
+        svg.icons.push({
+          content: value.content,
           font: value.font,
           fontSize: vs.legendFontSize,
           //color: value.color,
           color: vs.legendFontColor,
           x: vs.legendInnerMargin,
           y: offsetY
-        };
+        });
       } else if (visualVar === 'type') {
         if (elementType === 'edge') {
           drawEdge(vs, svg, value, vs.legendInnerMargin, leftColumnWidth - vs.legendInnerMargin, offsetY, vs.legendFontSize / 3);
@@ -11464,10 +11757,8 @@ sigma.plugins.colorbrewer = {YlGn: {
    * Must be called whenever the graph's design changes.
    */
   LegendPlugin.prototype.draw = function (callback) {
-    var self = this,
-        pixelRatio = this._visualSettings.pixelRatio;
+    var self = this;
 
-    //setupCanvas(this._canvas, this._canvas.width / pixelRatio, this._canvas.height / pixelRatio, this._visualSettings.pixelRatio);
     buildLegendWidgets(this, function () {
       drawLayout(self);
       if (callback) {
@@ -11669,9 +11960,8 @@ sigma.plugins.colorbrewer = {YlGn: {
         str += widget.svg.innerHTML;
         if (widget.visualVar === 'icon') {
           var tmpSvg = document.createElement('svg');
-          iterate(widget.svg.icons, function (value, content) {
-            drawText(vs, tmpSvg, content, value.x, value.y, 'left', vs.legendFontColor, value.font,
-              vs.legendFontSize, 'central');
+          widget.svg.icons.forEach(function (value) {
+            drawText(vs, tmpSvg, value.content, value.x, value.y, 'left', vs.legendFontColor, value.font, vs.legendFontSize, 'central');
           });
           str += tmpSvg.innerHTML;
         }
@@ -12504,41 +12794,81 @@ sigma.plugins.colorbrewer = {YlGn: {
    * This methods returns an array of nodes that are adjacent to a node.
    *
    * @param  {string} id The node id.
+   * @param  {?object}  options:
+   *         {?boolean} withHidden Get not hidden nodes if set false, all
+   *                               nodes otherwise.
    * @return {array}     The array of adjacent nodes.
    */
   if (!sigma.classes.graph.hasMethod('adjacentNodes'))
-    sigma.classes.graph.addMethod('adjacentNodes', function(id) {
-      if (typeof id !== 'number' && typeof id !== 'string')
-        throw new TypeError('Invalid argument: "id" is not a string or a number, was ' + id);
+    sigma.classes.graph.addMethod('adjacentNodes', function(id, options) {
+      options = options || {};
+      options.withHidden = (arguments.length == 2) ? options.withHidden : true;
 
-      var target,
+
+      if (typeof id !== 'string' && typeof id !== 'number')
+        throw new TypeError('The node id is not a string or a number, was ' + id);
+
+      var self = this,
+          target,
+          edgeNotHidden,
           nodes = [];
-      for(target in this.allNeighborsIndex[id]) {
-        nodes.push(this.nodesIndex.get(target));
-      }
+      (this.allNeighborsIndex.get(id) || []).forEach(function(map, target) {
+        if (options.withHidden) {
+          nodes.push(self.nodesIndex.get(target));
+        }
+        else if (!self.nodes(target).hidden) {
+          // check if at least one non-hidden edge exists
+          // between the node and the target node:
+          edgeNotHidden =
+            self.allNeighborsIndex.get(id).get(target).keyList().map(function(eid) {
+              return self.edges(eid);
+            })
+            .filter(function(e) {
+              return !e.hidden;
+            })
+            .length != 0;
+
+          if (edgeNotHidden) {
+            nodes.push(self.nodesIndex.get(target));
+          }
+        }
+      });
+
       return nodes;
     });
+
 
   /**
    * This methods returns an array of edges that are adjacent to a node.
    *
    * @param  {string} id The node id.
+   * @param  {?object}  options:
+   *         {?boolean} withHidden Get not hidden nodes if set false, all
+   *                               nodes otherwise.
    * @return {array}     The array of adjacent edges.
    */
   if (!sigma.classes.graph.hasMethod('adjacentEdges'))
-    sigma.classes.graph.addMethod('adjacentEdges', function(id) {
-      if (typeof id !== 'number' && typeof id !== 'string')
-        throw new TypeError('Invalid argument: "id" is not a string or a number, was ' + id);
+    sigma.classes.graph.addMethod('adjacentEdges', function(id, options) {
+      options = options || {};
+      options.withHidden = (arguments.length == 2) ? options.withHidden : true;
 
-      var a = this.allNeighborsIndex[id],
+
+      if (typeof id !== 'string' && typeof id !== 'number')
+        throw new TypeError('The node id is not a string or a number, was ' + id);
+
+      var self = this,
+          a = this.allNeighborsIndex.get(id) || [],
           eid,
-          target,
           edges = [];
-      for(target in a) {
-        for(eid in a[target]) {
-          edges.push(a[target][eid]);
-        }
-      }
+
+      a.forEach(function(map, target) {
+        a.get(target).forEach(function(map2, eid) {
+          if (options.withHidden || !self.edges(eid).hidden) {
+            edges.push(self.edges(eid));
+          }
+        });
+      });
+
       return edges;
     });
 
@@ -13869,10 +14199,6 @@ sigma.plugins.colorbrewer = {YlGn: {
     duration: 200,
     // {number} Override the `zoomingRatio` setting of Sigma
     zoomingRatio: 1.7,
-    // {boolean} Set focus on the visualization container when the plugin is
-    // initialized and when the mouse is over it. The container must have the
-    // focus to enable keyboard events.
-    autofocus: true,
     // {number} Tab index of the graph container provided if no `tabindex`
     // attribute is found
     tabIndex: -1
@@ -13967,12 +14293,6 @@ sigma.plugins.colorbrewer = {YlGn: {
     };
 
     function bindAll() {
-      if (params.autofocus) {
-        self.domElt.focus();
-        self.domElt.addEventListener('mouseover', self.focus);
-        self.domElt.addEventListener('mouseout', self.blur);
-      }
-
       self.domElt.addEventListener('keydown', self.keyDown);
       self.domElt.addEventListener('keyup', self.keyUp);
 
@@ -13986,8 +14306,6 @@ sigma.plugins.colorbrewer = {YlGn: {
     }
 
     function unbindAll() {
-      self.domElt.removeEventListener('mouseover', self.focus);
-      self.domElt.removeEventListener('mouseout', self.blur);
       self.domElt.removeEventListener('keydown', self.keyDown);
       self.domElt.removeEventListener('keyup', self.keyUp);
 
@@ -18990,7 +19308,7 @@ sigma.plugins.colorbrewer = {YlGn: {
       this.domElements['glyphs'].height = this.container.offsetHeight;
       this.container.insertBefore(
         this.domElements['glyphs'],
-        this.domElements['glyphs'].previousSibling
+        this.domElements['mouse']
       );
     }
     this.drawingContext = this.domElements['glyphs'].getContext('2d');
@@ -19568,7 +19886,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     }
 
     // draw label with a background
-    if (sigma.canvas.edges.labels.arrow) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.arrow) {
       edge.hover = true;
       sigma.canvas.edges.labels.arrow(edge, source, target, context, settings);
       edge.hover = false;
@@ -19684,7 +20002,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     }
 
     // draw label with a background
-    if (sigma.canvas.edges.labels.curve) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.curve) {
       edge.hover = true;
       sigma.canvas.edges.labels.curve(edge, source, target, context, settings);
       edge.hover = false;
@@ -19832,7 +20150,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     }
 
     // draw label with a background
-    if (sigma.canvas.edges.labels.curvedArrow) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.curvedArrow) {
       edge.hover = true;
       var def = sigma.canvas.edges.labels.curvedArrow;
       (def.render || def)(edge, source, target, context, settings);
@@ -19947,7 +20265,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     context.restore();
 
     // draw label with a background
-    if (sigma.canvas.edges.labels) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.def) {
       edge.hover = true;
       sigma.canvas.edges.labels.def(edge, source, target, context, settings);
       edge.hover = false;
@@ -20056,7 +20374,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     }
 
     // draw label with a background
-    if (sigma.canvas.edges.labels.def) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.def) {
       edge.hover = true;
       sigma.canvas.edges.labels.def(edge, source, target, context, settings);
       edge.hover = false;
@@ -20170,7 +20488,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     context.restore();
 
     // draw label with a background
-    if (sigma.canvas.edges.labels) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.def) {
       edge.hover = true;
       var def = sigma.canvas.edges.labels.def;
       (def.render || def)(edge, source, target, context, settings);
@@ -20298,7 +20616,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     context.restore();
 
     // draw label with a background
-    if (sigma.canvas.edges.labels) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.def) {
       edge.hover = true;
       sigma.canvas.edges.labels.def(edge, source, target, context, settings);
       edge.hover = false;
@@ -20422,7 +20740,7 @@ sigma.plugins.colorbrewer = {YlGn: {
     context.restore();
 
     // draw label with a background
-    if (sigma.canvas.edges.labels) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.def) {
       edge.hover = true;
       sigma.canvas.edges.labels.def(edge, source, target, context, settings);
       edge.hover = false;
