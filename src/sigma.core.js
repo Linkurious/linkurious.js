@@ -3,15 +3,16 @@
 
   var __instances = {};
 
-  // Deal with resize:
-  window.addEventListener('resize', function() {
-    for (var key in __instances) {
-      if (__instances.hasOwnProperty(key)) {
-        var instance = __instances[key];
-        instance.refresh();
+  // Deal with resize.  skip this for node.js apps
+  if (typeof window != 'undefined')
+    window.addEventListener('resize', function() {
+      for (var key in __instances) {
+        if (__instances.hasOwnProperty(key)) {
+          var instance = __instances[key];
+          instance.refresh();
+        }
       }
-    }
-  });
+    });
 
   /**
    * This is the sigma instances constructor. One instance of sigma represent
