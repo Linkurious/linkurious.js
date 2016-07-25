@@ -1,10 +1,18 @@
 ## linkurious.js - changelog:
 
-#### 1.5.1 (March 30, 2016)
+#### 1.5.1 (July 25, 2016)
+
+This is mostly a bugfix release. A new global setting `clickToFocus` is added. By default, the DOM container loses the focus when the mouse leaves it. If `clickToFocus` is true, the user must click on the container to focus it. Otherwise, the container is focused when the mouse enters it. The `autofocus` setting of plugins.keyboard is removed.
 
 **Plugins:**
-- #351 layouts.forceLink Layout pulls nodes too close together
-- #285 Fix exporters.image: Incomplete image export on Retina screen
+- #376 Fix plugins.legend: cannot use same icon for two different legend items
+- #375 Fix renderers.linkurious: requires sigma.renderers.edgeLabels
+- #371 Fix plugins.filters: adjacentNodes/Edges not updated to use sigma.util.map
+- #369 Click to focus
+- #367 Fix renderers.glyphs: insert glyphs canvas before mouse canvas
+- #356 Fix plugins.legend: uncaught TypeError: Cannot read property 'widgets' of undefined
+- #351 layouts.forceLink: layout pulls nodes too close together
+- #285 Fix exporters.image: incomplete image export on Retina screen
 
 #### 1.5.0 (February 27, 2016)
 
