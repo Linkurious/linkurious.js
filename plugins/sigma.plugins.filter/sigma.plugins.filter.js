@@ -15,41 +15,81 @@
    * This methods returns an array of nodes that are adjacent to a node.
    *
    * @param  {string} id The node id.
+   * @param  {?object}  options:
+   *         {?boolean} withHidden Get not hidden nodes if set false, all
+   *                               nodes otherwise.
    * @return {array}     The array of adjacent nodes.
    */
   if (!sigma.classes.graph.hasMethod('adjacentNodes'))
-    sigma.classes.graph.addMethod('adjacentNodes', function(id) {
-      if (typeof id !== 'number' && typeof id !== 'string')
-        throw new TypeError('Invalid argument: "id" is not a string or a number, was ' + id);
+    sigma.classes.graph.addMethod('adjacentNodes', function(id, options) {
+      options = options || {};
+      options.withHidden = (arguments.length == 2) ? options.withHidden : true;
 
-      var target,
+
+      if (typeof id !== 'string' && typeof id !== 'number')
+        throw new TypeError('The node id is not a string or a number, was ' + id);
+
+      var self = this,
+          target,
+          edgeNotHidden,
           nodes = [];
-      for(target in this.allNeighborsIndex[id]) {
-        nodes.push(this.nodesIndex.get(target));
-      }
+      (this.allNeighborsIndex.get(id) || []).forEach(function(map, target) {
+        if (options.withHidden) {
+          nodes.push(self.nodesIndex.get(target));
+        }
+        else if (!self.nodes(target).hidden) {
+          // check if at least one non-hidden edge exists
+          // between the node and the target node:
+          edgeNotHidden =
+            self.allNeighborsIndex.get(id).get(target).keyList().map(function(eid) {
+              return self.edges(eid);
+            })
+            .filter(function(e) {
+              return !e.hidden;
+            })
+            .length != 0;
+
+          if (edgeNotHidden) {
+            nodes.push(self.nodesIndex.get(target));
+          }
+        }
+      });
+
       return nodes;
     });
+
 
   /**
    * This methods returns an array of edges that are adjacent to a node.
    *
    * @param  {string} id The node id.
+   * @param  {?object}  options:
+   *         {?boolean} withHidden Get not hidden nodes if set false, all
+   *                               nodes otherwise.
    * @return {array}     The array of adjacent edges.
    */
   if (!sigma.classes.graph.hasMethod('adjacentEdges'))
-    sigma.classes.graph.addMethod('adjacentEdges', function(id) {
-      if (typeof id !== 'number' && typeof id !== 'string')
-        throw new TypeError('Invalid argument: "id" is not a string or a number, was ' + id);
+    sigma.classes.graph.addMethod('adjacentEdges', function(id, options) {
+      options = options || {};
+      options.withHidden = (arguments.length == 2) ? options.withHidden : true;
 
-      var a = this.allNeighborsIndex[id],
+
+      if (typeof id !== 'string' && typeof id !== 'number')
+        throw new TypeError('The node id is not a string or a number, was ' + id);
+
+      var self = this,
+          a = this.allNeighborsIndex.get(id) || [],
           eid,
-          target,
           edges = [];
-      for(target in a) {
-        for(eid in a[target]) {
-          edges.push(a[target][eid]);
-        }
-      }
+
+      a.forEach(function(map, target) {
+        a.get(target).forEach(function(map2, eid) {
+          if (options.withHidden || !self.edges(eid).hidden) {
+            edges.push(self.edges(eid));
+          }
+        });
+      });
+
       return edges;
     });
 
