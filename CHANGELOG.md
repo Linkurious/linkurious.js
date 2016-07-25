@@ -1,6 +1,6 @@
 ## linkurious.js - changelog:
 
-#### 1.5.1 (July 25, 2016)
+#### 1.5.2 (July 25, 2016)
 
 This is mostly a bugfix release. A new global setting `clickToFocus` is added. By default, the DOM container loses the focus when the mouse leaves it. If `clickToFocus` is true, the user must click on the container to focus it. Otherwise, the container is focused when the mouse enters it. The `autofocus` setting of plugins.keyboard is removed.
 
@@ -11,6 +11,9 @@ This is mostly a bugfix release. A new global setting `clickToFocus` is added. B
 - #369 Click to focus
 - #367 Fix renderers.glyphs: insert glyphs canvas before mouse canvas
 - #356 Fix plugins.legend: uncaught TypeError: Cannot read property 'widgets' of undefined
+
+#### 1.5.1 (March 30, 2016)
+
 - #351 layouts.forceLink: layout pulls nodes too close together
 - #285 Fix exporters.image: incomplete image export on Retina screen
 
