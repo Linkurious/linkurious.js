@@ -5,10 +5,10 @@ var sigma = this.sigma,
 sigma.conrad = conrad;
 
 // Dirty polyfills to permit sigma usage in node
-if (HTMLElement === undefined)
+if (typeof HTMLElement === 'undefined')
   HTMLElement = function() {};
 
-if (window === undefined)
+if (typeof window === 'undefined')
   window = {
     addEventListener: function() {}
   };
