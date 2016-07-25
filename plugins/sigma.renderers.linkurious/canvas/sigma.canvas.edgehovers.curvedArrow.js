@@ -138,7 +138,7 @@
     }
 
     // draw label with a background
-    if (sigma.canvas.edges.labels.curvedArrow) {
+    if (sigma.canvas.edges.labels && sigma.canvas.edges.labels.curvedArrow) {
       edge.hover = true;
       var def = sigma.canvas.edges.labels.curvedArrow;
       (def.render || def)(edge, source, target, context, settings);
