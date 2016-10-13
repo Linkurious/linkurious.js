@@ -1,9 +1,10 @@
-[ ![Codeship Status for Linkurious/linkurious.js](https://www.codeship.io/projects/b0710040-7f11-0132-f563-62fa786c5210/status)](https://www.codeship.io/projects/57170)
 [![Join the chat at https://gitter.im/Linkurious/linkurious.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Linkurious/linkurious.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 linkurious.js
 =================
 **A JavaScript library to visualize and interact with graphs.**
+
+**status: DEPRECATED! More info at https://linkurio.us/ogma-js-library-large-scale-graph-visualization/**
 
 Linkurious.js is an active fork of [Sigma.js](https://github.com/jacomyal/sigma.js). It's dual-licensed under both GPLv3 and a [commercial license for proprietary projects](https://linkurio.us/toolkit/#pricing).
 
