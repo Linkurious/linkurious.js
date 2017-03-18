@@ -218,6 +218,7 @@
       var x = 0,
           y = 0,
           drawingRectangle = this.drawingCanvas.getBoundingClientRect();
+
       switch (event.type) {
         case 'touchmove':
           x = event.touches[0].clientX;
@@ -228,6 +229,7 @@
           y = event.clientY;
           break;
       }
+
       this.drewPoints.push({
         x: x - drawingRectangle.left,
         y: y - drawingRectangle.top
