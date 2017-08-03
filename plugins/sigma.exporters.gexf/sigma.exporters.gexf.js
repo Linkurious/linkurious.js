@@ -66,7 +66,7 @@
    */
   function strToObjectRef(obj, str) {
     // http://stackoverflow.com/a/6393943
-    if (str === null) return null;
+    if (str === null || !str) return null;
     return str.split('.').reduce(function(obj, i) { return obj[i] }, obj);
   }
 
