@@ -28,16 +28,6 @@
     // Lasso is also an event dispatcher
     sigma.classes.dispatcher.extend(this);
 
-    // A quick hardcoded rule to prevent people from using this plugin with the
-    // WebGL renderer (which is impossible at the moment):
-    if (
-      sigma.renderers.webgl &&
-      renderer instanceof sigma.renderers.webgl
-    )
-      throw new Error(
-        'The sigma.plugins.lasso is not compatible with the WebGL renderer'
-      );
-
     this.sigmaInstance = sigmaInstance;
     this.renderer = renderer;
     this.drawingCanvas = undefined;
@@ -280,9 +270,8 @@
   function onDrawingEnd (event) {
     if (this.isActive && this.isDrawing) {
       this.isDrawing = false;
-
       // Select the nodes inside the path
-      var nodes = this.renderer.nodesOnScreen,
+      var nodes = this.sigmaInstance.graph.nodes(),
         nodesLength = nodes.length,
         i = 0,
         prefix = this.renderer.options.prefix || '';
