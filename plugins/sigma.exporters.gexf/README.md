@@ -53,6 +53,9 @@ s.toGEXF({
  * **renderer**
    * The Sigma renderer. If provided, write the visualization attributes (position, size, color) of nodes and edges in the GEXF.
    * type: *sigma.renderers*
+ * **filterHidden**
+   * If true, the output in the GEXF will ignore hidden nodes and edges.
+   * type: *sigma.renderers*
  * **creator**
    * If provided, write the file creator in the META element of the GEXF.
    * type: *string*

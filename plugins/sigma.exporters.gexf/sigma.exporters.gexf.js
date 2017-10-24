@@ -175,6 +175,12 @@
           params.renderer.camera.readPrefix;
       }
 
+      if (params.filterHidden) {
+        var filterFunction = function(x){return !x.hidden}
+        nodes = nodes.filter(filterFunction)
+        edges = edges.filter(filterFunction)
+      }
+
       var o,
           attrs,
           nodeAttrIndex = {},
