@@ -14,8 +14,8 @@
   // Initialize package:
   sigma.utils.pkg('sigma.plugins');
 
-   var _body = undefined,
-       _instances = {};
+  var _body = undefined,
+    _instances = {};
 
   /**
    * Lasso Object
@@ -24,19 +24,9 @@
    * @param  {renderer} renderer                      The sigma instance renderer.
    * @param  {sigma.classes.configurable} settings    A settings class
    */
-  function Lasso (sigmaInstance, renderer, settings) {
+  function Lasso(sigmaInstance, renderer, settings) {
     // Lasso is also an event dispatcher
     sigma.classes.dispatcher.extend(this);
-
-    // A quick hardcoded rule to prevent people from using this plugin with the
-    // WebGL renderer (which is impossible at the moment):
-    if (
-      sigma.renderers.webgl &&
-      renderer instanceof sigma.renderers.webgl
-    )
-      throw new Error(
-        'The sigma.plugins.lasso is not compatible with the WebGL renderer'
-      );
 
     this.sigmaInstance = sigmaInstance;
     this.renderer = renderer;
@@ -56,7 +46,7 @@
       'fillWhileDrawing': false,
       'fillStyle': 'rgba(200, 200, 200, 0.25)',
       'cursor': 'crosshair'
-     }, settings || {});
+    }, settings || {});
   };
 
   /**
@@ -216,8 +206,8 @@
   function onDrawing (event) {
     if (this.isActive && this.isDrawing) {
       var x = 0,
-          y = 0,
-          drawingRectangle = this.drawingCanvas.getBoundingClientRect();
+        y = 0,
+        drawingRectangle = this.drawingCanvas.getBoundingClientRect();
       switch (event.type) {
         case 'touchmove':
           x = event.touches[0].clientX;
@@ -246,14 +236,14 @@
       // Redraw the complete path for a smoother effect
       // Even smoother with quadratic curves
       var sourcePoint = this.drewPoints[0],
-          destinationPoint = this.drewPoints[1],
-          pointsLength = this.drewPoints.length,
-          getMiddlePointCoordinates = function (firstPoint, secondPoint) {
-            return {
-              x: firstPoint.x + (secondPoint.x - firstPoint.x) / 2,
-              y: firstPoint.y + (secondPoint.y - firstPoint.y) / 2
-            };
+        destinationPoint = this.drewPoints[1],
+        pointsLength = this.drewPoints.length,
+        getMiddlePointCoordinates = function (firstPoint, secondPoint) {
+          return {
+            x: firstPoint.x + (secondPoint.x - firstPoint.x) / 2,
+            y: firstPoint.y + (secondPoint.y - firstPoint.y) / 2
           };
+        };
 
       this.drawingContext.beginPath();
       this.drawingContext.moveTo(sourcePoint.x, sourcePoint.y);
@@ -280,18 +270,25 @@
   function onDrawingEnd (event) {
     if (this.isActive && this.isDrawing) {
       this.isDrawing = false;
-
       // Select the nodes inside the path
-      var nodes = this.renderer.nodesOnScreen,
+      var nodes = this.sigmaInstance.graph.nodes(),
         nodesLength = nodes.length,
         i = 0,
         prefix = this.renderer.options.prefix || '';
 
+      if (
+        sigma.renderers.webgl &&
+        this.renderer instanceof sigma.renderers.webgl
+      ) {
+        // Remove 'read_'
+        prefix = prefix.slice(5);
+      }
+
       // Loop on all nodes and check if they are in the path
       while (nodesLength--) {
         var node = nodes[nodesLength],
-            x = node[prefix + 'x'],
-            y = node[prefix + 'y'];
+          x = node[prefix + 'x'],
+          y = node[prefix + 'y'];
 
         if (this.drawingContext.isPointInPath(x, y) && !node.hidden) {
           this.selectedNodes.push(node);
